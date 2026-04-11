@@ -1,68 +1,134 @@
 import StudentLayout from '../../layout/student/StudentLayout';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
 
-const subjectCards = [
+const quickStats = [
   {
-    title: 'Systems Analysis and Design',
-    detail: 'IS 312 - Michael Reyes',
-    status: 'Excellent',
+    title: 'Enrolled Courses',
+    value: '4',
+    action: 'View all courses',
+    icon: '📘',
+    tone: 'blue',
+  },
+  {
+    title: 'Pending Assignments',
+    value: '3',
+    action: 'View assignments',
+    icon: '📝',
+    tone: 'green',
+  },
+  {
+    title: 'Upcoming Exams',
+    value: '2',
+    action: 'View schedule',
+    icon: '📊',
+    tone: 'violet',
+  },
+  {
+    title: 'Overall Progress',
+    value: '76%',
+    action: 'View progress',
+    icon: '⭐',
+    tone: 'amber',
+  },
+];
+
+const deadlineItems = [
+  {
+    month: 'APR',
+    day: '12',
+    title: 'Systems Analysis Quiz 2',
+    meta: 'Apr 12, 2026 • 08:00 AM',
+    badge: '2 days left',
+    tone: 'blue',
+  },
+  {
+    month: 'APR',
+    day: '15',
+    title: 'Case Study 02',
+    meta: 'Apr 15, 2026 • 01:00 PM',
+    badge: '5 days left',
+    tone: 'green',
+  },
+  {
+    month: 'APR',
+    day: '18',
+    title: 'Database Practical Exam',
+    meta: 'Apr 18, 2026 • 10:30 AM',
+    badge: '8 days left',
+    tone: 'violet',
+  },
+  {
+    month: 'APR',
+    day: '22',
+    title: 'Ethics Reflection Paper',
+    meta: 'Apr 22, 2026 • 11:59 PM',
+    badge: '12 days left',
+    tone: 'amber',
+  },
+];
+
+const announcements = [
+  {
+    title: 'Platform maintenance scheduled',
+    body: 'The student portal will be under maintenance on Saturday from 1:00 AM to 3:00 AM.',
+    date: 'Apr 10, 2026',
+    icon: '📢',
+    tone: 'blue',
+  },
+  {
+    title: 'Final exam schedule released',
+    body: 'Please review your official examination schedule in the exams module.',
+    date: 'Apr 08, 2026',
+    icon: '✅',
+    tone: 'green',
+  },
+];
+
+const courses = [
+  {
+    title: 'Systems Analysis',
+    professor: 'Prof. Reyes',
+    progress: 82,
+    icon: '💾',
+    tone: 'blue',
   },
   {
     title: 'Database Management',
-    detail: 'IS 305 - Ariana Velasco',
-    status: 'On track',
+    professor: 'Prof. Velasco',
+    progress: 68,
+    icon: '💻',
+    tone: 'green',
   },
   {
-    title: 'Systems Project Management',
-    detail: 'IS 330 - Bryan Javier',
-    status: 'On track',
+    title: 'Project Management',
+    professor: 'Prof. Javier',
+    progress: 79,
+    icon: '🧩',
+    tone: 'violet',
   },
   {
-    title: 'Ethics',
-    detail: 'GE 208 - Camila Dizon',
-    status: 'Needs attention',
+    title: 'Web Technologies',
+    professor: 'Prof. Brown',
+    progress: 74,
+    icon: '🌐',
+    tone: 'amber',
   },
 ];
 
-const assessments = [
-  {
-    title: 'Quiz 2 - Systems Review',
-    detail: 'Systems Analysis and Design - 2nd Quarter',
-    schedule: '2026-04-12 - 08:00',
-  },
-  {
-    title: 'Case Study 02',
-    detail: 'Systems Analysis and Design - 2nd Quarter',
-    schedule: '2026-04-15 - 13:00',
-  },
+const performanceRows = [
+  { label: 'Systems Analysis', value: 82, tone: 'blue' },
+  { label: 'Database Management', value: 68, tone: 'green' },
+  { label: 'Project Management', value: 79, tone: 'violet' },
+  { label: 'Web Technologies', value: 74, tone: 'amber' },
 ];
 
-const gradeCards = [
-  { subject: 'Systems Analysis', score: '89', note: 'Excellent' },
-  { subject: 'Database Management', score: '86', note: 'On track' },
-  { subject: 'Project Management', score: '88', note: 'Good' },
-  { subject: 'Ethics', score: '82', note: 'Needs review' },
-];
+const weeklyProgress = [48, 48, 59, 64, 64, 71, 77, 82];
 
-const todaySchedule = [
-  {
-    time: '08:00 - 09:30',
-    subject: 'Systems Analysis and Design',
-    room: 'Lab 402',
-    status: 'Next class',
-  },
-  {
-    time: '10:00 - 11:30',
-    subject: 'Database Management',
-    room: 'Room 305',
-    status: 'Lecture',
-  },
-  {
-    time: '13:00 - 14:30',
-    subject: 'Web Programming',
-    room: 'Lab 205',
-    status: 'Lab',
-  },
+const quickActions = [
+  { label: 'Upload Assignment', icon: '📤', tone: 'blue' },
+  { label: 'Join Live Class', icon: '🎥', tone: 'green' },
+  { label: 'View Grades', icon: '📈', tone: 'violet' },
+  { label: 'Academic Calendar', icon: '📅', tone: 'amber' },
 ];
 
 function Dashboard() {
@@ -88,162 +154,396 @@ function Dashboard() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="grid gap-5 px-4 py-5 sm:px-7 lg:px-8">
-        <article className="rounded-[2rem] border border-[#b8cddd] bg-[linear-gradient(120deg,#eef4f9_0%,#e4edf5_38%,#dde7f0_100%)] px-5 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.1)] sm:px-6">
-          <div className="grid gap-5 xl:grid-cols-[1fr_275px]">
+      <div className="grid gap-[1.25rem] px-[1.4rem] py-[1.4rem] sm:px-[1.8rem] lg:px-[2rem]">
+        <section className="rounded-[1.8rem] bg-[#edf3f8] px-[1.6rem] py-[1.5rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d4e0ea]">
+          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[#2f78bc]">
+            Student Workspace
+          </p>
+
+          <div className="mt-[0.55rem] flex flex-col gap-[1rem] lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-[#2b79ba]">
-                Today
-              </p>
-              <h2 className="mt-3 max-w-4xl text-[2.1rem] font-semibold leading-[1.02] tracking-[-0.05em] text-[#173b70] sm:text-[2.55rem]">
-                Keep your subjects, assessments, and schedule aligned from one student view.
-              </h2>
-              <p className="mt-3 max-w-3xl text-[14px] leading-6 text-[#5f7896]">
-                Your portal is read-focused by default, with direct paths into grades,
-                upcoming work, and schedule checks.
+              <h1 className="text-[2.15rem] font-semibold leading-[1.05] tracking-[-0.05em] text-[#173b70]">
+                Welcome back, {activeUser.firstName}!
+              </h1>
+              <p className="mt-[0.65rem] max-w-[42rem] text-[0.92rem] leading-[1.7] text-[#6b8198]">
+                Here&apos;s an overview of your academic journey, upcoming requirements,
+                and course performance in one clean dashboard.
               </p>
             </div>
 
-            <div className="self-start rounded-[1.7rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-5 text-white shadow-[0_20px_32px_rgba(27,46,70,0.2)]">
-              <p className="text-[12px] text-[#d2dfec]">Next assessment</p>
-              <p className="mt-3 text-[1.3rem] font-semibold leading-tight">
-                Quiz 2 - Systems Review
+            <div className="min-w-[16rem] self-start rounded-[1.55rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-[1.2rem] py-[1.15rem] text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
+              <p className="text-[0.75rem] text-[#d5e2ef]">Account overview</p>
+              <p className="mt-[0.55rem] text-[1.15rem] font-semibold leading-tight">
+                {activeUser.email || 'student@nalaka.edu.ph'}
               </p>
-              <p className="mt-4 text-[15px] text-[#e8eff6]">2026-04-12 - 08:00</p>
+              <p className="mt-[0.35rem] text-[0.84rem] text-[#e8eff6]">
+                @{activeUser.username}
+              </p>
+              <p className="mt-[0.75rem] text-[0.82rem] text-[#d5e2ef]">
+                Section: {activeUser.section || 'Not assigned'}
+              </p>
             </div>
           </div>
-        </article>
+        </section>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard value="4" label="Active subjects" />
-          <StatCard value="87.5" label="General average" />
-          <StatCard value="2" label="Open assessments" />
-          <StatCard value="3" label="Friday blocks" />
-        </div>
+        <section className="grid gap-[1rem] sm:grid-cols-2 xl:grid-cols-4">
+          {quickStats.map((item) => (
+            <QuickStatCard key={item.title} {...item} />
+          ))}
+        </section>
 
-        <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
-            <PanelHeader title="My Subjects" action="View all" />
-            <div className="mt-4 space-y-3">
-              {subjectCards.map((item) => (
-                <div
-                  key={item.title}
-                  className="grid gap-3 rounded-[1.45rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4 md:grid-cols-[1fr_auto] md:items-center"
-                >
-                  <div>
-                    <p className="text-[1.02rem] font-semibold text-[#123b74]">
-                      {item.title}
-                    </p>
-                    <p className="mt-1 text-[13px] text-[#7088a1]">{item.detail}</p>
-                  </div>
-                  <div className="justify-self-start text-[13px] italic text-[#36557a] md:justify-self-end">
-                    {item.status}
-                  </div>
-                </div>
-              ))}
+        <section className="grid gap-[1rem] xl:grid-cols-[1.45fr_.95fr]">
+          <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.45rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
+            <div className="flex items-center justify-between gap-[1rem]">
+              <div>
+                <h2 className="text-[1.12rem] font-semibold text-[#173b70]">
+                  Academic Progress
+                </h2>
+                <p className="mt-[0.3rem] text-[0.84rem] text-[#7288a0]">
+                  Your performance trend across courses
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="rounded-full border border-[#d3dee8] bg-white px-[1rem] py-[0.55rem] text-[0.78rem] font-semibold text-[#5d7690]"
+              >
+                This Semester
+              </button>
             </div>
-          </section>
 
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
-            <PanelHeader title="Assessment Queue" action="Open assessments" />
-            <div className="mt-4 space-y-3">
-              {assessments.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[1.45rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4"
+            <div className="mt-[1.2rem] rounded-[1.4rem] border border-[#dde7ef] bg-[linear-gradient(180deg,#f8fbfd_0%,#f1f6fa_100%)] p-[1rem]">
+              <div className="relative h-[10.5rem]">
+                <div className="absolute inset-0 grid grid-cols-8">
+                  {weeklyProgress.map((_, i) => (
+                    <div key={i} className="border-r border-[#e4edf4] last:border-r-0" />
+                  ))}
+                </div>
+
+                <div className="absolute inset-0 grid grid-rows-4">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="border-b border-[#e4edf4] last:border-b-0" />
+                  ))}
+                </div>
+
+                <div className="absolute inset-x-[3%] bottom-[18%] top-[10%] flex items-end justify-between">
+                  {weeklyProgress.map((value, index) => (
+                    <div
+                      key={index}
+                      className="flex w-[10.5%] items-end justify-center"
+                    >
+                      <div className="relative flex w-full items-end justify-center">
+                        {index !== weeklyProgress.length - 1 && (
+                          <div
+                            className="absolute left-[50%] top-auto h-[0.14rem] origin-left rounded-full bg-[#3c7de0]"
+                            style={{
+                              width: '100%',
+                              bottom: `${value}%`,
+                              transform: `rotate(${Math.atan(
+                                ((weeklyProgress[index + 1] - value) * 1.2) / 100
+                              )}rad)`,
+                            }}
+                          />
+                        )}
+                        <div
+                          className="relative z-10 w-[0.48rem] rounded-full bg-[#3c7de0]"
+                          style={{ height: `${value}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="absolute inset-x-[3%] bottom-0 flex justify-between text-[0.72rem] text-[#7b8fa5]">
+                  {weeklyProgress.map((_, index) => (
+                    <span key={index}>Week {index + 1}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-[1.1rem] space-y-[0.8rem]">
+                {performanceRows.map((row) => (
+                  <div key={row.label}>
+                    <div className="mb-[0.35rem] flex items-center justify-between gap-[1rem]">
+                      <p className="text-[0.82rem] font-medium text-[#173b70]">
+                        {row.label}
+                      </p>
+                      <p className="text-[0.8rem] font-semibold text-[#4e6782]">
+                        {row.value}%
+                      </p>
+                    </div>
+
+                    <div className="h-[0.38rem] rounded-full bg-[#dde8f1]">
+                      <div
+                        className={`h-full rounded-full ${progressTone(row.tone)}`}
+                        style={{ width: `${row.value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-[1.2rem] flex justify-center">
+                <button
+                  type="button"
+                  className="text-[0.82rem] font-semibold text-[#2f78bc]"
                 >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-[1rem] font-semibold text-[#123b74]">
+                  View detailed analytics →
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <div className="grid gap-[1rem]">
+            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
+              <SectionHeader title="Upcoming Deadlines" action="View all" />
+              <div className="mt-[1rem] space-y-[0.8rem]">
+                {deadlineItems.map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex items-center gap-[0.9rem] rounded-[1.2rem] border border-[#dde7ef] bg-white px-[0.9rem] py-[0.9rem]"
+                  >
+                    <div
+                      className={`flex h-[3.6rem] w-[3.6rem] shrink-0 flex-col items-center justify-center rounded-[1rem] ${softTone(
+                        item.tone
+                      )}`}
+                    >
+                      <span className="text-[0.68rem] font-semibold uppercase text-[#6b8198]">
+                        {item.month}
+                      </span>
+                      <span className="text-[1.05rem] font-semibold text-[#173b70]">
+                        {item.day}
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[0.94rem] font-semibold text-[#173b70]">
                         {item.title}
                       </p>
-                      <p className="mt-2 text-[13px] text-[#7088a1]">{item.detail}</p>
-                    </div>
-                    <div className="text-left md:text-right">
-                      <span className="inline-flex rounded-full bg-[#d2e1ec] px-3 py-1 text-[11px] font-semibold text-[#2b79ba]">
-                        Open
-                      </span>
-                      <p className="mt-3 text-[13px] text-[#7088a1]">{item.schedule}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
-            <PanelHeader title="My Grades" action="Grade details" />
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {gradeCards.map((item) => (
-                <div
-                  key={item.subject}
-                  className="rounded-[1.4rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4"
-                >
-                  <p className="text-sm font-semibold text-[#123b74]">{item.subject}</p>
-                  <div className="mt-4 flex items-end justify-between gap-3">
-                    <p className="text-[1.85rem] font-semibold leading-none text-[#123b74]">
-                      {item.score}
-                    </p>
-                    <p className="text-[12px] text-[#7088a1]">{item.note}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
-            <PanelHeader title="Today's Schedule" action="Full schedule" />
-            <div className="mt-4 space-y-3">
-              {todaySchedule.map((item) => (
-                <div
-                  key={`${item.subject}-${item.time}`}
-                  className="rounded-[1.45rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-[1rem] font-semibold text-[#123b74]">
-                        {item.subject}
+                      <p className="mt-[0.25rem] text-[0.77rem] text-[#7088a1]">
+                        {item.meta}
                       </p>
-                      <p className="mt-1 text-[13px] text-[#7088a1]">{item.room}</p>
                     </div>
-                    <div className="text-left sm:text-right">
-                      <p className="text-sm font-semibold text-[#123b74]">{item.time}</p>
-                      <p className="mt-1 text-[12px] text-[#7088a1]">{item.status}</p>
+
+                    <span
+                      className={`shrink-0 rounded-full px-[0.7rem] py-[0.34rem] text-[0.68rem] font-semibold ${badgeTone(
+                        item.tone
+                      )}`}
+                    >
+                      {item.badge}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
+              <SectionHeader title="Recent Announcements" action="View all" />
+              <div className="mt-[1rem] space-y-[0.8rem]">
+                {announcements.map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex gap-[0.85rem] rounded-[1.2rem] border border-[#dde7ef] bg-white px-[0.95rem] py-[0.95rem]"
+                  >
+                    <div
+                      className={`flex h-[2.9rem] w-[2.9rem] shrink-0 items-center justify-center rounded-[0.95rem] text-[1.05rem] ${softTone(
+                        item.tone
+                      )}`}
+                    >
+                      {item.icon}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-[1rem]">
+                        <p className="text-[0.9rem] font-semibold text-[#173b70]">
+                          {item.title}
+                        </p>
+                        <span className="shrink-0 text-[0.72rem] text-[#8092a6]">
+                          {item.date}
+                        </span>
+                      </div>
+                      <p className="mt-[0.35rem] text-[0.78rem] leading-[1.55] text-[#7088a1]">
+                        {item.body}
+                      </p>
                     </div>
                   </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
+              <h2 className="text-[1.05rem] font-semibold text-[#173b70]">
+                Quick Actions
+              </h2>
+              <div className="mt-[1rem] grid grid-cols-2 gap-[0.75rem]">
+                {quickActions.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className="rounded-[1.15rem] border border-[#dde7ef] bg-white px-[0.8rem] py-[0.95rem] text-left transition hover:-translate-y-[0.03rem]"
+                  >
+                    <div
+                      className={`flex h-[2.7rem] w-[2.7rem] items-center justify-center rounded-[0.9rem] text-[1rem] ${softTone(
+                        item.tone
+                      )}`}
+                    >
+                      {item.icon}
+                    </div>
+                    <p className="mt-[0.65rem] text-[0.78rem] font-medium leading-[1.45] text-[#173b70]">
+                      {item.label}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.4rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
+          <SectionHeader title="My Courses" action="View all courses" />
+          <div className="mt-[1rem] grid gap-[0.9rem] sm:grid-cols-2 xl:grid-cols-4">
+            {courses.map((course) => (
+              <article
+                key={course.title}
+                className="rounded-[1.25rem] border border-[#dde7ef] bg-white px-[1rem] py-[1rem]"
+              >
+                <div
+                  className={`flex h-[3rem] w-[3rem] items-center justify-center rounded-[1rem] text-[1.15rem] ${softTone(
+                    course.tone
+                  )}`}
+                >
+                  {course.icon}
                 </div>
-              ))}
-            </div>
-          </section>
-        </div>
+
+                <h3 className="mt-[0.85rem] text-[0.98rem] font-semibold leading-[1.35] text-[#173b70]">
+                  {course.title}
+                </h3>
+                <p className="mt-[0.25rem] text-[0.78rem] text-[#7088a1]">
+                  {course.professor}
+                </p>
+
+                <div className="mt-[1rem] flex items-center gap-[0.7rem]">
+                  <div className="h-[0.34rem] flex-1 rounded-full bg-[#dde8f1]">
+                    <div
+                      className={`h-full rounded-full ${progressTone(course.tone)}`}
+                      style={{ width: `${course.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-[0.74rem] font-semibold text-[#4e6782]">
+                    {course.progress}%
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       </div>
     </StudentLayout>
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
+function QuickStatCard({
+  title,
+  value,
+  action,
+  icon,
+  tone,
+}: {
+  title: string;
+  value: string;
+  action: string;
+  icon: string;
+  tone: string;
+}) {
   return (
-    <article className="rounded-[1.75rem] border border-[#c4d5e4] bg-[linear-gradient(180deg,#f4f8fb_0%,#eef4f8_100%)] p-5 shadow-[0_16px_32px_rgba(49,70,98,0.08)]">
-      <p className="text-[2.35rem] font-semibold leading-none text-[#123b74]">{value}</p>
-      <p className="mt-3 text-[13px] text-[#7088a1]">{label}</p>
+    <article className="rounded-[1.45rem] border border-[#d9e4ed] bg-[linear-gradient(180deg,#f9fcfe_0%,#f2f7fb_100%)] px-[1.15rem] py-[1.1rem] shadow-[0_.6rem_1.5rem_rgba(40,68,99,0.06)]">
+      <div className="flex items-start justify-between gap-[0.8rem]">
+        <div
+          className={`flex h-[3.05rem] w-[3.05rem] items-center justify-center rounded-[1rem] text-[1.1rem] ${softTone(
+            tone
+          )}`}
+        >
+          {icon}
+        </div>
+      </div>
+
+      <p className="mt-[0.8rem] text-[0.9rem] font-medium text-[#5f7892]">{title}</p>
+      <p className="mt-[0.3rem] text-[2rem] font-semibold leading-none text-[#173b70]">
+        {value}
+      </p>
+      <button
+        type="button"
+        className="mt-[0.85rem] text-[0.8rem] font-semibold text-[#2f78bc]"
+      >
+        {action} →
+      </button>
     </article>
   );
 }
 
-function PanelHeader({ title, action }: { title: string; action: string }) {
+function SectionHeader({
+  title,
+  action,
+}: {
+  title: string;
+  action: string;
+}) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <p className="text-[1.12rem] font-semibold text-[#123b74]">{title}</p>
+    <div className="flex items-center justify-between gap-[1rem]">
+      <h2 className="text-[1.08rem] font-semibold text-[#173b70]">{title}</h2>
       <button
         type="button"
-        className="rounded-full border border-[#c4d5e4] bg-[#f5f9fc] px-4 py-2 text-[13px] font-semibold text-[#2b79ba] shadow-[0_6px_16px_rgba(49,70,98,0.06)]"
+        className="text-[0.8rem] font-semibold text-[#2f78bc]"
       >
         {action}
       </button>
     </div>
   );
+}
+
+function softTone(tone: string) {
+  switch (tone) {
+    case 'blue':
+      return 'bg-[#e8f1ff] text-[#2f78bc]';
+    case 'green':
+      return 'bg-[#e7f7ef] text-[#2f9b63]';
+    case 'violet':
+      return 'bg-[#f1ebff] text-[#8b5fe0]';
+    case 'amber':
+      return 'bg-[#fff2e2] text-[#f29a2e]';
+    default:
+      return 'bg-[#eef3f8] text-[#5d7690]';
+  }
+}
+
+function badgeTone(tone: string) {
+  switch (tone) {
+    case 'blue':
+      return 'bg-[#e8f1ff] text-[#2f78bc]';
+    case 'green':
+      return 'bg-[#e7f7ef] text-[#2f9b63]';
+    case 'violet':
+      return 'bg-[#f1ebff] text-[#8b5fe0]';
+    case 'amber':
+      return 'bg-[#fff2e2] text-[#f29a2e]';
+    default:
+      return 'bg-[#eef3f8] text-[#5d7690]';
+  }
+}
+
+function progressTone(tone: string) {
+  switch (tone) {
+    case 'blue':
+      return 'bg-[#3c7de0]';
+    case 'green':
+      return 'bg-[#2f9b63]';
+    case 'violet':
+      return 'bg-[#8b5fe0]';
+    case 'amber':
+      return 'bg-[#f29a2e]';
+    default:
+      return 'bg-[#7d94aa]';
+  }
 }
 
 export default Dashboard;

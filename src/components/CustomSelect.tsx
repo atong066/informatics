@@ -3,7 +3,7 @@ import { FiChevronDown } from 'react-icons/fi';
 
 type CustomSelectProps = {
   id: string;
-  options: string[];
+  options: Array<string | { label: string; value: string }>;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
@@ -38,6 +38,13 @@ function CustomSelect({
   }, []);
 
   const displayValue = value || placeholder;
+  const normalizedOptions = options.map((option) => (
+    typeof option === 'string'
+      ? { label: option, value: option }
+      : option
+  ));
+  const selectedOption = normalizedOptions.find((option) => option.value === value);
+  const resolvedDisplayValue = selectedOption?.label ?? displayValue;
   const menuPositionClasses =
     menuPosition === 'top'
       ? 'bottom-[calc(100%+0.5rem)]'
@@ -72,7 +79,7 @@ function CustomSelect({
             value ? 'text-[#2c3e50]' : 'text-[#95a5a6]'
           }`}
         >
-          {displayValue}
+          {resolvedDisplayValue}
         </span>
         <span
           className={`shrink-0 text-[12px] leading-none transition duration-200 ${
@@ -91,12 +98,12 @@ function CustomSelect({
           className={`absolute left-0 right-0 z-20 overflow-hidden rounded-2xl border border-[#bdc3c7] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.12)] ${menuPositionClasses}`}
           role="listbox"
         >
-          {options.map((option) => {
-            const isSelected = option === value;
+          {normalizedOptions.map((option) => {
+            const isSelected = option.value === value;
 
             return (
               <button
-                key={option}
+                key={option.value}
                 type="button"
                 className={`block w-full px-4 py-3 text-left text-[15px] transition ${
                   isSelected
@@ -104,11 +111,11 @@ function CustomSelect({
                     : 'text-[#34495e] hover:bg-[#f7f9fa]'
                 }`}
                 onClick={() => {
-                  onChange(option);
+                  onChange(option.value);
                   setIsOpen(false);
                 }}
               >
-                {option}
+                {option.label}
               </button>
             );
           })}

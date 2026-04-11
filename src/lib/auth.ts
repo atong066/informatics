@@ -5,6 +5,7 @@ export type StoredUser = {
   middleName: string;
   email: string;
   username: string;
+  role?: 'student' | 'faculty';
   section: string;
   birthdate: string;
   address: string;
@@ -53,4 +54,14 @@ export function setAuthSession(session: AuthSession) {
 
 export function clearStoredUser() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+export function getNormalizedRole(user?: Pick<StoredUser, 'role'> | null) {
+  return user?.role === 'faculty' ? 'faculty' : 'student';
+}
+
+export function getDefaultPortalRoute(user?: Pick<StoredUser, 'role'> | null) {
+  return getNormalizedRole(user) === 'faculty'
+    ? '/faculty/dashboard'
+    : '/student/dashboard';
 }

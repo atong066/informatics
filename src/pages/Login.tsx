@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NotificationPopup from '../components/NotificationPopup';
-import { setAuthSession } from '../lib/auth';
+import { getDefaultPortalRoute, setAuthSession } from '../lib/auth';
 
 const portalHighlights = [
   'Access schedules, announcements, and student services in one secure place.',
@@ -91,15 +91,17 @@ function Login() {
       });
 
       if (data.token && data.data) {
+        const sessionUser = data.data as Parameters<typeof setAuthSession>[0]['user'];
         setAuthSession({
           token: data.token,
-          user: data.data as Parameters<typeof setAuthSession>[0]['user'],
+          user: sessionUser,
         });
-      }
 
-      window.setTimeout(() => {
-        navigate('/student/dashboard');
-      }, 250);
+        window.setTimeout(() => {
+          navigate(getDefaultPortalRoute(sessionUser));
+        }, 250);
+        return;
+      }
     },
     onError: (error: LoginError) => {
       setFieldErrors(error.fieldErrors ?? {});

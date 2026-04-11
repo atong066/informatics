@@ -1,39 +1,79 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { GuestOnlyRoute, ProtectedRoute } from './components/RouteGuards';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import {
+  GuestOnlyRoute,
+  RoleProtectedRoute,
+  SessionHomeRedirect,
+} from './components/RouteGuards';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/student/Dashboard';
 import Profile from './pages/student/Profile';
 import Settings from './pages/student/Settings';
+import SubjectDetails from './pages/student/SubjectDetails';
+import FacultyDashboard from './pages/faculty/Dashboard';
+import FacultyStudentList from './pages/faculty/StudentList';
+import FacultySubjectDetails from './pages/faculty/SubjectDetails';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/dashboard" element={<Navigate to="/student/dashboard" replace />} />
+        <Route path="/" element={<SessionHomeRedirect />} />
+        <Route path="/dashboard" element={<SessionHomeRedirect />} />
         <Route
           path="/student/dashboard"
           element={(
-            <ProtectedRoute>
+            <RoleProtectedRoute role="student">
               <Dashboard />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           )}
         />
         <Route
           path="/student/profile"
           element={(
-            <ProtectedRoute>
+            <RoleProtectedRoute role="student">
               <Profile />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           )}
         />
         <Route
           path="/student/settings"
           element={(
-            <ProtectedRoute>
+            <RoleProtectedRoute role="student">
               <Settings />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/student/subjects/:subjectId"
+          element={(
+            <RoleProtectedRoute role="student">
+              <SubjectDetails />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/dashboard"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyDashboard />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/student-list"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyStudentList />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultySubjectDetails />
+            </RoleProtectedRoute>
           )}
         />
         <Route

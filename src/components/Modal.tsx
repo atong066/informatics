@@ -34,8 +34,8 @@ function Modal({
         aria-hidden="true"
       />
 
-      <div className="modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#c7d7e6] bg-[linear-gradient(180deg,#f6f9fc_0%,#edf3f8_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.24)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#d8e3ec] px-5 py-5 sm:px-6">
+      <div className="modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)]">
+        <div className="flex items-start justify-between gap-4 border-b border-[#bccbd8] px-5 py-5 sm:px-6">
           <div>
             <h3 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#173b70]">
               {title}
@@ -49,7 +49,7 @@ function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#ccd9e5] bg-white/90 text-[#48617d] transition hover:bg-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#b7c7d6] bg-[rgba(255,255,255,0.88)] text-[#48617d] transition hover:bg-white"
             aria-label="Close modal"
           >
             <FiX className="h-4 w-4" />
@@ -59,7 +59,7 @@ function Modal({
         <div className="px-5 py-5 sm:px-6">{children}</div>
 
         {actions ? (
-          <div className="flex flex-col-reverse gap-3 border-t border-[#d8e3ec] bg-white/45 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-[#bccbd8] bg-[rgba(230,238,245,0.82)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             {actions}
           </div>
         ) : null}

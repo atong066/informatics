@@ -1,38 +1,42 @@
 import { useState, type ReactNode } from 'react';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
+import FacultyNavbar from './Navbar';
+import FacultySidebar from './Sidebar';
 
-type StudentLayoutProps = {
+type FacultyLayoutProps = {
   firstName: string;
   fullName: string;
-  section: string;
+  department: string;
   username: string;
   profileImage?: string | null;
+  pageEyebrow?: string;
+  pageTitle: string;
   children: ReactNode;
 };
 
-function StudentLayout({
+function FacultyLayout({
   firstName,
   fullName,
-  section,
+  department,
   username,
   profileImage,
+  pageEyebrow,
+  pageTitle,
   children,
-}: StudentLayoutProps) {
+}: FacultyLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <main className="h-screen overflow-hidden bg-[#b8c8da] text-slate-900">
+    <main className="h-screen overflow-hidden bg-[#b6c2cf] text-slate-900">
       <div className="relative grid h-full lg:grid-cols-[248px_1fr]">
         {isMobileSidebarOpen ? (
           <>
             <div
-              className="drawer-overlay absolute inset-0 z-30 bg-[#0c1e35]/52 backdrop-blur-[3px] lg:hidden"
+              className="drawer-overlay absolute inset-0 z-30 bg-[#142535]/46 backdrop-blur-[3px] lg:hidden"
               onClick={() => setIsMobileSidebarOpen(false)}
               aria-hidden="true"
             />
             <div className="drawer-panel fixed inset-y-0 left-0 z-40 lg:hidden">
-              <Sidebar
+              <FacultySidebar
                 fullName={fullName}
                 username={username}
                 profileImage={profileImage}
@@ -42,18 +46,22 @@ function StudentLayout({
             </div>
           </>
         ) : null}
+
         <div className="hidden lg:block">
-          <Sidebar
+          <FacultySidebar
             fullName={fullName}
             username={username}
             profileImage={profileImage}
           />
         </div>
-        <div className="flex min-w-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(53,112,171,0.14),transparent_23%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_18%),linear-gradient(180deg,#b8c8da_0%,#aebfd3_46%,#a5b8cc_100%)]">
-          <Navbar
+
+        <div className="flex min-w-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_18%),radial-gradient(circle_at_top_right,rgba(74,111,161,0.12),transparent_24%),linear-gradient(180deg,#aebccc_0%,#9fafc0_46%,#90a2b6_100%)]">
+          <FacultyNavbar
             firstName={firstName}
-            section={section}
+            department={department}
             profileImage={profileImage}
+            pageEyebrow={pageEyebrow}
+            pageTitle={pageTitle}
             onOpenSidebar={() => setIsMobileSidebarOpen(true)}
           />
           <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</div>
@@ -63,4 +71,4 @@ function StudentLayout({
   );
 }
 
-export default StudentLayout;
+export default FacultyLayout;
