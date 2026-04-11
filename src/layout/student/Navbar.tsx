@@ -54,10 +54,10 @@ function Navbar({ firstName, section, profileImage, onOpenSidebar }: NavbarProps
           <p className="hidden text-[11px] font-semibold uppercase tracking-[0.24em] text-[#2b79ba] lg:block">
             Student workspace
           </p>
-          <h1 className="mt-4 max-w-[9ch] text-[1.55rem] font-semibold leading-[0.98] tracking-[-0.05em] text-[#163b73] sm:max-w-none sm:text-[1.85rem] lg:mt-3 lg:text-[2.15rem]">
+          <h1 className="mt-4 hidden max-w-[9ch] text-[1.55rem] font-semibold leading-[0.98] tracking-[-0.05em] text-[#163b73] sm:max-w-none sm:text-[1.85rem] lg:mt-3 lg:block lg:text-[2.15rem]">
             Student Dashboard
           </h1>
-          <p className="mt-2 max-w-[22rem] text-[14px] leading-7 text-[#58728f]">
+          <p className="mt-2 hidden max-w-[22rem] text-[14px] leading-7 text-[#58728f] lg:block">
             Check what needs attention, what is due next, and how your term is moving.
           </p>
         </div>

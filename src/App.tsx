@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/student/Dashboard';
 import Profile from './pages/student/Profile';
+import Settings from './pages/student/Settings';
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
           element={(
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/student/settings"
+          element={(
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           )}
         />

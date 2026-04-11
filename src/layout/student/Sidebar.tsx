@@ -1,5 +1,4 @@
 import {
-  FiGrid,
   FiLogOut,
   FiSettings,
   FiUser,
@@ -140,9 +139,6 @@ function Sidebar({
                   type="button"
                   onClick={() => {
                     onClose?.();
-                    if (item.path === '/student/settings') {
-                      return;
-                    }
                     navigate(item.path);
                   }}
                   className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
