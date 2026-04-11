@@ -1,27 +1,69 @@
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-
-type StoredUser = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  middleName: string;
-  email: string;
-  username: string;
-  section: string;
-  birthdate: string;
-  address: string;
-  contactNumber: string;
-};
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { clearStoredUser, getStoredToken, getStoredUser, setAuthSession } from '../lib/auth';
 
 function Dashboard() {
   const navigate = useNavigate();
   const storedUser = getStoredUser();
+  const token = getStoredToken();
 
   if (!storedUser) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
-  const fullName = [storedUser.firstName, storedUser.middleName, storedUser.lastName]
+  const currentUserQuery = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const response = await fetch('/api/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        data?: typeof storedUser;
+      };
+
+      if (!response.ok || !data.data) {
+        throw new Error(data.message || 'Failed to load authenticated user');
+      }
+
+      return data.data;
+    },
+    enabled: Boolean(token),
+    retry: false,
+    initialData: storedUser,
+  });
+
+  const activeUser = currentUserQuery.data ?? storedUser;
+
+  useEffect(() => {
+    if (!currentUserQuery.isError) {
+      return;
+    }
+
+    clearStoredUser();
+    navigate('/login', { replace: true });
+  }, [currentUserQuery.isError, navigate]);
+
+  useEffect(() => {
+    if (!token || !currentUserQuery.data || currentUserQuery.data === storedUser) {
+      return;
+    }
+
+    setAuthSession({
+      token,
+      user: currentUserQuery.data,
+    });
+  }, [currentUserQuery.data, storedUser, token]);
+
+  if (currentUserQuery.isError) {
+    return null;
+  }
+
+  const fullName = [activeUser.firstName, activeUser.middleName, activeUser.lastName]
     .filter(Boolean)
     .join(' ');
 
@@ -62,7 +104,7 @@ function Dashboard() {
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.removeItem('informatics-user');
+                  clearStoredUser();
                   navigate('/login', { replace: true });
                 }}
                 className="rounded-full bg-[#3498db] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#2d89c6]"
@@ -78,7 +120,7 @@ function Dashboard() {
                 Welcome
               </p>
               <h1 className="mt-3 font-display text-[2.3rem] leading-[1] text-slate-950">
-                {storedUser.firstName}, your portal is ready.
+                {activeUser.firstName}, your portal is ready.
               </h1>
               <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[#5d6d7e]">
                 This is your first dashboard screen after login. It can grow into
@@ -92,7 +134,7 @@ function Dashboard() {
                     Username
                   </p>
                   <p className="mt-3 text-lg font-semibold text-slate-950">
-                    {storedUser.username}
+                    {activeUser.username}
                   </p>
                 </article>
                 <article className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-[0_14px_30px_rgba(44,62,80,0.08)]">
@@ -100,7 +142,7 @@ function Dashboard() {
                     Section
                   </p>
                   <p className="mt-3 text-lg font-semibold text-slate-950">
-                    {storedUser.section}
+                    {activeUser.section}
                   </p>
                 </article>
                 <article className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-[0_14px_30px_rgba(44,62,80,0.08)]">
@@ -108,7 +150,7 @@ function Dashboard() {
                     Birthdate
                   </p>
                   <p className="mt-3 text-lg font-semibold text-slate-950">
-                    {formatBirthdate(storedUser.birthdate)}
+                    {formatBirthdate(activeUser.birthdate)}
                   </p>
                 </article>
               </div>
@@ -126,17 +168,17 @@ function Dashboard() {
                   </div>
                   <div>
                     <dt className="text-[#7f8c8d]">Email</dt>
-                    <dd className="mt-1 font-medium text-[#2c3e50]">{storedUser.email}</dd>
+                    <dd className="mt-1 font-medium text-[#2c3e50]">{activeUser.email}</dd>
                   </div>
                   <div>
                     <dt className="text-[#7f8c8d]">Contact number</dt>
                     <dd className="mt-1 font-medium text-[#2c3e50]">
-                      {storedUser.contactNumber}
+                      {activeUser.contactNumber}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-[#7f8c8d]">Address</dt>
-                    <dd className="mt-1 font-medium text-[#2c3e50]">{storedUser.address}</dd>
+                    <dd className="mt-1 font-medium text-[#2c3e50]">{activeUser.address}</dd>
                   </div>
                 </dl>
               </article>
@@ -156,21 +198,6 @@ function Dashboard() {
       </div>
     </main>
   );
-}
-
-function getStoredUser() {
-  const rawValue = localStorage.getItem('informatics-user');
-
-  if (!rawValue) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(rawValue) as StoredUser;
-  } catch {
-    localStorage.removeItem('informatics-user');
-    return null;
-  }
 }
 
 function formatBirthdate(value: string) {

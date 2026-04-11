@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NotificationPopup from '../components/NotificationPopup';
+import { setAuthSession } from '../lib/auth';
 
 const portalHighlights = [
   'Access schedules, announcements, and student services in one secure place.',
@@ -58,6 +59,7 @@ function Login() {
 
       const data = (await response.json()) as {
         message?: string;
+        token?: string;
         data?: Record<string, unknown>;
         errors?: Record<string, string[]>;
       };
@@ -88,8 +90,11 @@ function Login() {
         variant: 'success',
       });
 
-      if (data.data) {
-        localStorage.setItem('informatics-user', JSON.stringify(data.data));
+      if (data.token && data.data) {
+        setAuthSession({
+          token: data.token,
+          user: data.data as Parameters<typeof setAuthSession>[0]['user'],
+        });
       }
 
       window.setTimeout(() => {
