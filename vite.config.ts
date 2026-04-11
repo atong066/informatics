@@ -7,5 +7,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     allowedHosts: ['nalaka.cloud', 'www.nalaka.cloud'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+    },
   },
 })

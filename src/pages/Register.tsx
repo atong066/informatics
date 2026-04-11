@@ -1,22 +1,123 @@
+import { useMutation } from '@tanstack/react-query';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
+import CustomDatePicker from '../components/CustomDatePicker';
+import CustomSelect from '../components/CustomSelect';
 
-const highlights = [
-  'Submit your application details and create your student portal credentials in one step.',
-  'Designed for incoming students exploring senior high school, college, and diploma pathways.',
-  'Clean, mobile-friendly registration flow aligned with the Informatics identity.',
+const sectionOptions = [
+  'DCS-B6',
+  'DCS-B7',
+  'DCS-B8',
+  'DCS-B9',
+  'DIT-B7',
+  'DIT-B8',
 ];
 
-function Register() {
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.18),_transparent_24%),linear-gradient(135deg,_#091a3d_0%,_#0a2458_40%,_#103784_100%)] text-slate-50">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] bg-[size:88px_88px] opacity-25" />
-      <div className="absolute left-[-8rem] top-[-7rem] h-72 w-72 rounded-full bg-amber-300/20 blur-3xl" />
-      <div className="absolute bottom-[-10rem] right-[-4rem] h-96 w-96 rounded-full bg-sky-300/15 blur-3xl" />
+type RegistrationForm = {
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  address: string;
+  contactNumber: string;
+  email: string;
+  section: string;
+  birthdate: string;
+};
 
-      <div className="relative grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="hidden min-h-[56svh] flex-col justify-between px-10 py-8 lg:flex lg:px-14 lg:py-12">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-white/95 p-2 shadow-[0_10px_30px_rgba(8,20,48,0.28)]">
+type FieldErrors = Partial<Record<keyof RegistrationForm, string>>;
+type RegistrationError = Error & {
+  fieldErrors?: FieldErrors;
+};
+
+const initialForm: RegistrationForm = {
+  lastName: '',
+  firstName: '',
+  middleName: '',
+  address: '',
+  contactNumber: '',
+  email: '',
+  section: '',
+  birthdate: '',
+};
+
+function Register() {
+  const [form, setForm] = useState<RegistrationForm>(initialForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const registerMutation = useMutation({
+    mutationFn: async (payload: RegistrationForm) => {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        const error = new Error(data.message || 'Registration failed') as RegistrationError;
+
+        if (data.errors) {
+          error.fieldErrors = Object.fromEntries(
+            Object.entries(data.errors).map(([key, value]) => [
+              key,
+              value?.[0] ?? '',
+            ]),
+          ) as FieldErrors;
+        }
+
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      setForm(initialForm);
+      setFieldErrors({});
+      setSuccessMessage(data.message ?? 'Registration saved successfully');
+    },
+    onError: (error: RegistrationError) => {
+      setFieldErrors(error.fieldErrors ?? {});
+    },
+  });
+
+  function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: '',
+    }));
+
+    setSuccessMessage('');
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSuccessMessage('');
+    registerMutation.mutate(form);
+  }
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(145deg,_#1f3a5f_0%,_#234d77_55%,_#2c5f92_100%)] px-5 py-8 text-slate-900 sm:px-8">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:84px_84px] opacity-30" />
+      <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
+      <div className="absolute bottom-[-8rem] right-[-3rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
+
+      <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl items-center justify-center">
+        <section className="w-full max-w-xl rounded-[1.75rem] border border-white/55 bg-[#ecf0f1] p-5 shadow-[0_30px_80px_rgba(16,33,53,0.28)] sm:p-6">
+          <div className="mb-6 flex items-center gap-3 border-b border-[#d6dde2] pb-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d6dde2] bg-white p-2 shadow-[0_8px_18px_rgba(44,62,80,0.08)]">
               <img
                 src="/images/logo.png"
                 alt="Informatics Philippines logo"
@@ -24,186 +125,239 @@ function Register() {
               />
             </div>
             <div>
-              <p className="text-xl font-bold uppercase tracking-[0.18em] text-white">
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-slate-950">
                 Informatics
               </p>
-              <p className="text-sm text-blue-100/80">Philippines Admissions Portal</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#3498db]">
+                Registration v2
+              </p>
             </div>
           </div>
 
-          <div className="max-w-xl py-10">
-            <p className="mb-4 text-xs uppercase tracking-[0.4em] text-amber-100/75">
-              Enrollment open
+          <div className="mb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#3498db]">
+              Student registration
             </p>
-            <h1 className="font-display text-6xl leading-[0.94] tracking-tight text-white">
-              Create your account and begin your application.
+            <h1 className="mt-3 font-display text-[2rem] leading-tight text-slate-950 sm:text-[1.8rem]">
+              Create your account
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-7 text-slate-300">
-              A streamlined registration experience for future Informatics students,
-              built to feel clearer and more focused than a typical admissions form.
+            <p className="mt-2 text-[13px] leading-5 text-[#5d6d7e]">
+              Enter your student details below to begin registration.
             </p>
           </div>
 
-          <div className="grid gap-3 text-sm text-slate-200/90">
-            {highlights.map((item) => (
-              <div
-                key={item}
-                className="flex items-start gap-3 border-t border-white/10 py-3"
-              >
-                <span className="mt-1 h-2.5 w-2.5 rounded-full bg-amber-300" />
-                <p>{item}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex min-h-screen items-center justify-center px-5 py-6 sm:px-10 sm:py-8 lg:px-14">
-          <div className="w-full max-w-lg rounded-[1.75rem] border border-white/15 bg-white/94 p-5 text-slate-900 shadow-[0_30px_80px_rgba(6,24,58,0.35)] backdrop-blur sm:rounded-[2rem] sm:p-8">
-            <div className="mb-6 flex items-center gap-3 border-b border-slate-200 pb-5 lg:hidden">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_8px_24px_rgba(8,20,48,0.12)]">
-                <img
-                  src="/images/logo.png"
-                  alt="Informatics Philippines logo"
-                  className="max-h-full max-w-full object-contain"
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Last name
+                </span>
+                {fieldErrors.lastName ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.lastName}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="lastName"
+                  type="text"
+                  value={form.lastName}
+                  onChange={handleInputChange}
+                  placeholder="Dela Cruz"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.lastName
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
                 />
-              </div>
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.16em] text-slate-950">
-                  Informatics
-                </p>
-                <p className="mt-1 text-xs uppercase tracking-[0.24em] text-[#0d4aa6]/70">
-                  Enrollment open
-                </p>
-              </div>
+              </label>
+
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  First name
+                </span>
+                {fieldErrors.firstName ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.firstName}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="firstName"
+                  type="text"
+                  value={form.firstName}
+                  onChange={handleInputChange}
+                  placeholder="Juan"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.firstName
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
             </div>
 
-            <div className="mb-6 sm:mb-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#0d4aa6]/75">
-                Student registration
-              </p>
-              <h2 className="mt-2 font-display text-3xl leading-tight text-slate-950 sm:mt-3 sm:text-4xl">
-                Create your portal account
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600 sm:mt-3">
-                Register with your personal details to begin admissions, track your
-                application, and access student services later on.
-              </p>
+            <label className="relative block">
+              <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                Middle name
+              </span>
+              {fieldErrors.middleName ? (
+                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  {fieldErrors.middleName}
+                  <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                </div>
+              ) : null}
+              <input
+                name="middleName"
+                type="text"
+                value={form.middleName}
+                onChange={handleInputChange}
+                placeholder="Santos"
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                  fieldErrors.middleName
+                    ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                    : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                }`}
+              />
+            </label>
+
+            <label className="relative block">
+              <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                Address
+              </span>
+              {fieldErrors.address ? (
+                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  {fieldErrors.address}
+                  <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                </div>
+              ) : null}
+              <input
+                name="address"
+                type="text"
+                value={form.address}
+                onChange={handleInputChange}
+                placeholder="Bayombong"
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                  fieldErrors.address
+                    ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                    : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                }`}
+              />
+            </label>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Contact number
+                </span>
+                {fieldErrors.contactNumber ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.contactNumber}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="contactNumber"
+                  type="tel"
+                  value={form.contactNumber}
+                  onChange={handleInputChange}
+                  placeholder="09XX XXX XXXX"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.contactNumber
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
+
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Email
+                </span>
+                {fieldErrors.email ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.email}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleInputChange}
+                  placeholder="student@informatics.edu"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.email
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
             </div>
 
-            <form className="space-y-4 sm:space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    First name
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Juan"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    Last name
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Dela Cruz"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
-                  />
-                </label>
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Section
+                </span>
+                <CustomSelect
+                  id="section"
+                  value={form.section}
+                  onChange={(value) => {
+                    setForm((current) => ({ ...current, section: value }));
+                    setFieldErrors((current) => ({ ...current, section: '' }));
+                    setSuccessMessage('');
+                  }}
+                  error={fieldErrors.section}
+                  options={sectionOptions}
+                  placeholder="Select section"
+                  menuPosition="top"
+                />
+              </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">
-                  Email address
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Birthdate
                 </span>
-                <input
-                  type="email"
-                  placeholder="applicant@email.com"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
+                <CustomDatePicker
+                  id="birthdate"
+                  value={form.birthdate}
+                  onChange={(value) => {
+                    setForm((current) => ({ ...current, birthdate: value }));
+                    setFieldErrors((current) => ({ ...current, birthdate: '' }));
+                    setSuccessMessage('');
+                  }}
+                  error={fieldErrors.birthdate}
+                  placeholder="Select date"
+                  menuPosition="top"
                 />
               </label>
+            </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    Mobile number
-                  </span>
-                  <input
-                    type="tel"
-                    placeholder="+63 9XX XXX XXXX"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
-                  />
-                </label>
+            {successMessage ? (
+              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {successMessage}
+              </p>
+            ) : null}
 
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    Program interest
-                  </span>
-                  <select className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100">
-                    <option>Senior High School</option>
-                    <option>Bachelor&apos;s Degree</option>
-                    <option>Diploma Courses</option>
-                    <option>Short Courses</option>
-                  </select>
-                </label>
-              </div>
+            <button
+              type="submit"
+              disabled={registerMutation.isPending}
+              className="w-full rounded-2xl bg-[#3498db] px-4 py-3 text-[15px] font-semibold text-white shadow-[0_14px_30px_rgba(52,152,219,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2d89c6] hover:shadow-[0_18px_36px_rgba(52,152,219,0.32)] focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              {registerMutation.isPending ? 'Creating account...' : 'Create account'}
+            </button>
+          </form>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    Password
-                  </span>
-                  <input
-                    type="password"
-                    placeholder="Create a password"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
-                    Confirm password
-                  </span>
-                  <input
-                    type="password"
-                    placeholder="Repeat password"
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-[#0d4aa6] focus:ring-4 focus:ring-blue-100"
-                  />
-                </label>
-              </div>
-
-              <label className="flex items-start gap-3 text-sm text-slate-600">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0d4aa6] focus:ring-blue-500"
-                />
-                <span>
-                  I agree to the admissions process, account creation terms, and
-                  future updates about my application.
-                </span>
-              </label>
-
-              <button
-                type="submit"
-                className="w-full rounded-2xl bg-[#0d4aa6] px-4 py-3.5 text-base font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#0a3b83] focus:outline-none focus:ring-4 focus:ring-blue-200"
+          <div className="mt-6 border-t border-[#d6dde2] pt-4">
+            <div className="flex items-center justify-between gap-4 text-[13px] text-[#7f8c8d]">
+              <p>Already have an account?</p>
+              <Link
+                to="/login"
+                className="font-medium text-[#2c3e50] transition hover:text-[#3498db]"
               >
-                Create account
-              </button>
-            </form>
-
-            <div className="mt-6 border-t border-slate-200 pt-4 sm:mt-8 sm:pt-5">
-              <div className="flex items-center justify-between gap-4 text-sm text-slate-500">
-                <p>Already have an account?</p>
-                <Link
-                  to="/login"
-                  className="font-medium text-slate-900 transition hover:text-[#0d4aa6]"
-                >
-                  Sign in
-                </Link>
-              </div>
+                Sign in
+              </Link>
             </div>
           </div>
         </section>

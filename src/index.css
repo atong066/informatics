@@ -42,3 +42,36 @@ input {
 #root {
   min-height: 100vh;
 }
+
+@keyframes picker-popover {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes picker-view {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.picker-popover {
+  animation: picker-popover 180ms ease-out;
+  transform-origin: bottom right;
+}
+
+.picker-view {
+  animation: picker-view 160ms ease-out;
+}
