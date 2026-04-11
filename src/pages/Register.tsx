@@ -20,6 +20,9 @@ type RegistrationForm = {
   address: string;
   contactNumber: string;
   email: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
   section: string;
   birthdate: string;
 };
@@ -36,6 +39,9 @@ const initialForm: RegistrationForm = {
   address: '',
   contactNumber: '',
   email: '',
+  username: '',
+  password: '',
+  confirmPassword: '',
   section: '',
   birthdate: '',
 };
@@ -46,7 +52,7 @@ function Register() {
   const [successMessage, setSuccessMessage] = useState('');
 
   const registerMutation = useMutation({
-    mutationFn: async (payload: RegistrationForm) => {
+    mutationFn: async (payload: Omit<RegistrationForm, 'confirmPassword'>) => {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
@@ -61,7 +67,7 @@ function Register() {
       };
 
       if (!response.ok) {
-        const error = new Error(data.message || 'Registration failed') as RegistrationError;
+        const error = new Error(data.message || 'Account creation failed') as RegistrationError;
 
         if (data.errors) {
           error.fieldErrors = Object.fromEntries(
@@ -80,7 +86,7 @@ function Register() {
     onSuccess: (data) => {
       setForm(initialForm);
       setFieldErrors({});
-      setSuccessMessage(data.message ?? 'Registration saved successfully');
+      setSuccessMessage(data.message ?? 'User account created successfully');
     },
     onError: (error: RegistrationError) => {
       setFieldErrors(error.fieldErrors ?? {});
@@ -97,6 +103,9 @@ function Register() {
     setFieldErrors((current) => ({
       ...current,
       [name]: '',
+      ...(name === 'password' || name === 'confirmPassword'
+        ? { confirmPassword: '' }
+        : {}),
     }));
 
     setSuccessMessage('');
@@ -105,7 +114,26 @@ function Register() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSuccessMessage('');
-    registerMutation.mutate(form);
+
+    const nextFieldErrors: FieldErrors = {};
+
+    if (!form.confirmPassword.trim()) {
+      nextFieldErrors.confirmPassword = 'Confirm password is required';
+    } else if (form.password !== form.confirmPassword) {
+      nextFieldErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors((current) => ({
+        ...current,
+        ...nextFieldErrors,
+      }));
+      return;
+    }
+
+    const { confirmPassword, ...payload } = form;
+    void confirmPassword;
+    registerMutation.mutate(payload);
   }
 
   return (
@@ -288,6 +316,82 @@ function Register() {
                   placeholder="student@informatics.edu"
                   className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
                     fieldErrors.email
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Username
+                </span>
+                {fieldErrors.username ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.username}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="username"
+                  type="text"
+                  value={form.username}
+                  onChange={handleInputChange}
+                  placeholder="juan.delacruz"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.username
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Password
+                </span>
+                {fieldErrors.password ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.password}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleInputChange}
+                  placeholder="Create a password"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.password
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                  }`}
+                />
+              </label>
+
+              <label className="relative block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Confirm password
+                </span>
+                {fieldErrors.confirmPassword ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.confirmPassword}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={handleInputChange}
+                  placeholder="Re-enter your password"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                    fieldErrors.confirmPassword
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                   }`}
