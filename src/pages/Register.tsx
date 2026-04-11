@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomDatePicker from '../components/CustomDatePicker';
 import CustomSelect from '../components/CustomSelect';
+import NotificationPopup from '../components/NotificationPopup';
 
 const sectionOptions = [
   'DCS-B6',
@@ -32,6 +33,13 @@ type RegistrationError = Error & {
   fieldErrors?: FieldErrors;
 };
 
+type NotificationState = {
+  open: boolean;
+  title: string;
+  message: string;
+  variant: 'success' | 'error';
+};
+
 const initialForm: RegistrationForm = {
   lastName: '',
   firstName: '',
@@ -49,7 +57,19 @@ const initialForm: RegistrationForm = {
 function Register() {
   const [form, setForm] = useState<RegistrationForm>(initialForm);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [successMessage, setSuccessMessage] = useState('');
+  const [notification, setNotification] = useState<NotificationState>({
+    open: false,
+    title: '',
+    message: '',
+    variant: 'success',
+  });
+
+  const closeNotification = useCallback(() => {
+    setNotification((current) => ({
+      ...current,
+      open: false,
+    }));
+  }, []);
 
   const registerMutation = useMutation({
     mutationFn: async (payload: Omit<RegistrationForm, 'confirmPassword'>) => {
@@ -86,10 +106,21 @@ function Register() {
     onSuccess: (data) => {
       setForm(initialForm);
       setFieldErrors({});
-      setSuccessMessage(data.message ?? 'User account created successfully');
+      setNotification({
+        open: true,
+        title: 'Registration successful',
+        message: data.message ?? 'User account created successfully',
+        variant: 'success',
+      });
     },
     onError: (error: RegistrationError) => {
       setFieldErrors(error.fieldErrors ?? {});
+      setNotification({
+        open: true,
+        title: 'Registration failed',
+        message: error.message || 'Please review the form details and try again.',
+        variant: 'error',
+      });
     },
   });
 
@@ -108,12 +139,12 @@ function Register() {
         : {}),
     }));
 
-    setSuccessMessage('');
+    closeNotification();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSuccessMessage('');
+    closeNotification();
 
     const nextFieldErrors: FieldErrors = {};
 
@@ -128,6 +159,12 @@ function Register() {
         ...current,
         ...nextFieldErrors,
       }));
+      setNotification({
+        open: true,
+        title: 'Registration failed',
+        message: 'Please complete the required fields before submitting.',
+        variant: 'error',
+      });
       return;
     }
 
@@ -138,6 +175,14 @@ function Register() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(145deg,_#1f3a5f_0%,_#234d77_55%,_#2c5f92_100%)] px-5 py-8 text-slate-900 sm:px-8">
+      <NotificationPopup
+        open={notification.open}
+        title={notification.title}
+        message={notification.message}
+        variant={notification.variant}
+        onClose={closeNotification}
+      />
+
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:84px_84px] opacity-30" />
       <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
       <div className="absolute bottom-[-8rem] right-[-3rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
@@ -334,7 +379,7 @@ function Register() {
                   onChange={(value) => {
                     setForm((current) => ({ ...current, section: value }));
                     setFieldErrors((current) => ({ ...current, section: '' }));
-                    setSuccessMessage('');
+                    closeNotification();
                   }}
                   error={fieldErrors.section}
                   options={sectionOptions}
@@ -353,7 +398,7 @@ function Register() {
                   onChange={(value) => {
                     setForm((current) => ({ ...current, birthdate: value }));
                     setFieldErrors((current) => ({ ...current, birthdate: '' }));
-                    setSuccessMessage('');
+                    closeNotification();
                   }}
                   error={fieldErrors.birthdate}
                   placeholder="Select date"
@@ -446,12 +491,6 @@ function Register() {
                 />
               </label>
             </div>
-
-            {successMessage ? (
-              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                {successMessage}
-              </p>
-            ) : null}
 
             <button
               type="submit"
