@@ -10,6 +10,7 @@ const sectionOptions = [
   'DCS-B7',
   'DCS-B8',
   'DCS-B9',
+  'DIT-B6',
   'DIT-B7',
   'DIT-B8',
 ];
@@ -237,11 +238,10 @@ function Register() {
                   value={form.lastName}
                   onChange={handleInputChange}
                   placeholder="Dela Cruz"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.lastName
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.lastName
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
 
@@ -261,11 +261,10 @@ function Register() {
                   value={form.firstName}
                   onChange={handleInputChange}
                   placeholder="Juan"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.firstName
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.firstName
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
             </div>
@@ -286,11 +285,10 @@ function Register() {
                 value={form.middleName}
                 onChange={handleInputChange}
                 placeholder="Santos"
-                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                  fieldErrors.middleName
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.middleName
                     ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                     : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                }`}
+                  }`}
               />
             </label>
 
@@ -310,11 +308,10 @@ function Register() {
                 value={form.address}
                 onChange={handleInputChange}
                 placeholder="Bayombong"
-                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                  fieldErrors.address
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.address
                     ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                     : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                }`}
+                  }`}
               />
             </label>
 
@@ -335,11 +332,10 @@ function Register() {
                   value={form.contactNumber}
                   onChange={handleInputChange}
                   placeholder="09XX XXX XXXX"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.contactNumber
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.contactNumber
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
 
@@ -359,11 +355,10 @@ function Register() {
                   value={form.email}
                   onChange={handleInputChange}
                   placeholder="student@informatics.edu"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.email
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.email
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
             </div>
@@ -433,11 +428,10 @@ function Register() {
                   value={form.username}
                   onChange={handleInputChange}
                   placeholder="juan.delacruz"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.username
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.username
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
             </div>
@@ -459,11 +453,10 @@ function Register() {
                   value={form.password}
                   onChange={handleInputChange}
                   placeholder="Create a password"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.password
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.password
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
 
@@ -483,11 +476,10 @@ function Register() {
                   value={form.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Re-enter your password"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
-                    fieldErrors.confirmPassword
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.confirmPassword
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
-                  }`}
+                    }`}
                 />
               </label>
             </div>

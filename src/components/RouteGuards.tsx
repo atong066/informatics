@@ -20,7 +20,7 @@ export function GuestOnlyRoute({ children }: RouteGuardProps) {
   const storedUser = hasStoredSession();
 
   if (storedUser) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/student/dashboard" replace />;
   }
 
   return <>{children}</>;

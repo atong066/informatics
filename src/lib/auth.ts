@@ -9,6 +9,7 @@ export type StoredUser = {
   birthdate: string;
   address: string;
   contactNumber: string;
+  profileImage?: string | null;
 };
 
 type AuthSession = {

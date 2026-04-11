@@ -98,7 +98,7 @@ function Login() {
       }
 
       window.setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/student/dashboard');
       }, 250);
     },
     onError: (error: LoginError) => {
