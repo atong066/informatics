@@ -324,7 +324,55 @@ function Register() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="relative block">
+              <label className="block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Section
+                </span>
+                <CustomSelect
+                  id="section"
+                  value={form.section}
+                  onChange={(value) => {
+                    setForm((current) => ({ ...current, section: value }));
+                    setFieldErrors((current) => ({ ...current, section: '' }));
+                    setSuccessMessage('');
+                  }}
+                  error={fieldErrors.section}
+                  options={sectionOptions}
+                  placeholder="Select section"
+                  menuPosition="top"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                  Birthdate
+                </span>
+                <CustomDatePicker
+                  id="birthdate"
+                  value={form.birthdate}
+                  onChange={(value) => {
+                    setForm((current) => ({ ...current, birthdate: value }));
+                    setFieldErrors((current) => ({ ...current, birthdate: '' }));
+                    setSuccessMessage('');
+                  }}
+                  error={fieldErrors.birthdate}
+                  placeholder="Select date"
+                  menuPosition="top"
+                />
+              </label>
+            </div>
+
+            <div className="pt-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3498db]">
+                Account setup
+              </p>
+              <p className="mt-2 text-[13px] leading-5 text-[#5d6d7e]">
+                Choose your username and secure your account password.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="relative block sm:col-span-2">
                 <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
                   Username
                 </span>
@@ -395,45 +443,6 @@ function Register() {
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                   }`}
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
-                  Section
-                </span>
-                <CustomSelect
-                  id="section"
-                  value={form.section}
-                  onChange={(value) => {
-                    setForm((current) => ({ ...current, section: value }));
-                    setFieldErrors((current) => ({ ...current, section: '' }));
-                    setSuccessMessage('');
-                  }}
-                  error={fieldErrors.section}
-                  options={sectionOptions}
-                  placeholder="Select section"
-                  menuPosition="top"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
-                  Birthdate
-                </span>
-                <CustomDatePicker
-                  id="birthdate"
-                  value={form.birthdate}
-                  onChange={(value) => {
-                    setForm((current) => ({ ...current, birthdate: value }));
-                    setFieldErrors((current) => ({ ...current, birthdate: '' }));
-                    setSuccessMessage('');
-                  }}
-                  error={fieldErrors.birthdate}
-                  placeholder="Select date"
-                  menuPosition="top"
                 />
               </label>
             </div>
