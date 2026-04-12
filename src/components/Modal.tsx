@@ -8,6 +8,8 @@ type ModalProps = {
   children: ReactNode;
   onClose: () => void;
   actions?: ReactNode;
+  panelClassName?: string;
+  bodyClassName?: string;
 };
 
 function Modal({
@@ -17,6 +19,8 @@ function Modal({
   children,
   onClose,
   actions,
+  panelClassName,
+  bodyClassName,
 }: ModalProps) {
   if (!open) {
     return null;
@@ -34,7 +38,7 @@ function Modal({
         aria-hidden="true"
       />
 
-      <div className="modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)]">
+      <div className={`modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
         <div className="flex items-start justify-between gap-4 border-b border-[#bccbd8] px-5 py-5 sm:px-6">
           <div>
             <h3 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#173b70]">
@@ -56,7 +60,7 @@ function Modal({
           </button>
         </div>
 
-        <div className="px-5 py-5 sm:px-6">{children}</div>
+        <div className={bodyClassName ?? 'px-5 py-5 sm:px-6'}>{children}</div>
 
         {actions ? (
           <div className="flex flex-col-reverse gap-3 border-t border-[#bccbd8] bg-[rgba(230,238,245,0.82)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">

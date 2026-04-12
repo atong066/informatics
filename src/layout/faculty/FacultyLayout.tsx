@@ -26,7 +26,7 @@ function FacultyLayout({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <main className="h-screen overflow-hidden bg-[#b6c2cf] text-slate-900">
+    <main className="h-screen overflow-hidden bg-[#c7d2de] text-slate-900">
       <div className="relative grid h-full lg:grid-cols-[248px_1fr]">
         {isMobileSidebarOpen ? (
           <>
@@ -55,7 +55,7 @@ function FacultyLayout({
           />
         </div>
 
-        <div className="flex min-w-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_18%),radial-gradient(circle_at_top_right,rgba(74,111,161,0.12),transparent_24%),linear-gradient(180deg,#aebccc_0%,#9fafc0_46%,#90a2b6_100%)]">
+        <div className="flex min-w-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#d0dbe7_0%,#c8d4e0_48%,#becbd8_100%)]">
           <FacultyNavbar
             firstName={firstName}
             department={department}
@@ -64,7 +64,13 @@ function FacultyLayout({
             pageTitle={pageTitle}
             onOpenSidebar={() => setIsMobileSidebarOpen(true)}
           />
-          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</div>
+          <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(110,142,176,0.18),transparent_18%),radial-gradient(circle_at_top_right,rgba(184,199,216,0.28),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(98,126,154,0.14),transparent_28%),linear-gradient(180deg,rgba(208,219,231,0.22)_0%,rgba(208,219,231,0)_34%)]"
+            />
+            <div className="relative">{children}</div>
+          </div>
         </div>
       </div>
     </main>

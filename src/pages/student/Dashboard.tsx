@@ -1,150 +1,313 @@
-import StudentLayout from '../../layout/student/StudentLayout';
+import { useMemo, type ReactNode } from 'react';
+import { useQueries } from '@tanstack/react-query';
+import {
+  FiArrowRight,
+  FiBookOpen,
+  FiCheckCircle,
+  FiClock,
+  FiCode,
+  FiCpu,
+  FiDatabase,
+  FiLayers,
+} from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
+import {
+  type StudentSubject,
+  useStudentSubjects,
+} from '../../hooks/useStudentSubjects';
+import StudentLayout from '../../layout/student/StudentLayout';
+import { getStoredToken } from '../../lib/auth';
 
-const quickStats = [
-  {
-    title: 'Enrolled Courses',
-    value: '4',
-    action: 'View all courses',
-    icon: '📘',
-    tone: 'blue',
-  },
-  {
-    title: 'Pending Assignments',
-    value: '3',
-    action: 'View assignments',
-    icon: '📝',
-    tone: 'green',
-  },
-  {
-    title: 'Upcoming Exams',
-    value: '2',
-    action: 'View schedule',
-    icon: '📊',
-    tone: 'violet',
-  },
-  {
-    title: 'Overall Progress',
-    value: '76%',
-    action: 'View progress',
-    icon: '⭐',
-    tone: 'amber',
-  },
-];
+type SubjectDashboardDetails = {
+  id: string;
+  lessonProgress: Array<{
+    id: string;
+    lesson: string;
+    completion: number;
+    state: string;
+  }>;
+  modules: Array<{
+    id: string;
+    title: string;
+    completion?: number;
+    progress: string;
+  }>;
+  assignments: Array<{
+    id: string;
+    title: string;
+    dueDate: string;
+    status: string;
+  }>;
+  assessments: Array<{
+    id: string;
+    title: string;
+    schedule: string;
+    status: string;
+  }>;
+};
 
-const deadlineItems = [
-  {
-    month: 'APR',
-    day: '12',
-    title: 'Systems Analysis Quiz 2',
-    meta: 'Apr 12, 2026 • 08:00 AM',
-    badge: '2 days left',
-    tone: 'blue',
-  },
-  {
-    month: 'APR',
-    day: '15',
-    title: 'Case Study 02',
-    meta: 'Apr 15, 2026 • 01:00 PM',
-    badge: '5 days left',
-    tone: 'green',
-  },
-  {
-    month: 'APR',
-    day: '18',
-    title: 'Database Practical Exam',
-    meta: 'Apr 18, 2026 • 10:30 AM',
-    badge: '8 days left',
-    tone: 'violet',
-  },
-  {
-    month: 'APR',
-    day: '22',
-    title: 'Ethics Reflection Paper',
-    meta: 'Apr 22, 2026 • 11:59 PM',
-    badge: '12 days left',
-    tone: 'amber',
-  },
-];
+type SubjectProgressItem = StudentSubject & {
+  progress: number;
+  lessons: number;
+  modules: number;
+  completedCount: number;
+  remainingCount: number;
+};
 
-const announcements = [
-  {
-    title: 'Platform maintenance scheduled',
-    body: 'The student portal will be under maintenance on Saturday from 1:00 AM to 3:00 AM.',
-    date: 'Apr 10, 2026',
-    icon: '📢',
-    tone: 'blue',
-  },
-  {
-    title: 'Final exam schedule released',
-    body: 'Please review your official examination schedule in the exams module.',
-    date: 'Apr 08, 2026',
-    icon: '✅',
-    tone: 'green',
-  },
-];
+function getSubjectIcon(iconKey: string) {
+  switch (iconKey) {
+    case 'database':
+      return FiDatabase;
+    case 'code':
+      return FiCode;
+    case 'cpu':
+      return FiCpu;
+    default:
+      return FiBookOpen;
+  }
+}
 
-const courses = [
-  {
-    title: 'Systems Analysis',
-    professor: 'Prof. Reyes',
-    progress: 82,
-    icon: '💾',
-    tone: 'blue',
-  },
-  {
-    title: 'Database Management',
-    professor: 'Prof. Velasco',
-    progress: 68,
-    icon: '💻',
-    tone: 'green',
-  },
-  {
-    title: 'Project Management',
-    professor: 'Prof. Javier',
-    progress: 79,
-    icon: '🧩',
-    tone: 'violet',
-  },
-  {
-    title: 'Web Technologies',
-    professor: 'Prof. Brown',
-    progress: 74,
-    icon: '🌐',
-    tone: 'amber',
-  },
-];
+function average(values: number[]) {
+  if (values.length === 0) {
+    return 0;
+  }
 
-const performanceRows = [
-  { label: 'Systems Analysis', value: 82, tone: 'blue' },
-  { label: 'Database Management', value: 68, tone: 'green' },
-  { label: 'Project Management', value: 79, tone: 'violet' },
-  { label: 'Web Technologies', value: 74, tone: 'amber' },
-];
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return Math.round(total / values.length);
+}
 
-const weeklyProgress = [48, 48, 59, 64, 64, 71, 77, 82];
+function getProgressState(progress: number, remainingCount: number) {
+  if (remainingCount === 0 && progress >= 100) {
+    return {
+      label: 'Complete',
+      className: 'border-[#bfe5cf] bg-[#eef8f2] text-[#14724f]',
+    };
+  }
 
-const quickActions = [
-  { label: 'Upload Assignment', icon: '📤', tone: 'blue' },
-  { label: 'Join Live Class', icon: '🎥', tone: 'green' },
-  { label: 'View Grades', icon: '📈', tone: 'violet' },
-  { label: 'Academic Calendar', icon: '📅', tone: 'amber' },
-];
+  if (progress >= 75) {
+    return {
+      label: 'On track',
+      className: 'border-[#c9dcf0] bg-[#edf5fd] text-[#255e98]',
+    };
+  }
+
+  if (progress >= 40) {
+    return {
+      label: 'In progress',
+      className: 'border-[#efd9bb] bg-[#fff5e8] text-[#a66517]',
+    };
+  }
+
+  return {
+    label: 'Needs focus',
+    className: 'border-[#eed2cb] bg-[#fff1ed] text-[#b25545]',
+  };
+}
 
 function Dashboard() {
   const { activeUser, isError } = useCurrentStudent();
+  const token = getStoredToken();
+  const subjectsQuery = useStudentSubjects(Boolean(activeUser && !isError));
+  const subjects = subjectsQuery.data ?? [];
+
+  const subjectDetailsQueries = useQueries({
+    queries: subjects.map((subject) => ({
+      queryKey: ['student-dashboard-subject-detail', subject.id],
+      queryFn: async () => {
+        const response = await fetch(`/api/student/subjects/${subject.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = (await response.json()) as {
+          message?: string;
+          data?: SubjectDashboardDetails;
+        };
+
+        if (!response.ok || !data.data) {
+          throw new Error(data.message || 'Failed to load dashboard subject details');
+        }
+
+        return data.data;
+      },
+      enabled: Boolean(token && activeUser && !isError),
+      staleTime: 60_000,
+    })),
+  });
+
+  const isDashboardLoading =
+    subjectsQuery.isLoading ||
+    subjectDetailsQueries.some((query) => query.isLoading);
+
+  const hasDashboardError =
+    subjectsQuery.isError ||
+    subjectDetailsQueries.some((query) => query.isError);
+
+  const fullName = useMemo(
+    () =>
+      [activeUser?.firstName, activeUser?.middleName, activeUser?.lastName]
+        .filter(Boolean)
+        .join(' '),
+    [activeUser],
+  );
+
+  const detailEntries = useMemo(
+    () =>
+      subjects.map((subject, index) => ({
+        subject,
+        details: subjectDetailsQueries[index]?.data ?? null,
+      })),
+    [subjectDetailsQueries, subjects],
+  );
+
+  const subjectProgress = useMemo<SubjectProgressItem[]>(
+    () =>
+      detailEntries.map(({ subject, details }) => {
+        const lessons = details?.lessonProgress ?? [];
+        const modules = details?.modules ?? [];
+        const completedLessons = lessons.filter((item) => item.state === 'Completed').length;
+        const completedModules = modules.filter((item) => item.progress === 'Completed').length;
+        const progress = average([
+          ...lessons.map((item) => item.completion),
+          ...modules.map((item) => item.completion ?? 0),
+        ]);
+
+        return {
+          ...subject,
+          progress,
+          lessons: lessons.length,
+          modules: modules.length,
+          completedCount: completedLessons + completedModules,
+          remainingCount:
+            lessons.length +
+            modules.length -
+            completedLessons -
+            completedModules,
+        };
+      }),
+    [detailEntries],
+  );
+
+  const summary = useMemo(() => {
+    const allLessons = detailEntries.flatMap((entry) => entry.details?.lessonProgress ?? []);
+    const allModules = detailEntries.flatMap((entry) => entry.details?.modules ?? []);
+    const allAssignments = detailEntries.flatMap((entry) => entry.details?.assignments ?? []);
+    const allAssessments = detailEntries.flatMap((entry) => entry.details?.assessments ?? []);
+    const completedLessons = allLessons.filter((item) => item.state === 'Completed').length;
+    const completedModules = allModules.filter((item) => item.progress === 'Completed').length;
+    const openModules = allModules.length - completedModules;
+
+    return {
+      subjectCount: subjects.length,
+      totalLessons: allLessons.length,
+      totalModules: allModules.length,
+      totalAssignments: allAssignments.length,
+      totalAssessments: allAssessments.length,
+      completedLessons,
+      completedModules,
+      openLessons: allLessons.length - completedLessons,
+      openModules,
+      averageProgress: average([
+        ...allLessons.map((item) => item.completion),
+        ...allModules.map((item) => item.completion ?? 0),
+      ]),
+    };
+  }, [detailEntries, subjects.length]);
+
+  const focusSubject = useMemo(() => {
+    const openSubjects = subjectProgress
+      .filter((item) => item.remainingCount > 0)
+      .sort((left, right) => left.progress - right.progress || right.remainingCount - left.remainingCount);
+
+    return openSubjects[0] ?? subjectProgress[0] ?? null;
+  }, [subjectProgress]);
+
+  const nextSteps = useMemo(
+    () =>
+      detailEntries
+        .flatMap(({ subject, details }) => {
+          if (!details) {
+            return [];
+          }
+
+          const lessons = details.lessonProgress
+            .filter((item) => item.state !== 'Completed')
+            .map((item) => ({
+              id: `lesson-${item.id}`,
+              title: item.lesson,
+              subtitle: `${subject.title} lesson`,
+              status: `${item.completion}% complete`,
+              progress: item.completion,
+              subjectId: subject.id,
+            }));
+
+          const modules = details.modules
+            .filter((item) => item.progress !== 'Completed')
+            .map((item) => ({
+              id: `module-${item.id}`,
+              title: item.title,
+              subtitle: `${subject.title} module`,
+              status: `${item.completion ?? 0}% complete`,
+              progress: item.completion ?? 0,
+              subjectId: subject.id,
+            }));
+
+          return [...lessons, ...modules];
+        })
+        .sort((left, right) => left.progress - right.progress)
+        .slice(0, 5),
+    [detailEntries],
+  );
+
+  const coverageRows = useMemo(() => {
+    const rows = [
+      {
+        label: 'Lessons',
+        value: summary.totalLessons,
+        helper:
+          summary.totalLessons > 0
+            ? `${summary.completedLessons} completed`
+            : 'No lesson records yet',
+      },
+      {
+        label: 'Modules',
+        value: summary.totalModules,
+        helper:
+          summary.totalModules > 0
+            ? `${summary.completedModules} completed`
+            : 'No module records yet',
+      },
+      {
+        label: 'Assignments',
+        value: summary.totalAssignments,
+        helper:
+          summary.totalAssignments > 0
+            ? 'Live assignment records available'
+            : 'No assignment records yet',
+      },
+      {
+        label: 'Assessments',
+        value: summary.totalAssessments,
+        helper:
+          summary.totalAssessments > 0
+            ? 'Live assessment records available'
+            : 'No assessment records yet',
+      },
+    ];
+
+    const maxValue = Math.max(...rows.map((row) => row.value), 1);
+
+    return rows.map((row) => ({
+      ...row,
+      percent: row.value === 0 ? 10 : Math.max(18, Math.round((row.value / maxValue) * 100)),
+    }));
+  }, [summary]);
 
   if (!activeUser || isError) {
     return null;
   }
-
-  const fullName = [
-    activeUser.firstName,
-    activeUser.middleName,
-    activeUser.lastName,
-  ]
-    .filter(Boolean)
-    .join(' ');
 
   return (
     <StudentLayout
@@ -154,287 +317,244 @@ function Dashboard() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="grid gap-[1.25rem] px-[1.4rem] py-[1.4rem] sm:px-[1.8rem] lg:px-[2rem]">
-        <section className="rounded-[1.8rem] bg-[#edf3f8] px-[1.6rem] py-[1.5rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d4e0ea]">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-[#2f78bc]">
-            Student Workspace
-          </p>
-
-          <div className="mt-[0.55rem] flex flex-col gap-[1rem] lg:flex-row lg:items-end lg:justify-between">
+      <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 py-4 sm:px-5 lg:px-6">
+        <section
+          className="dashboard-rise relative overflow-hidden rounded-[2.35rem] border border-[#173552] bg-[#0d2339] px-6 py-6 text-white shadow-[0_28px_70px_rgba(8,20,35,0.28)] sm:px-8 sm:py-8"
+          style={{ animationDelay: '40ms' }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,178,255,0.18),transparent_30%),radial-gradient(circle_at_75%_25%,rgba(113,209,167,0.1),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
+          <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_340px] xl:items-end">
             <div>
-              <h1 className="text-[2.15rem] font-semibold leading-[1.05] tracking-[-0.05em] text-[#173b70]">
-                Welcome back, {activeUser.firstName}!
-              </h1>
-              <p className="mt-[0.65rem] max-w-[42rem] text-[0.92rem] leading-[1.7] text-[#6b8198]">
-                Here&apos;s an overview of your academic journey, upcoming requirements,
-                and course performance in one clean dashboard.
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-[#96b9d8]">
+                Student Workspace
               </p>
+              <h1 className="mt-4 max-w-[11ch] font-display text-[2.45rem] leading-[0.93] tracking-[-0.05em] text-white sm:text-[3rem]">
+                Study board for {activeUser.firstName}.
+              </h1>
+              <p className="mt-4 max-w-2xl text-[0.95rem] leading-7 text-[#c5d5e5]">
+                Current section, live subject load, and lesson progress synced from
+                your latest records.
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <InfoPill label="Section" value={activeUser.section || 'Not assigned'} />
+                <InfoPill label="Subjects" value={String(summary.subjectCount)} />
+                <InfoPill
+                  label="Open items"
+                  value={String(summary.openLessons + summary.openModules)}
+                />
+              </div>
             </div>
 
-            <div className="min-w-[16rem] self-start rounded-[1.55rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-[1.2rem] py-[1.15rem] text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
-              <p className="text-[0.75rem] text-[#d5e2ef]">Account overview</p>
-              <p className="mt-[0.55rem] text-[1.15rem] font-semibold leading-tight">
-                {activeUser.email || 'student@nalaka.edu.ph'}
-              </p>
-              <p className="mt-[0.35rem] text-[0.84rem] text-[#e8eff6]">
-                @{activeUser.username}
-              </p>
-              <p className="mt-[0.75rem] text-[0.82rem] text-[#d5e2ef]">
-                Section: {activeUser.section || 'Not assigned'}
-              </p>
+            <div className="rounded-[1.8rem] border border-white/10 bg-white/7 p-4 backdrop-blur-md">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <ProgressRing progress={summary.averageProgress} label="Synced" />
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#96b9d8]">
+                    Focus Subject
+                  </p>
+                  <h2 className="mt-2 text-[1.25rem] font-semibold tracking-[-0.03em] text-white">
+                    {focusSubject?.title ?? 'No active subject yet'}
+                  </h2>
+                  <p className="mt-2 text-[0.84rem] leading-6 text-[#c5d5e5]">
+                    {focusSubject
+                      ? `${focusSubject.remainingCount} open records and ${focusSubject.progress}% completion.`
+                      : 'Subject data will appear here once records are available.'}
+                  </p>
+
+                  <div className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-[0.8rem] text-[#d2dfeb]">
+                    <MetaRow label="Email" value={activeUser.email} />
+                    <MetaRow label="Username" value={`@${activeUser.username}`} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-[1rem] sm:grid-cols-2 xl:grid-cols-4">
-          {quickStats.map((item) => (
-            <QuickStatCard key={item.title} {...item} />
-          ))}
+        <section className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricTile
+            title="Courses"
+            value={String(summary.subjectCount)}
+            detail="Live subjects in your current workspace"
+            icon={<FiBookOpen className="h-5 w-5" />}
+            delay="90ms"
+          />
+          <MetricTile
+            title="Completed Lessons"
+            value={String(summary.completedLessons)}
+            detail="Lesson records marked as complete"
+            icon={<FiCheckCircle className="h-5 w-5" />}
+            delay="140ms"
+          />
+          <MetricTile
+            title="Open Records"
+            value={String(summary.openLessons + summary.openModules)}
+            detail="Lessons and modules still in progress"
+            icon={<FiClock className="h-5 w-5" />}
+            delay="190ms"
+          />
+          <MetricTile
+            title="Average Progress"
+            value={`${summary.averageProgress}%`}
+            detail="Completion average across synced records"
+            icon={<FiLayers className="h-5 w-5" />}
+            delay="240ms"
+          />
         </section>
 
-        <section className="grid gap-[1rem] xl:grid-cols-[1.45fr_.95fr]">
-          <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.45rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
-            <div className="flex items-center justify-between gap-[1rem]">
-              <div>
-                <h2 className="text-[1.12rem] font-semibold text-[#173b70]">
-                  Academic Progress
-                </h2>
-                <p className="mt-[0.3rem] text-[0.84rem] text-[#7288a0]">
-                  Your performance trend across courses
-                </p>
-              </div>
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_340px]">
+          <article
+            className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+            style={{ animationDelay: '140ms' }}
+          >
+            <SectionHeading
+              title="Progress Board"
+              detail="Each subject is ranked from the data already stored in your account."
+            />
 
-              <button
-                type="button"
-                className="rounded-full border border-[#d3dee8] bg-white px-[1rem] py-[0.55rem] text-[0.78rem] font-semibold text-[#5d7690]"
-              >
-                This Semester
-              </button>
-            </div>
-
-            <div className="mt-[1.2rem] rounded-[1.4rem] border border-[#dde7ef] bg-[linear-gradient(180deg,#f8fbfd_0%,#f1f6fa_100%)] p-[1rem]">
-              <div className="relative h-[10.5rem]">
-                <div className="absolute inset-0 grid grid-cols-8">
-                  {weeklyProgress.map((_, i) => (
-                    <div key={i} className="border-r border-[#e4edf4] last:border-r-0" />
+            <div className="mt-4 overflow-hidden rounded-[1.45rem] border border-[#d9e5ee] bg-white/84">
+              {hasDashboardError ? (
+                <EmptyState
+                  title="Dashboard data could not be loaded"
+                  body="Try refreshing the page after the API records are available again."
+                />
+              ) : isDashboardLoading ? (
+                <PanelMessage message="Loading subject progress..." />
+              ) : subjectProgress.length > 0 ? (
+                <div className="divide-y divide-[#e6eef5]">
+                  {subjectProgress.map((subject) => (
+                    <SubjectRow
+                      key={subject.id}
+                      subject={subject}
+                    />
                   ))}
                 </div>
-
-                <div className="absolute inset-0 grid grid-rows-4">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div key={i} className="border-b border-[#e4edf4] last:border-b-0" />
-                  ))}
-                </div>
-
-                <div className="absolute inset-x-[3%] bottom-[18%] top-[10%] flex items-end justify-between">
-                  {weeklyProgress.map((value, index) => (
-                    <div
-                      key={index}
-                      className="flex w-[10.5%] items-end justify-center"
-                    >
-                      <div className="relative flex w-full items-end justify-center">
-                        {index !== weeklyProgress.length - 1 && (
-                          <div
-                            className="absolute left-[50%] top-auto h-[0.14rem] origin-left rounded-full bg-[#3c7de0]"
-                            style={{
-                              width: '100%',
-                              bottom: `${value}%`,
-                              transform: `rotate(${Math.atan(
-                                ((weeklyProgress[index + 1] - value) * 1.2) / 100
-                              )}rad)`,
-                            }}
-                          />
-                        )}
-                        <div
-                          className="relative z-10 w-[0.48rem] rounded-full bg-[#3c7de0]"
-                          style={{ height: `${value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="absolute inset-x-[3%] bottom-0 flex justify-between text-[0.72rem] text-[#7b8fa5]">
-                  {weeklyProgress.map((_, index) => (
-                    <span key={index}>Week {index + 1}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-[1.1rem] space-y-[0.8rem]">
-                {performanceRows.map((row) => (
-                  <div key={row.label}>
-                    <div className="mb-[0.35rem] flex items-center justify-between gap-[1rem]">
-                      <p className="text-[0.82rem] font-medium text-[#173b70]">
-                        {row.label}
-                      </p>
-                      <p className="text-[0.8rem] font-semibold text-[#4e6782]">
-                        {row.value}%
-                      </p>
-                    </div>
-
-                    <div className="h-[0.38rem] rounded-full bg-[#dde8f1]">
-                      <div
-                        className={`h-full rounded-full ${progressTone(row.tone)}`}
-                        style={{ width: `${row.value}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-[1.2rem] flex justify-center">
-                <button
-                  type="button"
-                  className="text-[0.82rem] font-semibold text-[#2f78bc]"
-                >
-                  View detailed analytics →
-                </button>
-              </div>
+              ) : (
+                <EmptyState
+                  title="No subject records yet"
+                  body="This board will populate as soon as your subjects and progress entries are available."
+                />
+              )}
             </div>
           </article>
 
-          <div className="grid gap-[1rem]">
-            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
-              <SectionHeader title="Upcoming Deadlines" action="View all" />
-              <div className="mt-[1rem] space-y-[0.8rem]">
-                {deadlineItems.map((item) => (
-                  <div
-                    key={item.title}
-                    className="flex items-center gap-[0.9rem] rounded-[1.2rem] border border-[#dde7ef] bg-white px-[0.9rem] py-[0.9rem]"
-                  >
-                    <div
-                      className={`flex h-[3.6rem] w-[3.6rem] shrink-0 flex-col items-center justify-center rounded-[1rem] ${softTone(
-                        item.tone
-                      )}`}
+          <div className="grid gap-4">
+            <article
+              className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              style={{ animationDelay: '200ms' }}
+            >
+              <SectionHeading
+                title="Priority Queue"
+                detail="The next incomplete lessons and modules with the lowest completion."
+              />
+
+              <div className="mt-4 space-y-2.5">
+                {hasDashboardError ? (
+                  <EmptyState
+                    title="Queue unavailable"
+                    body="The dashboard could not fetch the next active items right now."
+                  />
+                ) : isDashboardLoading ? (
+                  <PanelMessage message="Loading active items..." />
+                ) : nextSteps.length > 0 ? (
+                  nextSteps.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={`/student/subjects/${item.subjectId}`}
+                      className="dashboard-hover group flex items-center gap-3 rounded-[1.2rem] border border-[#dde7ef] bg-white px-3.5 py-3.5"
                     >
-                      <span className="text-[0.68rem] font-semibold uppercase text-[#6b8198]">
-                        {item.month}
-                      </span>
-                      <span className="text-[1.05rem] font-semibold text-[#173b70]">
-                        {item.day}
-                      </span>
-                    </div>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+                        <FiArrowRight className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
+                      </div>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[0.94rem] font-semibold text-[#173b70]">
-                        {item.title}
-                      </p>
-                      <p className="mt-[0.25rem] text-[0.77rem] text-[#7088a1]">
-                        {item.meta}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`shrink-0 rounded-full px-[0.7rem] py-[0.34rem] text-[0.68rem] font-semibold ${badgeTone(
-                        item.tone
-                      )}`}
-                    >
-                      {item.badge}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
-              <SectionHeader title="Recent Announcements" action="View all" />
-              <div className="mt-[1rem] space-y-[0.8rem]">
-                {announcements.map((item) => (
-                  <div
-                    key={item.title}
-                    className="flex gap-[0.85rem] rounded-[1.2rem] border border-[#dde7ef] bg-white px-[0.95rem] py-[0.95rem]"
-                  >
-                    <div
-                      className={`flex h-[2.9rem] w-[2.9rem] shrink-0 items-center justify-center rounded-[0.95rem] text-[1.05rem] ${softTone(
-                        item.tone
-                      )}`}
-                    >
-                      {item.icon}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-[1rem]">
-                        <p className="text-[0.9rem] font-semibold text-[#173b70]">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[0.92rem] font-semibold text-[#173b70]">
                           {item.title}
                         </p>
-                        <span className="shrink-0 text-[0.72rem] text-[#8092a6]">
-                          {item.date}
-                        </span>
+                        <p className="mt-0.5 text-[0.78rem] text-[#7088a1]">
+                          {item.subtitle}
+                        </p>
                       </div>
-                      <p className="mt-[0.35rem] text-[0.78rem] leading-[1.55] text-[#7088a1]">
-                        {item.body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+
+                      <span className="shrink-0 rounded-full border border-[#d6e3ef] bg-[#f4f8fb] px-3 py-1 text-[0.72rem] font-semibold text-[#536f8a]">
+                        {item.status}
+                      </span>
+                    </Link>
+                  ))
+                ) : (
+                  <EmptyState
+                    title="Nothing is waiting right now"
+                    body="There are no incomplete lesson or module records in the current dataset."
+                  />
+                )}
               </div>
             </article>
 
-            <article className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.35rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
-              <h2 className="text-[1.05rem] font-semibold text-[#173b70]">
-                Quick Actions
-              </h2>
-              <div className="mt-[1rem] grid grid-cols-2 gap-[0.75rem]">
-                {quickActions.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    className="rounded-[1.15rem] border border-[#dde7ef] bg-white px-[0.8rem] py-[0.95rem] text-left transition hover:-translate-y-[0.03rem]"
-                  >
-                    <div
-                      className={`flex h-[2.7rem] w-[2.7rem] items-center justify-center rounded-[0.9rem] text-[1rem] ${softTone(
-                        item.tone
-                      )}`}
-                    >
-                      {item.icon}
+            <article
+              className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              style={{ animationDelay: '250ms' }}
+            >
+              <SectionHeading
+                title="Live Coverage"
+                detail="What your current records actually include across the student workspace."
+              />
+
+              <div className="mt-4 space-y-3.5">
+                {coverageRows.map((row) => (
+                  <div key={row.label}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[0.86rem] font-semibold text-[#173b70]">
+                        {row.label}
+                      </p>
+                      <span className="text-[0.78rem] font-semibold text-[#4d6883]">
+                        {row.value}
+                      </span>
                     </div>
-                    <p className="mt-[0.65rem] text-[0.78rem] font-medium leading-[1.45] text-[#173b70]">
-                      {item.label}
+                    <div className="mt-2 h-2 rounded-full bg-[#e6edf4]">
+                      <div
+                        className="dashboard-progress-fill h-full rounded-full bg-[linear-gradient(90deg,#77c6ff_0%,#2f78bc_100%)]"
+                        style={{ width: `${row.percent}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-[0.75rem] leading-5 text-[#7088a1]">
+                      {row.helper}
                     </p>
-                  </button>
+                  </div>
                 ))}
               </div>
             </article>
           </div>
         </section>
 
-        <section className="rounded-[1.8rem] bg-[#f7fbfe] p-[1.4rem] shadow-[0_.8rem_2rem_rgba(40,68,99,0.08)] ring-[0.01rem] ring-[#d7e3ed]">
-          <SectionHeader title="My Courses" action="View all courses" />
-          <div className="mt-[1rem] grid gap-[0.9rem] sm:grid-cols-2 xl:grid-cols-4">
-            {courses.map((course) => (
-              <article
-                key={course.title}
-                className="rounded-[1.25rem] border border-[#dde7ef] bg-white px-[1rem] py-[1rem]"
-              >
-                <div
-                  className={`flex h-[3rem] w-[3rem] items-center justify-center rounded-[1rem] text-[1.15rem] ${softTone(
-                    course.tone
-                  )}`}
-                >
-                  {course.icon}
-                </div>
+        <section
+          className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+          style={{ animationDelay: '290ms' }}
+        >
+          <SectionHeading
+            title="Subject Directory"
+            detail="Quick access to each course space, along with the current record density and description."
+          />
 
-                <h3 className="mt-[0.85rem] text-[0.98rem] font-semibold leading-[1.35] text-[#173b70]">
-                  {course.title}
-                </h3>
-                <p className="mt-[0.25rem] text-[0.78rem] text-[#7088a1]">
-                  {course.professor}
-                </p>
-
-                <div className="mt-[1rem] flex items-center gap-[0.7rem]">
-                  <div className="h-[0.34rem] flex-1 rounded-full bg-[#dde8f1]">
-                    <div
-                      className={`h-full rounded-full ${progressTone(course.tone)}`}
-                      style={{ width: `${course.progress}%` }}
-                    />
-                  </div>
-                  <span className="text-[0.74rem] font-semibold text-[#4e6782]">
-                    {course.progress}%
-                  </span>
-                </div>
-              </article>
-            ))}
+          <div className="mt-4 grid gap-2.5 lg:grid-cols-2">
+            {hasDashboardError ? (
+              <EmptyState
+                title="Subject directory unavailable"
+                body="The dashboard could not load the linked subject records."
+              />
+            ) : isDashboardLoading ? (
+              <PanelMessage message="Loading courses..." />
+            ) : subjectProgress.length > 0 ? (
+              subjectProgress.map((subject) => (
+                <DirectoryItem key={subject.id} subject={subject} />
+              ))
+            ) : (
+              <EmptyState
+                title="No courses found"
+                body="Subjects will appear here once the backend returns your enrolled courses."
+              />
+            )}
           </div>
         </section>
       </div>
@@ -442,108 +562,248 @@ function Dashboard() {
   );
 }
 
-function QuickStatCard({
+function SectionHeading({
   title,
-  value,
-  action,
-  icon,
-  tone,
+  detail,
 }: {
   title: string;
-  value: string;
-  action: string;
-  icon: string;
-  tone: string;
+  detail: string;
 }) {
   return (
-    <article className="rounded-[1.45rem] border border-[#d9e4ed] bg-[linear-gradient(180deg,#f9fcfe_0%,#f2f7fb_100%)] px-[1.15rem] py-[1.1rem] shadow-[0_.6rem_1.5rem_rgba(40,68,99,0.06)]">
-      <div className="flex items-start justify-between gap-[0.8rem]">
-        <div
-          className={`flex h-[3.05rem] w-[3.05rem] items-center justify-center rounded-[1rem] text-[1.1rem] ${softTone(
-            tone
-          )}`}
-        >
-          {icon}
-        </div>
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 className="text-[1.18rem] font-semibold tracking-[-0.03em] text-[#173b70]">
+          {title}
+        </h2>
+        <p className="mt-0.5 text-[0.82rem] leading-5 text-[#7088a1]">{detail}</p>
       </div>
-
-      <p className="mt-[0.8rem] text-[0.9rem] font-medium text-[#5f7892]">{title}</p>
-      <p className="mt-[0.3rem] text-[2rem] font-semibold leading-none text-[#173b70]">
-        {value}
-      </p>
-      <button
-        type="button"
-        className="mt-[0.85rem] text-[0.8rem] font-semibold text-[#2f78bc]"
-      >
-        {action} →
-      </button>
-    </article>
-  );
-}
-
-function SectionHeader({
-  title,
-  action,
-}: {
-  title: string;
-  action: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-[1rem]">
-      <h2 className="text-[1.08rem] font-semibold text-[#173b70]">{title}</h2>
-      <button
-        type="button"
-        className="text-[0.8rem] font-semibold text-[#2f78bc]"
-      >
-        {action}
-      </button>
     </div>
   );
 }
 
-function softTone(tone: string) {
-  switch (tone) {
-    case 'blue':
-      return 'bg-[#e8f1ff] text-[#2f78bc]';
-    case 'green':
-      return 'bg-[#e7f7ef] text-[#2f9b63]';
-    case 'violet':
-      return 'bg-[#f1ebff] text-[#8b5fe0]';
-    case 'amber':
-      return 'bg-[#fff2e2] text-[#f29a2e]';
-    default:
-      return 'bg-[#eef3f8] text-[#5d7690]';
-  }
+function MetricTile({
+  title,
+  value,
+  detail,
+  icon,
+  delay,
+}: {
+  title: string;
+  value: string;
+  detail: string;
+  icon: ReactNode;
+  delay: string;
+}) {
+  return (
+    <article
+      className="dashboard-rise rounded-[1.4rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.82)] px-4 py-3.5 shadow-[0_14px_30px_rgba(30,52,78,0.06)] backdrop-blur-sm"
+      style={{ animationDelay: delay }}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[0.76rem] font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
+            {title}
+          </p>
+          <p className="mt-2.5 text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#163b70]">
+            {value}
+          </p>
+        </div>
+        <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[#edf5ff] text-[#2f78bc]">
+          {icon}
+        </div>
+      </div>
+
+      <p className="mt-2 text-[0.78rem] leading-5 text-[#7088a1]">{detail}</p>
+    </article>
+  );
 }
 
-function badgeTone(tone: string) {
-  switch (tone) {
-    case 'blue':
-      return 'bg-[#e8f1ff] text-[#2f78bc]';
-    case 'green':
-      return 'bg-[#e7f7ef] text-[#2f9b63]';
-    case 'violet':
-      return 'bg-[#f1ebff] text-[#8b5fe0]';
-    case 'amber':
-      return 'bg-[#fff2e2] text-[#f29a2e]';
-    default:
-      return 'bg-[#eef3f8] text-[#5d7690]';
-  }
+function SubjectRow({
+  subject,
+}: {
+  subject: SubjectProgressItem;
+}) {
+  const SubjectIcon = getSubjectIcon(subject.iconKey);
+  const state = getProgressState(subject.progress, subject.remainingCount);
+
+  return (
+    <Link
+      to={`/student/subjects/${subject.id}`}
+      className="dashboard-hover group grid gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+        <SubjectIcon className="h-5 w-5" />
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-[0.98rem] font-semibold text-[#173b70]">
+            {subject.title}
+          </h3>
+          <span className="rounded-full border border-[#dbe6ef] bg-[#f4f8fb] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#56718b]">
+            {subject.code}
+          </span>
+        </div>
+
+        <p className="mt-0.5 text-[0.78rem] leading-5 text-[#7088a1]">
+          {subject.lessons} lessons / {subject.modules} modules / {subject.remainingCount} open
+        </p>
+
+        <div className="mt-2.5 flex items-center gap-2.5">
+          <div className="h-2 flex-1 rounded-full bg-[#e3ebf3]">
+            <div
+              className="dashboard-progress-fill h-full rounded-full bg-[linear-gradient(90deg,#74c3ff_0%,#2f78bc_100%)]"
+              style={{ width: `${subject.progress}%` }}
+            />
+          </div>
+          <span className="w-14 shrink-0 text-right text-[0.86rem] font-semibold text-[#173b70]">
+            {subject.progress}%
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 lg:justify-end">
+        <span
+          className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${state.className}`}
+        >
+          {state.label}
+        </span>
+        <FiArrowRight className="h-4 w-4 text-[#6f89a4] transition duration-200 group-hover:translate-x-0.5 group-hover:text-[#2f78bc]" />
+      </div>
+    </Link>
+  );
 }
 
-function progressTone(tone: string) {
-  switch (tone) {
-    case 'blue':
-      return 'bg-[#3c7de0]';
-    case 'green':
-      return 'bg-[#2f9b63]';
-    case 'violet':
-      return 'bg-[#8b5fe0]';
-    case 'amber':
-      return 'bg-[#f29a2e]';
-    default:
-      return 'bg-[#7d94aa]';
-  }
+function DirectoryItem({ subject }: { subject: SubjectProgressItem }) {
+  const SubjectIcon = getSubjectIcon(subject.iconKey);
+
+  return (
+    <Link
+      to={`/student/subjects/${subject.id}`}
+      className="dashboard-hover group flex items-start gap-3.5 rounded-[1.35rem] border border-[#dbe6ef] bg-white/76 px-3.5 py-3.5"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+        <SubjectIcon className="h-5 w-5" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-[0.94rem] font-semibold text-[#173b70]">
+            {subject.title}
+          </h3>
+          <span className="text-[0.74rem] font-medium text-[#69829a]">
+            {subject.code}
+          </span>
+        </div>
+
+        <p className="mt-1.5 text-[0.8rem] leading-5 text-[#7088a1]">
+          {subject.description}
+        </p>
+
+        <div className="mt-2.5 flex flex-wrap gap-1.5 text-[0.72rem] text-[#58718b]">
+          <DirectoryTag label={`${subject.lessons} lessons`} />
+          <DirectoryTag label={`${subject.modules} modules`} />
+          <DirectoryTag label={`${subject.completedCount} complete`} />
+        </div>
+      </div>
+
+      <ProgressRing progress={subject.progress} label="Live" compact />
+    </Link>
+  );
+}
+
+function DirectoryTag({ label }: { label: string }) {
+  return (
+    <span className="rounded-full border border-[#dbe6ef] bg-[#f6f9fc] px-2.5 py-1">
+      {label}
+    </span>
+  );
+}
+
+function ProgressRing({
+  progress,
+  label,
+  compact = false,
+}: {
+  progress: number;
+  label: string;
+  compact?: boolean;
+}) {
+  const size = compact ? 68 : 110;
+  const innerSize = compact ? 54 : 90;
+  const accentStop = Math.max(progress, 0) * 3.6;
+
+  return (
+    <div
+      className="dashboard-ring relative shrink-0 rounded-full p-[1px]"
+      style={{
+        width: size,
+        height: size,
+        background: `conic-gradient(#79c9ff 0deg, #2f78bc ${accentStop}deg, rgba(200,217,234,0.2) ${accentStop}deg 360deg)`,
+      }}
+    >
+      <div
+        className={`flex h-full w-full flex-col items-center justify-center rounded-full ${
+          compact ? 'bg-[#f8fbfe] text-[#173b70]' : 'bg-[#10283f] text-white'
+        }`}
+        style={{ width: innerSize, height: innerSize, margin: 'auto' }}
+      >
+        <span
+          className={
+            compact
+              ? 'text-[0.9rem] font-semibold tracking-[-0.03em]'
+              : 'text-[1.35rem] font-semibold tracking-[-0.04em]'
+          }
+        >
+          {progress}%
+        </span>
+        <span
+          className={
+            compact
+              ? 'text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]'
+              : 'text-[0.66rem] font-semibold uppercase tracking-[0.2em] text-[#9bb8d1]'
+          }
+        >
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function InfoPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-white/12 bg-white/7 px-3.5 py-2 backdrop-blur-sm">
+      <span className="text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-[#93b4d2]">
+        {label}
+      </span>
+      <span className="ml-2 text-[0.84rem] font-semibold text-white">{value}</span>
+    </div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[#97b8d5]">{label}</span>
+      <span className="truncate text-right font-medium text-white">{value}</span>
+    </div>
+  );
+}
+
+function PanelMessage({ message }: { message: string }) {
+  return (
+    <div className="px-4 py-6 text-[0.88rem] text-[#6b8198] sm:px-5">{message}</div>
+  );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-[1.2rem] border border-dashed border-[#dbe6ef] bg-[#fbfdff] px-4 py-4">
+      <p className="text-[0.92rem] font-semibold text-[#173b70]">{title}</p>
+      <p className="mt-1.5 text-[0.8rem] leading-5 text-[#7088a1]">{body}</p>
+    </div>
+  );
 }
 
 export default Dashboard;

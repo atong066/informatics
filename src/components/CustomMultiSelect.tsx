@@ -1,29 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
-import { FiChevronDown } from 'react-icons/fi';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FiCheck, FiChevronDown } from 'react-icons/fi';
 
-type CustomSelectProps = {
+type CustomMultiSelectProps = {
   id: string;
   options: Array<string | { label: string; value: string }>;
   placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
+  values: string[];
+  onChange: (values: string[]) => void;
   error?: string;
   menuPosition?: 'top' | 'bottom';
   tone?: 'default' | 'muted';
 };
 
-function CustomSelect({
+function CustomMultiSelect({
   id,
   options,
   placeholder,
-  value,
+  values,
   onChange,
   error,
   menuPosition = 'bottom',
   tone = 'default',
-}: CustomSelectProps) {
+}: CustomMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const normalizedOptions = useMemo(
+    () =>
+      options.map((option) => (
+        typeof option === 'string'
+          ? { label: option, value: option }
+          : option
+      )),
+    [options],
+  );
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -39,23 +48,58 @@ function CustomSelect({
     };
   }, []);
 
-  const displayValue = value || placeholder;
-  const normalizedOptions = options.map((option) => (
-    typeof option === 'string'
-      ? { label: option, value: option }
-      : option
-  ));
-  const selectedOption = normalizedOptions.find((option) => option.value === value);
-  const resolvedDisplayValue = selectedOption?.label ?? displayValue;
+  const isMuted = tone === 'muted';
   const menuPositionClasses =
     menuPosition === 'top'
       ? 'bottom-[calc(100%+0.5rem)]'
       : 'top-[calc(100%+0.5rem)]';
-  const isMuted = tone === 'muted';
+  const resolvedValues =
+    values.length > 0 ? values : [];
+  const resolvedDisplayValue = (() => {
+    if (resolvedValues.length === 0) {
+      return placeholder;
+    }
+
+    if (resolvedValues.includes('All sections')) {
+      return 'All sections';
+    }
+
+    const selectedLabels = normalizedOptions
+      .filter((option) => resolvedValues.includes(option.value))
+      .map((option) => option.label);
+
+    if (selectedLabels.length <= 2) {
+      return selectedLabels.join(', ');
+    }
+
+    return `${selectedLabels.length} sections selected`;
+  })();
+
+  function handleToggleOption(nextValue: string) {
+    if (nextValue === 'All sections') {
+      onChange(['All sections']);
+      return;
+    }
+
+    const nextValues = resolvedValues.includes('All sections')
+      ? []
+      : [...resolvedValues];
+    const valueIndex = nextValues.indexOf(nextValue);
+
+    if (valueIndex >= 0) {
+      nextValues.splice(valueIndex, 1);
+    } else {
+      nextValues.push(nextValue);
+    }
+
+    onChange(nextValues.length > 0 ? nextValues : ['All sections']);
+  }
 
   return (
     <div ref={containerRef} className="relative">
-      <input id={id} name={id} type="hidden" value={value} />
+      {resolvedValues.map((value) => (
+        <input key={value} id={`${id}-${value}`} name={id} type="hidden" value={value} />
+      ))}
 
       {error ? (
         <div className="pointer-events-none absolute -top-11 left-0 z-30 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
@@ -75,8 +119,8 @@ function CustomSelect({
               : 'border-[#3498db] bg-white text-[#2c3e50] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(52,152,219,0.08)]'
             : error
               ? isMuted
-                ? 'border-red-300 bg-[rgba(209,220,231,0.96)] text-[#21486d] focus:border-red-400 focus:ring-red-100'
-                : 'border-red-300 bg-white text-[#2c3e50] focus:border-red-400 focus:ring-red-100'
+                ? 'border-red-300 bg-[rgba(209,220,231,0.96)] text-[#21486d]'
+                : 'border-red-300 bg-white text-[#2c3e50]'
               : isMuted
                 ? 'border-[#b6c7d6] bg-[rgba(209,220,231,0.96)] text-[#21486d] focus:border-[#7ea8cf] focus:ring-4 focus:ring-[rgba(126,168,207,0.16)]'
                 : 'border-[#bdc3c7] bg-white text-[#2c3e50] focus:border-[#3498db] focus:ring-4 focus:ring-blue-100'
@@ -85,7 +129,7 @@ function CustomSelect({
       >
         <span
           className={`min-w-0 truncate whitespace-nowrap text-left ${
-            value
+            resolvedValues.length > 0
               ? isMuted
                 ? 'text-[#21486d]'
                 : 'text-[#2c3e50]'
@@ -118,15 +162,16 @@ function CustomSelect({
               : 'border-[#bdc3c7] bg-white'
           } ${menuPositionClasses}`}
           role="listbox"
+          aria-multiselectable="true"
         >
           {normalizedOptions.map((option) => {
-            const isSelected = option.value === value;
+            const isSelected = resolvedValues.includes(option.value);
 
             return (
               <button
                 key={option.value}
                 type="button"
-                className={`block w-full px-4 py-3 text-left text-[15px] transition ${
+                className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-[15px] transition ${
                   isSelected
                     ? isMuted
                       ? 'bg-[rgba(194,209,224,0.92)] text-[#255a91]'
@@ -135,12 +180,12 @@ function CustomSelect({
                       ? 'text-[#33516f] hover:bg-[rgba(219,228,237,0.98)]'
                       : 'text-[#34495e] hover:bg-[#f7f9fa]'
                 }`}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleToggleOption(option.value)}
               >
-                {option.label}
+                <span>{option.label}</span>
+                <span className={`shrink-0 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
+                  <FiCheck className="h-4 w-4" />
+                </span>
               </button>
             );
           })}
@@ -150,4 +195,4 @@ function CustomSelect({
   );
 }
 
-export default CustomSelect;
+export default CustomMultiSelect;

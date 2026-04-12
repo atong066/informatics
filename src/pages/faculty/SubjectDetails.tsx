@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  FiArrowRight,
   FiBookOpen,
   FiCheckCircle,
   FiClipboard,
@@ -18,8 +19,11 @@ import {
   FiTrash2,
   FiTrendingUp,
   FiUploadCloud,
+  FiUsers,
 } from 'react-icons/fi';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import CustomDatePicker from '../../components/CustomDatePicker';
+import CustomMultiSelect from '../../components/CustomMultiSelect';
 import CustomSelect from '../../components/CustomSelect';
 import Modal from '../../components/Modal';
 import NotificationPopup from '../../components/NotificationPopup';
@@ -42,6 +46,7 @@ type FacultySubjectDetailsResponse = {
   slug: string;
   iconKey: string;
   description: string;
+  availableSections: string[];
   lessonProgress: Array<{
     id: string;
     lesson: string;
@@ -69,18 +74,35 @@ type FacultySubjectDetailsResponse = {
     id: string;
     title: string;
     detail: string;
+    dueDate: string;
+    activityType: 'text' | 'file';
+    attachments: AttachmentRecord[];
+    submittedCount: number;
+    totalStudents: number;
     status: string;
   }>;
   assignments: Array<{
     id: string;
     title: string;
+    detail: string;
     dueDate: string;
+    assignmentType: 'text' | 'file';
+    attachments: AttachmentRecord[];
     status: string;
   }>;
   assessments: Array<{
     id: string;
     title: string;
+    detail: string;
     schedule: string;
+    assessmentType: 'quiz' | 'quarter-exam';
+    targetSections: string[];
+    targetSectionLabel: string;
+    startTime: string;
+    endTime: string;
+    questionCount: number;
+    takenCount: number;
+    totalStudents: number;
     status: string;
   }>;
 };
@@ -126,7 +148,7 @@ function statusTone(status: string) {
 
 function EmptyTabState({ label }: { label: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-[#c6d5e1] bg-[linear-gradient(180deg,#edf3f8_0%,#e3ebf2_100%)] px-6 py-10 text-center">
+    <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
       <p className="text-[0.98rem] font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
       <p className="mt-2 text-[0.84rem] text-[#7088a1]">
         This section will stay empty until records are added from the database.
@@ -145,6 +167,67 @@ function formatBytes(size: number) {
   }
 
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatCalendarDate(value: string) {
+  if (!value) {
+    return 'No deadline';
+  }
+
+  const [year, month, day] = value.split('-').map(Number);
+
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatTimeLabel(value: string) {
+  if (!value) {
+    return '';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function formatAssessmentWindow(startTime: string, endTime: string) {
+  if (!startTime && !endTime) {
+    return 'Time not set';
+  }
+
+  if (startTime && endTime) {
+    return `${formatTimeLabel(startTime)} - ${formatTimeLabel(endTime)}`;
+  }
+
+  return formatTimeLabel(startTime || endTime);
+}
+
+const activityTypeOptions = [
+  { label: 'Text only', value: 'text' },
+  { label: 'File upload', value: 'file' },
+] as const;
+
+const assessmentTypeOptions = [
+  { label: 'Quiz', value: 'quiz' },
+  { label: 'Quarter exam', value: 'quarter-exam' },
+] as const;
+
+function formatAssessmentType(value: 'quiz' | 'quarter-exam') {
+  return value === 'quarter-exam' ? 'Quarter exam' : 'Quiz';
 }
 
 async function readFilesAsDataUrls(fileList: FileList | null) {
@@ -186,16 +269,23 @@ async function readFilesAsDataUrls(fileList: FileList | null) {
 
 function FacultySubjectDetails() {
   const { subjectId } = useParams();
+  const navigate = useNavigate();
   const { activeUser, isError } = useCurrentStudent();
   const token = getStoredToken();
   const queryClient = useQueryClient();
   const attachmentInputRef = useRef<HTMLInputElement>(null);
+  const activityAttachmentInputRef = useRef<HTMLInputElement>(null);
+  const assignmentAttachmentInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<SubjectTabId>('lesson-progress');
   const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);
   const [isSubtopicModalOpen, setIsSubtopicModalOpen] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [editingAssessmentId, setEditingAssessmentId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonSummary, setLessonSummary] = useState('');
   const [subtopicTitle, setSubtopicTitle] = useState('');
@@ -205,6 +295,23 @@ function FacultySubjectDetails() {
   const [moduleLinkInput, setModuleLinkInput] = useState('');
   const [moduleReferenceLinks, setModuleReferenceLinks] = useState<string[]>([]);
   const [moduleAttachments, setModuleAttachments] = useState<AttachmentRecord[]>([]);
+  const [activityTitle, setActivityTitle] = useState('');
+  const [activityType, setActivityType] = useState<'text' | 'file'>('text');
+  const [activityDetail, setActivityDetail] = useState('');
+  const [activityDeadline, setActivityDeadline] = useState('');
+  const [activityAttachments, setActivityAttachments] = useState<AttachmentRecord[]>([]);
+  const [assignmentTitle, setAssignmentTitle] = useState('');
+  const [assignmentType, setAssignmentType] = useState<'text' | 'file'>('text');
+  const [assignmentDetail, setAssignmentDetail] = useState('');
+  const [assignmentDeadline, setAssignmentDeadline] = useState('');
+  const [assignmentAttachments, setAssignmentAttachments] = useState<AttachmentRecord[]>([]);
+  const [assessmentTitle, setAssessmentTitle] = useState('');
+  const [assessmentType, setAssessmentType] = useState<'quiz' | 'quarter-exam'>('quiz');
+  const [assessmentTargetSections, setAssessmentTargetSections] = useState<string[]>(['All sections']);
+  const [assessmentDetail, setAssessmentDetail] = useState('');
+  const [assessmentSchedule, setAssessmentSchedule] = useState('');
+  const [assessmentStartTime, setAssessmentStartTime] = useState('');
+  const [assessmentEndTime, setAssessmentEndTime] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{
     lessonTitle?: string;
     lessonSummary?: string;
@@ -214,6 +321,23 @@ function FacultySubjectDetails() {
     moduleLessonId?: string;
     moduleLinkInput?: string;
     moduleAttachments?: string;
+    activityTitle?: string;
+    activityType?: string;
+    activityDetail?: string;
+    activityDeadline?: string;
+    activityAttachments?: string;
+    assignmentTitle?: string;
+    assignmentType?: string;
+    assignmentDetail?: string;
+    assignmentDeadline?: string;
+    assignmentAttachments?: string;
+    assessmentTitle?: string;
+    assessmentType?: string;
+    assessmentTargetSections?: string;
+    assessmentDetail?: string;
+    assessmentSchedule?: string;
+    assessmentStartTime?: string;
+    assessmentEndTime?: string;
   }>({});
   const [popupState, setPopupState] = useState<{
     open: boolean;
@@ -427,7 +551,7 @@ function FacultySubjectDetails() {
       return data;
     },
     onSuccess: async () => {
-      closeModuleModal();
+      closeModuleModal(true);
       setPopupState({
         open: true,
         title: 'Module added',
@@ -447,6 +571,250 @@ function FacultySubjectDetails() {
         open: true,
         title: 'Unable to add module',
         message: error.message || 'Please review the module details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const createActivityMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/activities`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: activityTitle,
+          activityType,
+          detail: activityDetail,
+          dueDate: activityDeadline,
+          attachments: activityAttachments,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to create activity',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeActivityModal(true);
+      setPopupState({
+        open: true,
+        title: 'Activity added',
+        message: 'The activity is now available in this subject tab.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        activityTitle: error.errors?.title?.[0],
+        activityType: error.errors?.activityType?.[0],
+        activityDetail: error.errors?.detail?.[0],
+        activityDeadline: error.errors?.dueDate?.[0],
+        activityAttachments: error.errors?.attachments?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to add activity',
+        message: error.message || 'Please review the activity details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const createAssignmentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/assignments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: assignmentTitle,
+          assignmentType,
+          detail: assignmentDetail,
+          dueDate: assignmentDeadline,
+          attachments: assignmentAttachments,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to create assignment',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeAssignmentModal(true);
+      setPopupState({
+        open: true,
+        title: 'Assignment added',
+        message: 'The assignment is now available in this subject tab.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        assignmentTitle: error.errors?.title?.[0],
+        assignmentType: error.errors?.assignmentType?.[0],
+        assignmentDetail: error.errors?.detail?.[0],
+        assignmentDeadline: error.errors?.dueDate?.[0],
+        assignmentAttachments: error.errors?.attachments?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to add assignment',
+        message: error.message || 'Please review the assignment details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const createAssessmentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/assessments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: assessmentTitle,
+          assessmentType,
+          targetSections: assessmentTargetSections,
+          detail: assessmentDetail,
+          schedule: assessmentSchedule,
+          startTime: assessmentStartTime,
+          endTime: assessmentEndTime,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to create assessment',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeAssessmentModal(true);
+      setPopupState({
+        open: true,
+        title: 'Assessment added',
+        message: 'The assessment is ready. You can open it now to start adding questions.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        assessmentTitle: error.errors?.title?.[0],
+        assessmentType: error.errors?.assessmentType?.[0],
+        assessmentTargetSections: error.errors?.targetSections?.[0],
+        assessmentDetail: error.errors?.detail?.[0],
+        assessmentSchedule: error.errors?.schedule?.[0],
+        assessmentStartTime: error.errors?.startTime?.[0],
+        assessmentEndTime: error.errors?.endTime?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to add assessment',
+        message: error.message || 'Please review the assessment details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const updateAssessmentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/assessments/${editingAssessmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: assessmentTitle,
+          assessmentType,
+          targetSections: assessmentTargetSections,
+          detail: assessmentDetail,
+          schedule: assessmentSchedule,
+          startTime: assessmentStartTime,
+          endTime: assessmentEndTime,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to update assessment',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeAssessmentModal(true);
+      setPopupState({
+        open: true,
+        title: 'Assessment updated',
+        message: 'The assessment details were updated successfully.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        assessmentTitle: error.errors?.title?.[0],
+        assessmentType: error.errors?.assessmentType?.[0],
+        assessmentTargetSections: error.errors?.targetSections?.[0],
+        assessmentDetail: error.errors?.detail?.[0],
+        assessmentSchedule: error.errors?.schedule?.[0],
+        assessmentStartTime: error.errors?.startTime?.[0],
+        assessmentEndTime: error.errors?.endTime?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to update assessment',
+        message: error.message || 'Please review the assessment details and try again.',
         variant: 'error',
       });
     },
@@ -484,7 +852,7 @@ function FacultySubjectDetails() {
       return data;
     },
     onSuccess: async () => {
-      closeModuleModal();
+      closeModuleModal(true);
       setPopupState({
         open: true,
         title: 'Module updated',
@@ -545,6 +913,42 @@ function FacultySubjectDetails() {
     },
   });
 
+  const deleteAssessmentMutation = useMutation({
+    mutationFn: async (assessmentId: string) => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/assessments/${assessmentId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = (await response.json()) as { message?: string };
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete assessment');
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      setPopupState({
+        open: true,
+        title: 'Assessment deleted',
+        message: 'The assessment was removed from this subject.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: Error) => {
+      setPopupState({
+        open: true,
+        title: 'Unable to delete assessment',
+        message: error.message || 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
   if (!activeUser || isError) {
     return null;
   }
@@ -587,6 +991,92 @@ function FacultySubjectDetails() {
     }
   }, [activeTab, subject]);
 
+  function resetActivityForm() {
+    setActivityTitle('');
+    setActivityType('text');
+    setActivityDetail('');
+    setActivityDeadline('');
+    setActivityAttachments([]);
+    setFieldErrors((current) => ({
+      ...current,
+      activityTitle: undefined,
+      activityType: undefined,
+      activityDetail: undefined,
+      activityDeadline: undefined,
+      activityAttachments: undefined,
+    }));
+    if (activityAttachmentInputRef.current) {
+      activityAttachmentInputRef.current.value = '';
+    }
+  }
+
+  function resetAssignmentForm() {
+    setAssignmentTitle('');
+    setAssignmentType('text');
+    setAssignmentDetail('');
+    setAssignmentDeadline('');
+    setAssignmentAttachments([]);
+    setFieldErrors((current) => ({
+      ...current,
+      assignmentTitle: undefined,
+      assignmentType: undefined,
+      assignmentDetail: undefined,
+      assignmentDeadline: undefined,
+      assignmentAttachments: undefined,
+    }));
+    if (assignmentAttachmentInputRef.current) {
+      assignmentAttachmentInputRef.current.value = '';
+    }
+  }
+
+  function resetAssessmentForm() {
+    setEditingAssessmentId(null);
+    setAssessmentTitle('');
+    setAssessmentType('quiz');
+    setAssessmentTargetSections(['All sections']);
+    setAssessmentDetail('');
+    setAssessmentSchedule('');
+    setAssessmentStartTime('');
+    setAssessmentEndTime('');
+    setFieldErrors((current) => ({
+      ...current,
+      assessmentTitle: undefined,
+      assessmentType: undefined,
+      assessmentTargetSections: undefined,
+      assessmentDetail: undefined,
+      assessmentSchedule: undefined,
+      assessmentStartTime: undefined,
+      assessmentEndTime: undefined,
+    }));
+  }
+
+  function closeActivityModal(force = false) {
+    if (!force && createActivityMutation.isPending) {
+      return;
+    }
+
+    setIsActivityModalOpen(false);
+    resetActivityForm();
+  }
+
+  function closeAssignmentModal(force = false) {
+    if (!force && createAssignmentMutation.isPending) {
+      return;
+    }
+
+    setIsAssignmentModalOpen(false);
+    resetAssignmentForm();
+  }
+
+  function closeAssessmentModal(force = false) {
+    if (!force && (createAssessmentMutation.isPending || updateAssessmentMutation.isPending)) {
+      return;
+    }
+
+    setIsAssessmentModalOpen(false);
+    resetAssessmentForm();
+  }
+
   function resetModuleForm() {
     setEditingModuleId(null);
     setModuleTitle('');
@@ -608,8 +1098,8 @@ function FacultySubjectDetails() {
     }
   }
 
-  function closeModuleModal() {
-    if (createModuleMutation.isPending || updateModuleMutation.isPending) {
+  function closeModuleModal(force = false) {
+    if (!force && (createModuleMutation.isPending || updateModuleMutation.isPending)) {
       return;
     }
 
@@ -632,6 +1122,43 @@ function FacultySubjectDetails() {
   const openCreateModuleModal = () => {
     resetModuleForm();
     setIsModuleModalOpen(true);
+  };
+
+  const openCreateActivityModal = () => {
+    resetActivityForm();
+    setIsActivityModalOpen(true);
+  };
+
+  const openCreateAssignmentModal = () => {
+    resetAssignmentForm();
+    setIsAssignmentModalOpen(true);
+  };
+
+  const openCreateAssessmentModal = () => {
+    resetAssessmentForm();
+    setIsAssessmentModalOpen(true);
+  };
+
+  const openEditAssessmentModal = (assessmentRecord: FacultySubjectDetailsResponse['assessments'][number]) => {
+    setEditingAssessmentId(assessmentRecord.id);
+    setAssessmentTitle(assessmentRecord.title);
+    setAssessmentType(assessmentRecord.assessmentType);
+    setAssessmentTargetSections(assessmentRecord.targetSections);
+    setAssessmentDetail(assessmentRecord.detail);
+    setAssessmentSchedule(assessmentRecord.schedule);
+    setAssessmentStartTime(assessmentRecord.startTime);
+    setAssessmentEndTime(assessmentRecord.endTime);
+    setFieldErrors((current) => ({
+      ...current,
+      assessmentTitle: undefined,
+      assessmentType: undefined,
+      assessmentTargetSections: undefined,
+      assessmentDetail: undefined,
+      assessmentSchedule: undefined,
+      assessmentStartTime: undefined,
+      assessmentEndTime: undefined,
+    }));
+    setIsAssessmentModalOpen(true);
   };
 
   const openEditModuleModal = (moduleRecord: FacultySubjectDetailsResponse['modules'][number]) => {
@@ -743,6 +1270,54 @@ function FacultySubjectDetails() {
     }
   };
 
+  const handleActivityFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const files = await readFilesAsDataUrls(event.target.files);
+
+      if (files.length === 0) {
+        return;
+      }
+
+      setActivityAttachments((current) => [...current, ...files]);
+      setFieldErrors((current) => ({ ...current, activityAttachments: undefined }));
+    } catch (error) {
+      setPopupState({
+        open: true,
+        title: 'Unable to attach file',
+        message: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      if (activityAttachmentInputRef.current) {
+        activityAttachmentInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleAssignmentFilesSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const files = await readFilesAsDataUrls(event.target.files);
+
+      if (files.length === 0) {
+        return;
+      }
+
+      setAssignmentAttachments((current) => [...current, ...files]);
+      setFieldErrors((current) => ({ ...current, assignmentAttachments: undefined }));
+    } catch (error) {
+      setPopupState({
+        open: true,
+        title: 'Unable to attach file',
+        message: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'error',
+      });
+    } finally {
+      if (assignmentAttachmentInputRef.current) {
+        assignmentAttachmentInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmitModule = () => {
     const trimmedTitle = moduleTitle.trim();
     const trimmedSummary = moduleSummary.trim();
@@ -780,12 +1355,190 @@ function FacultySubjectDetails() {
     createModuleMutation.mutate();
   };
 
+  const handleSubmitActivity = () => {
+    const trimmedTitle = activityTitle.trim();
+    const trimmedDetail = activityDetail.trim();
+    const nextErrors: typeof fieldErrors = {
+      activityTitle: undefined,
+      activityType: undefined,
+      activityDetail: undefined,
+      activityDeadline: undefined,
+      activityAttachments: undefined,
+    };
+
+    if (!trimmedTitle) {
+      nextErrors.activityTitle = 'Activity title is required';
+    }
+
+    if (!activityDeadline) {
+      nextErrors.activityDeadline = 'Deadline is required';
+    }
+
+    if (activityType === 'text' && !trimmedDetail) {
+      nextErrors.activityDetail = 'Activity instructions are required';
+    }
+
+    if (activityType === 'file' && activityAttachments.length === 0) {
+      nextErrors.activityAttachments = 'Upload at least one file';
+    }
+
+    setFieldErrors((current) => ({
+      ...current,
+      activityTitle: nextErrors.activityTitle,
+      activityType: nextErrors.activityType,
+      activityDetail: nextErrors.activityDetail,
+      activityDeadline: nextErrors.activityDeadline,
+      activityAttachments: nextErrors.activityAttachments,
+    }));
+
+    if (
+      nextErrors.activityTitle ||
+      nextErrors.activityType ||
+      nextErrors.activityDetail ||
+      nextErrors.activityDeadline ||
+      nextErrors.activityAttachments
+    ) {
+      return;
+    }
+
+    setActivityTitle(trimmedTitle);
+    setActivityDetail(trimmedDetail);
+    createActivityMutation.mutate();
+  };
+
+  const handleSubmitAssignment = () => {
+    const trimmedTitle = assignmentTitle.trim();
+    const trimmedDetail = assignmentDetail.trim();
+    const nextErrors: typeof fieldErrors = {
+      assignmentTitle: undefined,
+      assignmentType: undefined,
+      assignmentDetail: undefined,
+      assignmentDeadline: undefined,
+      assignmentAttachments: undefined,
+    };
+
+    if (!trimmedTitle) {
+      nextErrors.assignmentTitle = 'Assignment title is required';
+    }
+
+    if (!assignmentDeadline) {
+      nextErrors.assignmentDeadline = 'Deadline is required';
+    }
+
+    if (assignmentType === 'text' && !trimmedDetail) {
+      nextErrors.assignmentDetail = 'Assignment instructions are required';
+    }
+
+    if (assignmentType === 'file' && assignmentAttachments.length === 0) {
+      nextErrors.assignmentAttachments = 'Upload at least one file';
+    }
+
+    setFieldErrors((current) => ({
+      ...current,
+      assignmentTitle: nextErrors.assignmentTitle,
+      assignmentType: nextErrors.assignmentType,
+      assignmentDetail: nextErrors.assignmentDetail,
+      assignmentDeadline: nextErrors.assignmentDeadline,
+      assignmentAttachments: nextErrors.assignmentAttachments,
+    }));
+
+    if (
+      nextErrors.assignmentTitle ||
+      nextErrors.assignmentType ||
+      nextErrors.assignmentDetail ||
+      nextErrors.assignmentDeadline ||
+      nextErrors.assignmentAttachments
+    ) {
+      return;
+    }
+
+    setAssignmentTitle(trimmedTitle);
+    setAssignmentDetail(trimmedDetail);
+    createAssignmentMutation.mutate();
+  };
+
+  const handleSubmitAssessment = () => {
+    const trimmedTitle = assessmentTitle.trim();
+    const trimmedDetail = assessmentDetail.trim();
+    const nextErrors: typeof fieldErrors = {
+      assessmentTitle: undefined,
+      assessmentType: undefined,
+      assessmentTargetSections: undefined,
+      assessmentDetail: undefined,
+      assessmentSchedule: undefined,
+      assessmentStartTime: undefined,
+      assessmentEndTime: undefined,
+    };
+
+    if (!trimmedTitle) {
+      nextErrors.assessmentTitle = 'Assessment title is required';
+    }
+
+    if (!assessmentSchedule) {
+      nextErrors.assessmentSchedule = 'Assessment date is required';
+    }
+
+    if (assessmentTargetSections.length === 0) {
+      nextErrors.assessmentTargetSections = 'Choose at least one section';
+    }
+
+    if (!assessmentStartTime) {
+      nextErrors.assessmentStartTime = 'Start time is required';
+    }
+
+    if (!assessmentEndTime) {
+      nextErrors.assessmentEndTime = 'End time is required';
+    } else if (assessmentStartTime && assessmentEndTime <= assessmentStartTime) {
+      nextErrors.assessmentEndTime = 'End time must be later than the start time';
+    }
+
+    setFieldErrors((current) => ({
+      ...current,
+      assessmentTitle: nextErrors.assessmentTitle,
+      assessmentType: nextErrors.assessmentType,
+      assessmentTargetSections: nextErrors.assessmentTargetSections,
+      assessmentDetail: nextErrors.assessmentDetail,
+      assessmentSchedule: nextErrors.assessmentSchedule,
+      assessmentStartTime: nextErrors.assessmentStartTime,
+      assessmentEndTime: nextErrors.assessmentEndTime,
+    }));
+
+    if (
+      nextErrors.assessmentTitle ||
+      nextErrors.assessmentType ||
+      nextErrors.assessmentTargetSections ||
+      nextErrors.assessmentSchedule ||
+      nextErrors.assessmentStartTime ||
+      nextErrors.assessmentEndTime
+    ) {
+      return;
+    }
+
+    setAssessmentTitle(trimmedTitle);
+    setAssessmentDetail(trimmedDetail);
+
+    if (editingAssessmentId) {
+      updateAssessmentMutation.mutate();
+      return;
+    }
+
+    createAssessmentMutation.mutate();
+  };
+
   const handleDeleteModule = (moduleId: string) => {
     if (!window.confirm('Delete this module? This action cannot be undone.')) {
       return;
     }
 
     deleteModuleMutation.mutate(moduleId);
+  };
+
+  const handleDeleteAssessment = (assessmentId: string) => {
+    if (!window.confirm('Delete this assessment? This action cannot be undone.')) {
+      return;
+    }
+
+    deleteAssessmentMutation.mutate(assessmentId);
   };
 
   return (
@@ -798,44 +1551,48 @@ function FacultySubjectDetails() {
       pageEyebrow="Faculty subjects"
       pageTitle={subject?.title ?? 'Subject'}
     >
-      <div className="mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#dce6ef_0%,#ced9e5_100%)] px-6 py-6 shadow-[0_1rem_2.2rem_rgba(27,46,70,0.16)] ring-[0.01rem] ring-[#b8cad8]">
+      <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {subjectQuery.isLoading ? (
             <p className="text-[0.95rem] text-[#6b8198]">Loading subject details...</p>
           ) : subject ? (
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
-                  <SubjectIcon className="h-7 w-7" />
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex items-start gap-3.5">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#cfdfed_0%,#c1d3e3_100%)] text-[#255a91]">
+                  <SubjectIcon className="h-6 w-6" />
                 </div>
-                <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
+                <div className="min-w-0">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[#2f78bc]">
                     Faculty subject view
                   </p>
-                  <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#173b70]">
+                  <h1 className="mt-1.5 text-[1.7rem] font-semibold tracking-[-0.04em] text-[#173b70] sm:text-[1.9rem]">
                     {subject.title}
                   </h1>
-                  <p className="mt-2 max-w-3xl text-[0.95rem] leading-[1.7] text-[#5e7891]">
+                  <p className="mt-1.5 max-w-3xl text-[0.9rem] leading-[1.6] text-[#5e7891]">
                     {subject.description}
                   </p>
                 </div>
               </div>
 
-              <div className="min-w-[15rem] rounded-[1.5rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
-                <p className="text-[0.72rem] uppercase tracking-[0.18em] text-[#d5e2ef]">
+              <div className="grid min-w-[14rem] gap-2 self-start rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-3 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
+                <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#d5e2ef]">
                   Subject details
                 </p>
-                <p className="mt-3 text-[1.15rem] font-semibold">{subject.code}</p>
-                <p className="mt-2 text-[0.82rem] text-[#d5e2ef]">{activeCount} items in this tab</p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[1rem] font-semibold">{subject.code}</p>
+                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#eef5fb]">
+                    {activeCount} items
+                  </span>
+                </div>
               </div>
             </div>
           ) : null}
         </section>
 
         {subject ? (
-          <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#eff4f9_0%,#e2eaf2_100%)] p-[1.35rem] shadow-[0_1rem_2.2rem_rgba(27,46,70,0.14)] ring-[0.01rem] ring-[#c5d4df]">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap gap-3">
+          <section className="mt-5 rounded-[1.55rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-wrap gap-2">
                 {subjectTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -845,10 +1602,10 @@ function FacultySubjectDetails() {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.88rem] font-semibold transition ${
+                      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[0.82rem] font-semibold transition ${
                         isActive
-                          ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
-                          : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
+                          ? 'border-[#6f9fc9] bg-[linear-gradient(180deg,#cfdfef_0%,#c3d6e8_100%)] text-[#215f99] shadow-[0_6px_14px_rgba(43,121,186,0.08)]'
+                          : 'border-[#b7c6d4] bg-[rgba(210,220,230,0.96)] text-[#566f88] hover:bg-[rgba(217,226,235,0.98)]'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -862,7 +1619,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={openAddLessonModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2 text-[0.88rem] font-semibold text-white shadow-[0_14px_28px_rgba(41,124,198,0.22)] transition hover:brightness-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add lesson
@@ -874,22 +1631,55 @@ function FacultySubjectDetails() {
                   type="button"
                   onClick={openCreateModuleModal}
                   disabled={subject.lessonProgress.length === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2 text-[0.88rem] font-semibold text-white shadow-[0_14px_28px_rgba(41,124,198,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add module
                 </button>
               ) : null}
+
+              {activeTab === 'activities' ? (
+                <button
+                  type="button"
+                  onClick={openCreateActivityModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                >
+                  <FiPlus className="h-4 w-4" />
+                  Add activity
+                </button>
+              ) : null}
+
+              {activeTab === 'assignments' ? (
+                <button
+                  type="button"
+                  onClick={openCreateAssignmentModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                >
+                  <FiPlus className="h-4 w-4" />
+                  Add assignment
+                </button>
+              ) : null}
+
+              {activeTab === 'assessments' ? (
+                <button
+                  type="button"
+                  onClick={openCreateAssessmentModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                >
+                  <FiPlus className="h-4 w-4" />
+                  Add assessment
+                </button>
+              ) : null}
             </div>
 
-            <div className="mt-6">
+            <div className="mt-5">
               {activeTab === 'lesson-progress' ? (
                 subject.lessonProgress.length > 0 ? (
                   <div className="grid gap-4 lg:grid-cols-2">
                     {subject.lessonProgress.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#c4d2df] bg-[linear-gradient(180deg,#e9f0f6_0%,#dce5ee_100%)] px-5 py-5 shadow-[0_0.9rem_2rem_rgba(27,46,70,0.12)]"
+                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -916,7 +1706,7 @@ function FacultySubjectDetails() {
                           </div>
                         </div>
 
-                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.1rem] border border-[#d0dbe6] bg-[linear-gradient(180deg,#f0f5f9_0%,#e4ecf3_100%)] p-4">
+                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div>
                             <p className="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Subtopics
@@ -928,7 +1718,7 @@ function FacultySubjectDetails() {
                           <button
                             type="button"
                             onClick={() => openSubtopicModal(item.id)}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#cfdbe6] bg-white px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[#f6fbff]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                           >
                             <FiList className="h-3.5 w-3.5" />
                             Manage subtopics
@@ -948,7 +1738,7 @@ function FacultySubjectDetails() {
                     {subject.modules.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#c6d4df] bg-[linear-gradient(180deg,#e9f0f6_0%,#dde6ee_100%)] px-5 py-5 shadow-[0_0.9rem_2rem_rgba(27,46,70,0.12)]"
+                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -966,7 +1756,7 @@ function FacultySubjectDetails() {
                         <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.summary}</p>
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-[1rem] border border-[#d1dce6] bg-[linear-gradient(180deg,#f1f6fa_0%,#e7eef5_100%)] p-4">
+                          <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiLink2 className="h-4 w-4" />
                               <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -978,7 +1768,7 @@ function FacultySubjectDetails() {
                             </p>
                           </div>
 
-                          <div className="rounded-[1rem] border border-[#d1dce6] bg-[linear-gradient(180deg,#f1f6fa_0%,#e7eef5_100%)] p-4">
+                          <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiPaperclip className="h-4 w-4" />
                               <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -995,7 +1785,7 @@ function FacultySubjectDetails() {
                           <button
                             type="button"
                             onClick={() => openEditModuleModal(item)}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#cfdbe6] bg-white px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[#f6fbff]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                           >
                             <FiEdit2 className="h-3.5 w-3.5" />
                             Edit module
@@ -1004,7 +1794,7 @@ function FacultySubjectDetails() {
                             type="button"
                             onClick={() => handleDeleteModule(item.id)}
                             disabled={deleteModuleMutation.isPending}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#f0c7c7] bg-white px-3 py-2 text-[0.8rem] font-semibold text-[#b75353] transition hover:bg-[#fff7f7] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-[0.8rem] font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <FiTrash2 className="h-3.5 w-3.5" />
                             Delete module
@@ -1018,9 +1808,268 @@ function FacultySubjectDetails() {
                 )
               ) : null}
 
-              {activeTab === 'activities' ? <EmptyTabState label="Activities" /> : null}
-              {activeTab === 'assignments' ? <EmptyTabState label="Assignments" /> : null}
-              {activeTab === 'assessments' ? <EmptyTabState label="Assessment" /> : null}
+              {activeTab === 'activities' ? (
+                subject.activities.length > 0 ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {subject.activities.map((item) => (
+                      <article
+                        key={item.id}
+                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                                {formatCalendarDate(item.dueDate)}
+                              </span>
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                {item.activityType === 'file' ? 'File upload' : 'Text only'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </div>
+
+                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+
+                        <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div className="flex items-center gap-2 text-[#2f78bc]">
+                            <FiUsers className="h-4 w-4" />
+                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Student submissions
+                            </p>
+                          </div>
+                          <div className="mt-3 flex items-end justify-between gap-3">
+                            <div>
+                              <p className="text-[1.1rem] font-semibold text-[#173b70]">
+                                {item.submittedCount} submitted
+                              </p>
+                              <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                                out of {item.totalStudents} student{item.totalStudents === 1 ? '' : 's'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/faculty/subjects/${subjectId}/activities/${item.id}/submissions`)}
+                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            >
+                              View list
+                              <FiArrowRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {item.attachments.length > 0 ? (
+                          <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                            <div className="flex items-center gap-2 text-[#2f78bc]">
+                              <FiPaperclip className="h-4 w-4" />
+                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Attached files
+                              </p>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              {item.attachments.map((attachment) => (
+                                <a
+                                  key={attachment.id ?? attachment.name}
+                                  href={attachment.dataUrl}
+                                  download={attachment.name}
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="truncate">{attachment.name}</span>
+                                  </span>
+                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                    Download
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyTabState label="Activities" />
+                )
+              ) : null}
+              {activeTab === 'assignments' ? (
+                subject.assignments.length > 0 ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {subject.assignments.map((item) => (
+                      <article
+                        key={item.id}
+                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                                {formatCalendarDate(item.dueDate)}
+                              </span>
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                {item.assignmentType === 'file' ? 'File upload' : 'Text only'}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </div>
+
+                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+
+                        {item.attachments.length > 0 ? (
+                          <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                            <div className="flex items-center gap-2 text-[#2f78bc]">
+                              <FiPaperclip className="h-4 w-4" />
+                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Attached files
+                              </p>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                              {item.attachments.map((attachment) => (
+                                <a
+                                  key={attachment.id ?? attachment.name}
+                                  href={attachment.dataUrl}
+                                  download={attachment.name}
+                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="truncate">{attachment.name}</span>
+                                  </span>
+                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                    Download
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyTabState label="Assignments" />
+                )
+              ) : null}
+              {activeTab === 'assessments' ? (
+                subject.assessments.length > 0 ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {subject.assessments.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => navigate(`/faculty/subjects/${subjectId}/assessments/${item.id}`)}
+                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 text-left shadow-[0_8px_18px_rgba(27,46,70,0.07)] transition hover:border-[#9eb7cb] hover:shadow-[0_12px_24px_rgba(27,46,70,0.11)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                                {formatCalendarDate(item.schedule)}
+                              </span>
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                {formatAssessmentType(item.assessmentType)}
+                              </span>
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                {item.targetSectionLabel}
+                              </span>
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                {formatAssessmentWindow(item.startTime, item.endTime)}
+                              </span>
+                            </div>
+                          </div>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                            {item.status}
+                          </span>
+                        </div>
+
+                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+
+                        <div className="mt-5 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div>
+                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Question bank
+                            </p>
+                            <p className="mt-2 text-[1.05rem] font-semibold text-[#173b70]">
+                              {item.questionCount} question{item.questionCount === 1 ? '' : 's'}
+                            </p>
+                            <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                              Open this card to add options and set the answer key.
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc]">
+                            Build assessment
+                            <FiArrowRight className="h-4 w-4" />
+                          </span>
+                        </div>
+
+                        <div className="mt-4 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div>
+                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Exam takers
+                            </p>
+                            <p className="mt-2 text-[1.05rem] font-semibold text-[#173b70]">
+                              {item.takenCount} of {item.totalStudents} students
+                            </p>
+                            <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                              Review students who already completed this assessment.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/faculty/subjects/${subjectId}/assessments/${item.id}/takers`);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                          >
+                            View students
+                            <FiArrowRight className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openEditAssessmentModal(item);
+                            }}
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                          >
+                            <FiEdit2 className="h-3.5 w-3.5" />
+                            Edit assessment
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleDeleteAssessment(item.id);
+                            }}
+                            disabled={deleteAssessmentMutation.isPending}
+                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-[0.8rem] font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <FiTrash2 className="h-3.5 w-3.5" />
+                            Delete assessment
+                          </button>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyTabState label="Assessment" />
+                )
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -1209,6 +2258,563 @@ function FacultySubjectDetails() {
       </Modal>
 
       <Modal
+        open={isActivityModalOpen}
+        title="Add activity"
+        description="Create a classroom activity with either written instructions or downloadable files, then set the deadline students should follow."
+        onClose={closeActivityModal}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => closeActivityModal()}
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitActivity}
+              disabled={createActivityMutation.isPending}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {createActivityMutation.isPending ? 'Saving...' : 'Save activity'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-title">
+              Activity title
+            </label>
+            <input
+              id="activity-title"
+              type="text"
+              value={activityTitle}
+              onChange={(event) => {
+                setActivityTitle(event.target.value);
+                setFieldErrors((current) => ({ ...current, activityTitle: undefined }));
+              }}
+              placeholder="Week 1 reflection"
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                fieldErrors.activityTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.activityTitle ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityTitle}</p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-type">
+                Activity type
+              </label>
+              <CustomSelect
+                id="activity-type"
+                options={activityTypeOptions.map((option) => ({ ...option }))}
+                placeholder="Select activity type"
+                value={activityType}
+                onChange={(value) => {
+                  setActivityType(value as 'text' | 'file');
+                  setFieldErrors((current) => ({
+                    ...current,
+                    activityType: undefined,
+                    activityDetail: undefined,
+                    activityAttachments: undefined,
+                  }));
+                }}
+                error={fieldErrors.activityType}
+                tone="muted"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-deadline">
+                Deadline
+              </label>
+              <CustomDatePicker
+                id="activity-deadline"
+                value={activityDeadline}
+                placeholder="Select deadline"
+                onChange={(value) => {
+                  setActivityDeadline(value);
+                  setFieldErrors((current) => ({ ...current, activityDeadline: undefined }));
+                }}
+                error={fieldErrors.activityDeadline}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-detail">
+              {activityType === 'file' ? 'Instructions or note (optional)' : 'Activity instructions'}
+            </label>
+            <textarea
+              id="activity-detail"
+              value={activityDetail}
+              onChange={(event) => {
+                setActivityDetail(event.target.value);
+                setFieldErrors((current) => ({ ...current, activityDetail: undefined }));
+              }}
+              rows={4}
+              placeholder={
+                activityType === 'file'
+                  ? 'Add optional guidance for students before they open the files.'
+                  : 'Describe what students should read, write, or submit.'
+              }
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+                fieldErrors.activityDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.activityDetail ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityDetail}</p>
+            ) : null}
+          </div>
+
+          {activityType === 'file' ? (
+            <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[14px] font-semibold text-[#173b70]">Activity files</p>
+                  <p className="mt-1 text-[12px] text-[#7088a1]">
+                    Upload the files students should download. Keep each file under 2 MB.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => activityAttachmentInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                >
+                  <FiUploadCloud className="h-4 w-4" />
+                  Upload files
+                </button>
+                <input
+                  ref={activityAttachmentInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleActivityFilesSelected}
+                />
+              </div>
+
+              {fieldErrors.activityAttachments ? (
+                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityAttachments}</p>
+              ) : null}
+
+              {activityAttachments.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {activityAttachments.map((attachment, index) => (
+                    <div
+                      key={`${attachment.name}-${index}`}
+                      className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
+                        <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActivityAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                        }}
+                        className="rounded-full p-2 text-[#7f93a8] transition hover:bg-[#fff7f7] hover:text-[#b75353]"
+                        aria-label={`Remove ${attachment.name}`}
+                      >
+                        <FiTrash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                  <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
+                  <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                    Add worksheets, PDFs, or activity reference files here.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </Modal>
+
+      <Modal
+        open={isAssignmentModalOpen}
+        title="Add assignment"
+        description="Create an assignment with either written instructions or downloadable files, then set the deadline students should follow."
+        onClose={closeAssignmentModal}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => closeAssignmentModal()}
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitAssignment}
+              disabled={createAssignmentMutation.isPending}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {createAssignmentMutation.isPending ? 'Saving...' : 'Save assignment'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-title">
+              Assignment title
+            </label>
+            <input
+              id="assignment-title"
+              type="text"
+              value={assignmentTitle}
+              onChange={(event) => {
+                setAssignmentTitle(event.target.value);
+                setFieldErrors((current) => ({ ...current, assignmentTitle: undefined }));
+              }}
+              placeholder="Midterm reflection"
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                fieldErrors.assignmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.assignmentTitle ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentTitle}</p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-type">
+                Assignment type
+              </label>
+              <CustomSelect
+                id="assignment-type"
+                options={activityTypeOptions.map((option) => ({ ...option }))}
+                placeholder="Select assignment type"
+                value={assignmentType}
+                onChange={(value) => {
+                  setAssignmentType(value as 'text' | 'file');
+                  setFieldErrors((current) => ({
+                    ...current,
+                    assignmentType: undefined,
+                    assignmentDetail: undefined,
+                    assignmentAttachments: undefined,
+                  }));
+                }}
+                error={fieldErrors.assignmentType}
+                tone="muted"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-deadline">
+                Deadline
+              </label>
+              <CustomDatePicker
+                id="assignment-deadline"
+                value={assignmentDeadline}
+                placeholder="Select deadline"
+                onChange={(value) => {
+                  setAssignmentDeadline(value);
+                  setFieldErrors((current) => ({ ...current, assignmentDeadline: undefined }));
+                }}
+                error={fieldErrors.assignmentDeadline}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-detail">
+              {assignmentType === 'file' ? 'Instructions or note (optional)' : 'Assignment instructions'}
+            </label>
+            <textarea
+              id="assignment-detail"
+              value={assignmentDetail}
+              onChange={(event) => {
+                setAssignmentDetail(event.target.value);
+                setFieldErrors((current) => ({ ...current, assignmentDetail: undefined }));
+              }}
+              rows={4}
+              placeholder={
+                assignmentType === 'file'
+                  ? 'Add optional guidance for students before they open the files.'
+                  : 'Describe what students need to complete and submit.'
+              }
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+                fieldErrors.assignmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.assignmentDetail ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentDetail}</p>
+            ) : null}
+          </div>
+
+          {assignmentType === 'file' ? (
+            <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[14px] font-semibold text-[#173b70]">Assignment files</p>
+                  <p className="mt-1 text-[12px] text-[#7088a1]">
+                    Upload the files students should download. Keep each file under 2 MB.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => assignmentAttachmentInputRef.current?.click()}
+                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                >
+                  <FiUploadCloud className="h-4 w-4" />
+                  Upload files
+                </button>
+                <input
+                  ref={assignmentAttachmentInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleAssignmentFilesSelected}
+                />
+              </div>
+
+              {fieldErrors.assignmentAttachments ? (
+                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentAttachments}</p>
+              ) : null}
+
+              {assignmentAttachments.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {assignmentAttachments.map((attachment, index) => (
+                    <div
+                      key={`${attachment.name}-${index}`}
+                      className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
+                        <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssignmentAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index));
+                        }}
+                        className="rounded-full p-2 text-[#7f93a8] transition hover:bg-[#fff7f7] hover:text-[#b75353]"
+                        aria-label={`Remove ${attachment.name}`}
+                      >
+                        <FiTrash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                  <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
+                  <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                    Add worksheets, templates, or assignment reference files here.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </Modal>
+
+      <Modal
+        open={isAssessmentModalOpen}
+        title={editingAssessmentId ? 'Edit assessment' : 'Add assessment'}
+        description={
+          editingAssessmentId
+            ? 'Update the assessment details here before opening the builder again.'
+            : 'Choose whether this is a quiz or a quarter exam, then set the section and schedule before you start building questions.'
+        }
+        onClose={closeAssessmentModal}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => closeAssessmentModal()}
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitAssessment}
+              disabled={createAssessmentMutation.isPending || updateAssessmentMutation.isPending}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {createAssessmentMutation.isPending || updateAssessmentMutation.isPending
+                ? 'Saving...'
+                : editingAssessmentId
+                  ? 'Save changes'
+                  : 'Save assessment'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-title">
+              Assessment title
+            </label>
+            <input
+              id="assessment-title"
+              type="text"
+              value={assessmentTitle}
+              onChange={(event) => {
+                setAssessmentTitle(event.target.value);
+                setFieldErrors((current) => ({ ...current, assessmentTitle: undefined }));
+              }}
+              placeholder="Quiz 1: Platform concepts"
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                fieldErrors.assessmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.assessmentTitle ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentTitle}</p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-type">
+                Assessment type
+              </label>
+              <CustomSelect
+                id="assessment-type"
+                options={assessmentTypeOptions.map((option) => ({ ...option }))}
+                placeholder="Select assessment type"
+                value={assessmentType}
+                onChange={(value) => {
+                  setAssessmentType(value as 'quiz' | 'quarter-exam');
+                  setFieldErrors((current) => ({ ...current, assessmentType: undefined }));
+                }}
+                error={fieldErrors.assessmentType}
+                tone="muted"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-schedule">
+                Assessment date
+              </label>
+              <CustomDatePicker
+                id="assessment-schedule"
+                value={assessmentSchedule}
+                placeholder="Select assessment date"
+                onChange={(value) => {
+                  setAssessmentSchedule(value);
+                  setFieldErrors((current) => ({ ...current, assessmentSchedule: undefined }));
+                }}
+                error={fieldErrors.assessmentSchedule}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-target-section">
+                Section taking the exam
+              </label>
+              <CustomMultiSelect
+                id="assessment-target-section"
+                options={['All sections', ...Array.from(new Set(subject?.availableSections ?? []))]}
+                placeholder="Select section"
+                values={assessmentTargetSections}
+                onChange={(values) => {
+                  setAssessmentTargetSections(values);
+                  setFieldErrors((current) => ({ ...current, assessmentTargetSections: undefined }));
+                }}
+                error={fieldErrors.assessmentTargetSections}
+                tone="muted"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]">
+                Assessment window
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-start-time">
+                    Start
+                  </label>
+                  <input
+                    id="assessment-start-time"
+                    type="time"
+                    value={assessmentStartTime}
+                    onChange={(event) => {
+                      setAssessmentStartTime(event.target.value);
+                      setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
+                    }}
+                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                      fieldErrors.assessmentStartTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+                    }`}
+                  />
+                  {fieldErrors.assessmentStartTime ? (
+                    <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentStartTime}</p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-end-time">
+                    End
+                  </label>
+                  <input
+                    id="assessment-end-time"
+                    type="time"
+                    value={assessmentEndTime}
+                    onChange={(event) => {
+                      setAssessmentEndTime(event.target.value);
+                      setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
+                    }}
+                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                      fieldErrors.assessmentEndTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+                    }`}
+                  />
+                  {fieldErrors.assessmentEndTime ? (
+                    <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentEndTime}</p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-detail">
+              Notes or instructions
+            </label>
+            <textarea
+              id="assessment-detail"
+              value={assessmentDetail}
+              onChange={(event) => {
+                setAssessmentDetail(event.target.value);
+                setFieldErrors((current) => ({ ...current, assessmentDetail: undefined }));
+              }}
+              rows={4}
+              placeholder="Add optional notes for students before you begin writing the questions."
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+                fieldErrors.assessmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.assessmentDetail ? (
+              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentDetail}</p>
+            ) : null}
+          </div>
+
+          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+            <p className="text-[14px] font-semibold text-[#173b70]">Next step after saving</p>
+            <p className="mt-1 text-[12px] leading-6 text-[#7088a1]">
+              The new assessment card will keep the chosen section and time window, then open a
+              dedicated builder page where you can add questions, write options, and set the answer key.
+            </p>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={isModuleModalOpen}
         title={editingModuleId ? 'Update module' : 'Add module'}
         description="Attach a module to a lesson topic, then add files and reference links students can access."
@@ -1217,7 +2823,7 @@ function FacultySubjectDetails() {
           <>
             <button
               type="button"
-              onClick={closeModuleModal}
+              onClick={() => closeModuleModal()}
               className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel

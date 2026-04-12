@@ -131,6 +131,41 @@ input {
   }
 }
 
+@keyframes dashboard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dashboard-sheen {
+  0% {
+    transform: translateX(-140%);
+  }
+
+  42%,
+  100% {
+    transform: translateX(140%);
+  }
+}
+
+@keyframes dashboard-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .picker-popover {
   animation: picker-popover 180ms ease-out;
   transform-origin: bottom right;
@@ -156,4 +191,58 @@ input {
 .modal-panel {
   animation: modal-panel 220ms cubic-bezier(0.22, 1, 0.36, 1);
   transform-origin: center;
+}
+
+.dashboard-rise {
+  animation: dashboard-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-hover {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.dashboard-hover:hover {
+  transform: translateY(-2px);
+}
+
+.dashboard-progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.26) 50%,
+    transparent 100%
+  );
+  transform: translateX(-140%);
+  animation: dashboard-sheen 2.8s ease-in-out infinite;
+}
+
+.dashboard-ring {
+  animation: dashboard-ring 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-rise,
+  .dashboard-ring {
+    animation: none;
+  }
+
+  .dashboard-hover {
+    transition: none;
+  }
+
+  .dashboard-progress-fill::after {
+    animation: none;
+  }
 }

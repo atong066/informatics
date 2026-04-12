@@ -133,7 +133,7 @@ function Sidebar({
                       navigate(subjectPath);
                     }}
                     className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
-                      location.pathname === subjectPath
+                      location.pathname === subjectPath || location.pathname.startsWith(`${subjectPath}/`)
                         ? 'border-[#6eaad9] bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] text-white shadow-[inset_3px_0_0_#72b7e6,0_12px_24px_rgba(9,31,62,0.18)]'
                         : 'border-transparent text-[#e6eff9] hover:bg-white/8'
                     }`}

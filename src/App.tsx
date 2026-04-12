@@ -9,9 +9,13 @@ import Register from './pages/Register';
 import Dashboard from './pages/student/Dashboard';
 import Profile from './pages/student/Profile';
 import Settings from './pages/student/Settings';
+import StudentAssessmentAttempt from './pages/student/AssessmentAttempt';
 import SubjectDetails from './pages/student/SubjectDetails';
 import FacultyDashboard from './pages/faculty/Dashboard';
 import FacultyStudentList from './pages/faculty/StudentList';
+import FacultyActivitySubmissions from './pages/faculty/ActivitySubmissions';
+import FacultyAssessmentBuilder from './pages/faculty/AssessmentBuilder';
+import FacultyAssessmentTakers from './pages/faculty/AssessmentTakers';
 import FacultySubjectDetails from './pages/faculty/SubjectDetails';
 
 function App() {
@@ -53,6 +57,14 @@ function App() {
           )}
         />
         <Route
+          path="/student/subjects/:subjectId/assessments/:assessmentId"
+          element={(
+            <RoleProtectedRoute role="student">
+              <StudentAssessmentAttempt />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
           path="/faculty/dashboard"
           element={(
             <RoleProtectedRoute role="faculty">
@@ -73,6 +85,30 @@ function App() {
           element={(
             <RoleProtectedRoute role="faculty">
               <FacultySubjectDetails />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId/activities/:activityId/submissions"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyActivitySubmissions />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId/assessments/:assessmentId/takers"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyAssessmentTakers />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId/assessments/:assessmentId"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyAssessmentBuilder />
             </RoleProtectedRoute>
           )}
         />
