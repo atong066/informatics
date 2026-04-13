@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+﻿import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -30,6 +30,14 @@ type AttachmentRecord = {
   dataUrl: string;
   mimeType: string;
   size: number;
+};
+
+type StudentSubmissionRecord = {
+  id: string;
+  submissionType: 'text' | 'file';
+  textContent: string;
+  attachments: AttachmentRecord[];
+  submittedAt: string;
 };
 
 type AssessmentAttemptSummary = {
@@ -86,13 +94,7 @@ type SubjectDetailsResponse = {
     dueDate: string;
     activityType: 'text' | 'file';
     attachments: AttachmentRecord[];
-    submission: {
-      id: string;
-      submissionType: 'text' | 'file';
-      textContent: string;
-      attachments: AttachmentRecord[];
-      submittedAt: string;
-    } | null;
+    submission: StudentSubmissionRecord | null;
     status: string;
   }>;
   assignments: Array<{
@@ -102,6 +104,7 @@ type SubjectDetailsResponse = {
     dueDate: string;
     assignmentType: 'text' | 'file';
     attachments: AttachmentRecord[];
+    submission: StudentSubmissionRecord | null;
     status: string;
   }>;
   assessments: Array<{
@@ -129,6 +132,8 @@ const subjectTabs = [
   { id: 'assignments', label: 'Assignments', icon: FiClipboard },
   { id: 'assessments', label: 'Assessment', icon: FiCheckCircle },
 ] as const;
+
+type SubmissionTargetKind = 'activity' | 'assignment';
 
 function getSubjectIcon(iconKey: string) {
   switch (iconKey) {
@@ -168,8 +173,8 @@ function statusTone(status: string) {
 function EmptyTabState({ label }: { label: string }) {
   return (
     <div className="rounded-[1.4rem] border border-dashed border-[#d8e3ec] bg-[linear-gradient(180deg,#fbfdff_0%,#f4f8fb_100%)] px-6 py-10 text-center">
-      <p className="text-[0.98rem] font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
-      <p className="mt-2 text-[0.84rem] text-[#7088a1]">
+      <p className="text-fluid-md font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
+      <p className="mt-2 text-fluid-sm text-[#7088a1]">
         This section will stay empty until records are added from the database.
       </p>
     </div>
@@ -329,7 +334,11 @@ function SubjectDetails() {
   const submissionAttachmentInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<(typeof subjectTabs)[number]['id']>('lesson-progress');
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+  const [selectedSubmissionTarget, setSelectedSubmissionTarget] = useState<{
+    id: string;
+    kind: SubmissionTargetKind;
+  } | null>(null);
+  const [submissionType, setSubmissionType] = useState<'text' | 'file'>('text');
   const [submissionText, setSubmissionText] = useState('');
   const [submissionAttachments, setSubmissionAttachments] = useState<AttachmentRecord[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
@@ -382,7 +391,17 @@ function SubjectDetails() {
 
   const subject = subjectQuery.data;
   const SubjectIcon = getSubjectIcon(subject?.iconKey ?? 'book');
-  const selectedActivity = subject?.activities.find((activity) => activity.id === selectedActivityId) ?? null;
+  const selectedActivity =
+    selectedSubmissionTarget?.kind === 'activity'
+      ? subject?.activities.find((activity) => activity.id === selectedSubmissionTarget.id) ?? null
+      : null;
+  const selectedAssignment =
+    selectedSubmissionTarget?.kind === 'assignment'
+      ? subject?.assignments.find((assignment) => assignment.id === selectedSubmissionTarget.id) ?? null
+      : null;
+  const selectedSubmissionItem = selectedActivity ?? selectedAssignment;
+  const selectedSubmissionLabel =
+    selectedSubmissionTarget?.kind === 'assignment' ? 'assignment' : 'activity';
 
   const activeCount = useMemo(() => {
     if (!subject) {
@@ -407,8 +426,16 @@ function SubjectDetails() {
 
   const submitActivityMutation = useMutation({
     mutationFn: async () => {
+      if (!selectedSubmissionTarget) {
+        throw new Error('Select an activity or assignment first');
+      }
+
+      const endpoint =
+        selectedSubmissionTarget.kind === 'assignment'
+          ? `/api/student/subjects/${subjectId}/assignments/${selectedSubmissionTarget.id}/submission`
+          : `/api/student/subjects/${subjectId}/activities/${selectedSubmissionTarget.id}/submission`;
       const response = await fetch(
-        `/api/student/subjects/${subjectId}/activities/${selectedActivityId}/submission`,
+        endpoint,
         {
           method: 'PUT',
           headers: {
@@ -416,6 +443,7 @@ function SubjectDetails() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
+            submissionType,
             textContent: submissionText,
             attachments: submissionAttachments,
           }),
@@ -440,7 +468,7 @@ function SubjectDetails() {
       closeSubmissionModal(true);
       setPopupState({
         open: true,
-        title: 'Activity submitted',
+        title: `${selectedSubmissionTarget?.kind === 'assignment' ? 'Assignment' : 'Activity'} submitted`,
         message: 'Your submission is now saved successfully.',
         variant: 'success',
       });
@@ -448,14 +476,15 @@ function SubjectDetails() {
     },
     onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
       setSubmissionError(
-        error.errors?.textContent?.[0]
+        error.errors?.submissionType?.[0]
+          ?? error.errors?.textContent?.[0]
           ?? error.errors?.attachments?.[0]
           ?? error.message
           ?? 'Please review your submission and try again.',
       );
       setPopupState({
         open: true,
-        title: 'Unable to submit activity',
+        title: `Unable to submit ${selectedSubmissionTarget?.kind === 'assignment' ? 'assignment' : 'activity'}`,
         message: error.message || 'Please review your submission and try again.',
         variant: 'error',
       });
@@ -463,6 +492,7 @@ function SubjectDetails() {
   });
 
   function resetSubmissionForm() {
+    setSubmissionType('text');
     setSubmissionText('');
     setSubmissionAttachments([]);
     setSubmissionError(null);
@@ -477,18 +507,35 @@ function SubjectDetails() {
     }
 
     setIsSubmissionModalOpen(false);
-    setSelectedActivityId(null);
+    setSelectedSubmissionTarget(null);
     resetSubmissionForm();
   }
 
-  function openSubmissionModal(activityId: string) {
-    const activity = subject?.activities.find((entry) => entry.id === activityId);
+  function openSubmissionModal(kind: SubmissionTargetKind, itemId: string) {
+    if (kind === 'assignment') {
+      const assignment = subject?.assignments.find((entry) => entry.id === itemId);
+
+      if (!assignment) {
+        return;
+      }
+
+      setSelectedSubmissionTarget({ id: itemId, kind });
+      setSubmissionType(assignment.submission?.submissionType ?? assignment.assignmentType);
+      setSubmissionText(assignment.submission?.textContent ?? '');
+      setSubmissionAttachments(assignment.submission?.attachments ?? []);
+      setSubmissionError(null);
+      setIsSubmissionModalOpen(true);
+      return;
+    }
+
+    const activity = subject?.activities.find((entry) => entry.id === itemId);
 
     if (!activity) {
       return;
     }
 
-    setSelectedActivityId(activityId);
+    setSelectedSubmissionTarget({ id: itemId, kind });
+    setSubmissionType(activity.submission?.submissionType ?? activity.activityType);
     setSubmissionText(activity.submission?.textContent ?? '');
     setSubmissionAttachments(activity.submission?.attachments ?? []);
     setSubmissionError(null);
@@ -520,18 +567,18 @@ function SubjectDetails() {
   };
 
   const handleSubmitActivity = () => {
-    if (!selectedActivity) {
+    if (!selectedSubmissionItem) {
       return;
     }
 
     const trimmedText = submissionText.trim();
 
-    if (selectedActivity.activityType === 'text' && !trimmedText) {
+    if (submissionType === 'text' && !trimmedText) {
       setSubmissionError('Your response is required');
       return;
     }
 
-    if (selectedActivity.activityType === 'file' && submissionAttachments.length === 0) {
+    if (submissionType === 'file' && submissionAttachments.length === 0) {
       setSubmissionError('Upload at least one file before submitting');
       return;
     }
@@ -552,7 +599,7 @@ function SubjectDetails() {
       <div className="mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b8cad8]">
           {subjectQuery.isLoading ? (
-            <p className="text-[0.95rem] text-[#6b8198]">Loading subject details...</p>
+            <p className="text-fluid-md text-[#6b8198]">Loading subject details...</p>
           ) : subject ? (
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-start gap-4">
@@ -560,24 +607,24 @@ function SubjectDetails() {
                   <SubjectIcon className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
+                  <p className="text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
                     Subject workspace
                   </p>
-                  <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#173b70]">
+                  <h1 className="mt-2 text-fluid-3xl font-semibold tracking-[-0.05em] text-[#173b70]">
                     {subject.title}
                   </h1>
-                  <p className="mt-2 max-w-3xl text-[0.95rem] leading-[1.7] text-[#6b8198]">
+                  <p className="mt-2 max-w-3xl text-fluid-md leading-[1.7] text-[#6b8198]">
                     {subject.description}
                   </p>
                 </div>
               </div>
 
               <div className="min-w-[15rem] rounded-[1.5rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
-                <p className="text-[0.72rem] uppercase tracking-[0.18em] text-[#d5e2ef]">
+                <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#d5e2ef]">
                   Course details
                 </p>
-                <p className="mt-3 text-[1.15rem] font-semibold">{subject.code}</p>
-                <p className="mt-2 text-[0.82rem] text-[#d5e2ef]">{activeCount} items in this tab</p>
+                <p className="mt-3 text-fluid-xl font-semibold">{subject.code}</p>
+                <p className="mt-2 text-fluid-sm text-[#d5e2ef]">{activeCount} items in this tab</p>
               </div>
             </div>
           ) : null}
@@ -595,7 +642,7 @@ function SubjectDetails() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[0.88rem] font-semibold transition ${
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-fluid-base font-semibold transition ${
                       isActive
                         ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
                         : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
@@ -619,19 +666,19 @@ function SubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h2 className="text-[1rem] font-semibold text-[#173b70]">{item.lesson}</h2>
-                            <p className="mt-2 text-[0.82rem] leading-[1.6] text-[#7088a1]">
+                            <h2 className="text-fluid-lg font-semibold text-[#173b70]">{item.lesson}</h2>
+                            <p className="mt-2 text-fluid-sm leading-[1.6] text-[#7088a1]">
                               {item.summary}
                             </p>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.state)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.state)}`}>
                             {item.state}
                           </span>
                         </div>
                         <div className="mt-4">
                           <div className="mb-2 flex items-center justify-between gap-3">
-                            <p className="text-[0.8rem] font-medium text-[#5f7892]">Completion</p>
-                            <p className="text-[0.8rem] font-semibold text-[#173b70]">{item.completion}%</p>
+                            <p className="text-fluid-sm font-medium text-[#5f7892]">Completion</p>
+                            <p className="text-fluid-sm font-semibold text-[#173b70]">{item.completion}%</p>
                           </div>
                           <div className="h-[0.42rem] rounded-full bg-[#dde8f1]">
                             <div
@@ -642,23 +689,23 @@ function SubjectDetails() {
                         </div>
                         {item.subtopics.length > 0 ? (
                           <div className="mt-5 rounded-[1.1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] p-4">
-                            <p className="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Subtopics
                             </p>
                             <div className="mt-3 space-y-2">
                               {item.subtopics.map((subtopic) => (
                                 <div
                                   key={subtopic.id}
-                                  className="flex items-center gap-3 rounded-[0.95rem] border border-[#c8d7e2] bg-[rgba(255,255,255,0.96)] px-3 py-3 text-[0.84rem] text-[#37506c]"
+                                  className="flex items-center gap-3 rounded-[0.95rem] border border-[#c8d7e2] bg-[rgba(255,255,255,0.96)] px-3 py-3 text-fluid-sm text-[#37506c]"
                                 >
                                   <span
-                                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-[11px] font-semibold ${
+                                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-fluid-2xs font-semibold ${
                                       subtopic.isCompleted
                                         ? 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]'
                                         : 'border-[#d6e1ea] bg-[#f4f8fb] text-[#607790]'
                                     }`}
                                   >
-                                    {subtopic.isCompleted ? '✓' : ''}
+                                    {subtopic.isCompleted ? 'âœ“' : ''}
                                   </span>
                                   <span className={subtopic.isCompleted ? 'text-[#56738f] line-through' : ''}>
                                     {subtopic.title}
@@ -686,24 +733,24 @@ function SubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h2 className="text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
-                            <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <h2 className="text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
+                            <p className="mt-2 text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Topic
                             </p>
-                            <p className="mt-1 text-[0.84rem] text-[#45627f]">{item.topicTitle}</p>
+                            <p className="mt-1 text-fluid-sm text-[#45627f]">{item.topicTitle}</p>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.progress)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.progress)}`}>
                             {item.progress}
                           </span>
                         </div>
-                        <p className="mt-3 text-[0.84rem] leading-[1.65] text-[#7088a1]">
+                        <p className="mt-3 text-fluid-sm leading-[1.65] text-[#7088a1]">
                           {item.summary}
                         </p>
                         {item.referenceLinks.length > 0 || item.attachments.length > 0 ? (
                           <div className="mt-4 space-y-3">
                             {item.referenceLinks.length > 0 ? (
                               <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                                <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   References
                                 </p>
                                 <div className="mt-3 space-y-2">
@@ -713,13 +760,13 @@ function SubjectDetails() {
                                       href={link}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                     >
                                       <span className="flex min-w-0 items-center gap-2">
                                         <FiExternalLink className="h-3.5 w-3.5 shrink-0" />
                                         <span className="truncate">{link}</span>
                                       </span>
-                                      <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                      <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                         Open link
                                       </span>
                                     </a>
@@ -730,7 +777,7 @@ function SubjectDetails() {
 
                             {item.attachments.length > 0 ? (
                               <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                                <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   Files
                                 </p>
                                 <div className="mt-3 space-y-2">
@@ -739,13 +786,13 @@ function SubjectDetails() {
                                       key={attachment.id}
                                       href={attachment.dataUrl}
                                       download={attachment.name}
-                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                     >
                                       <span className="flex min-w-0 items-center gap-2">
                                         <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                         <span className="truncate">{attachment.name}</span>
                                       </span>
-                                      <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                      <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                         Download
                                       </span>
                                     </a>
@@ -773,32 +820,34 @@ function SubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {formatCalendarDate(item.dueDate)}
                               </span>
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
-                                {item.activityType === 'file' ? 'File upload' : 'Text only'}
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                Text or file submission
                               </span>
                             </div>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#7088a1]">
-                          {item.detail}
-                        </p>
+                        <div className="scrollbar-super-thin mt-4 max-h-36 overflow-y-auto pr-1 sm:max-h-40 lg:max-h-none lg:overflow-visible lg:pr-0">
+                          <p className="formatted-text text-fluid-xs leading-[1.6] text-[#7088a1] sm:text-fluid-sm sm:leading-[1.65]">
+                            {item.detail}
+                          </p>
+                        </div>
 
                         <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Your submission
                               </p>
-                              <p className="mt-2 text-[0.84rem] text-[#45627f]">
+                              <p className="mt-2 text-fluid-sm text-[#45627f]">
                                 {item.submission
                                   ? `Submitted ${formatDateTime(item.submission.submittedAt)}`
                                   : 'You have not submitted this activity yet.'}
@@ -806,8 +855,8 @@ function SubjectDetails() {
                             </div>
                             <button
                               type="button"
-                              onClick={() => openSubmissionModal(item.id)}
-                              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-[0.78rem] font-semibold text-white transition hover:brightness-105"
+                              onClick={() => openSubmissionModal('activity', item.id)}
+                              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
                             >
                               <FiSend className="h-3.5 w-3.5" />
                               {item.submission ? 'Update submission' : 'Submit activity'}
@@ -817,18 +866,20 @@ function SubjectDetails() {
 
                         {item.submission?.textContent ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted response
                             </p>
-                            <p className="mt-3 text-[0.84rem] leading-[1.65] text-[#7088a1]">
-                              {item.submission.textContent}
-                            </p>
+                            <div className="scrollbar-super-thin mt-3 max-h-32 overflow-y-auto pr-1 sm:max-h-40 lg:max-h-none lg:overflow-visible lg:pr-0">
+                              <p className="formatted-text text-fluid-xs leading-[1.6] text-[#7088a1] sm:text-fluid-sm sm:leading-[1.65]">
+                                {item.submission.textContent}
+                              </p>
+                            </div>
                           </div>
                         ) : null}
 
                         {item.attachments.length > 0 ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Files
                             </p>
                             <div className="mt-3 space-y-2">
@@ -837,13 +888,13 @@ function SubjectDetails() {
                                   key={attachment.id}
                                   href={attachment.dataUrl}
                                   download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                     <span className="truncate">{attachment.name}</span>
                                   </span>
-                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                     Download
                                   </span>
                                 </a>
@@ -854,20 +905,20 @@ function SubjectDetails() {
 
                         {item.submission?.attachments.length ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted files
                             </p>
                             <div className="mt-3 space-y-2">
                               {item.submission.attachments.map((attachment, index) => (
                                 <div
                                   key={`${attachment.name}-${attachment.id ?? index}`}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-[0.82rem] text-[#2f78bc]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                     <span className="truncate">{attachment.name}</span>
                                   </span>
-                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                     Submitted
                                   </span>
                                 </div>
@@ -893,28 +944,66 @@ function SubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {formatCalendarDate(item.dueDate)}
                               </span>
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
-                                {item.assignmentType === 'file' ? 'File upload' : 'Text only'}
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                Text or file submission
                               </span>
                             </div>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#7088a1]">
-                          {item.detail}
-                        </p>
+                        <div className="scrollbar-super-thin mt-4 max-h-36 overflow-y-auto pr-1 sm:max-h-40 lg:max-h-none lg:overflow-visible lg:pr-0">
+                          <p className="formatted-text text-fluid-xs leading-[1.6] text-[#7088a1] sm:text-fluid-sm sm:leading-[1.65]">
+                            {item.detail}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Your submission
+                              </p>
+                              <p className="mt-2 text-fluid-sm text-[#45627f]">
+                                {item.submission
+                                  ? `Submitted ${formatDateTime(item.submission.submittedAt)}`
+                                  : 'You have not submitted this assignment yet.'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => openSubmissionModal('assignment', item.id)}
+                              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                            >
+                              <FiSend className="h-3.5 w-3.5" />
+                              {item.submission ? 'Update submission' : 'Submit assignment'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {item.submission?.textContent ? (
+                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Submitted response
+                            </p>
+                            <div className="scrollbar-super-thin mt-3 max-h-32 overflow-y-auto pr-1 sm:max-h-40 lg:max-h-none lg:overflow-visible lg:pr-0">
+                              <p className="formatted-text text-fluid-xs leading-[1.6] text-[#7088a1] sm:text-fluid-sm sm:leading-[1.65]">
+                                {item.submission.textContent}
+                              </p>
+                            </div>
+                          </div>
+                        ) : null}
 
                         {item.attachments.length > 0 ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Files
                             </p>
                             <div className="mt-3 space-y-2">
@@ -923,16 +1012,40 @@ function SubjectDetails() {
                                   key={attachment.id ?? attachment.name}
                                   href={attachment.dataUrl}
                                   download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                     <span className="truncate">{attachment.name}</span>
                                   </span>
-                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                     Download
                                   </span>
                                 </a>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {item.submission?.attachments.length ? (
+                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Submitted files
+                            </p>
+                            <div className="mt-3 space-y-2">
+                              {item.submission.attachments.map((attachment, index) => (
+                                <div
+                                  key={`${attachment.name}-${attachment.id ?? index}`}
+                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
+                                >
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="truncate">{attachment.name}</span>
+                                  </span>
+                                  <span className="shrink-0 rounded-full border border-[#bed1df] bg-[#edf4fa] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                    Submitted
+                                  </span>
+                                </div>
                               ))}
                             </div>
                           </div>
@@ -960,37 +1073,37 @@ function SubjectDetails() {
                         >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {formatCalendarDate(item.schedule)}
                               </span>
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 {formatAssessmentType(item.assessmentType)}
                               </span>
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {item.targetSectionLabel}
                               </span>
-                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {formatAssessmentWindow(item.startTime, item.endTime)}
                               </span>
                             </div>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#7088a1]">
+                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#7088a1]">
                           {item.detail}
                         </p>
 
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
                           <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Question count
                             </p>
-                            <p className="mt-3 text-[1.05rem] font-semibold text-[#173b70]">
+                            <p className="mt-3 text-fluid-lg font-semibold text-[#173b70]">
                               {item.questionCount} question{item.questionCount === 1 ? '' : 's'}
                             </p>
                           </div>
@@ -998,25 +1111,25 @@ function SubjectDetails() {
                           <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             {item.attempt ? (
                               <>
-                                <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   {attemptSummary?.label}
                                 </p>
-                                <p className="mt-3 text-[1.05rem] font-semibold text-[#173b70]">
+                                <p className="mt-3 text-fluid-lg font-semibold text-[#173b70]">
                                   {attemptSummary?.value}
                                 </p>
-                                <p className="mt-2 text-[0.8rem] text-[#7088a1]">
+                                <p className="mt-2 text-fluid-sm text-[#7088a1]">
                                   {attemptSummary?.helper}
                                 </p>
                               </>
                             ) : (
                               <>
-                                <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   Availability
                                 </p>
-                                <p className="mt-3 text-[1.05rem] font-semibold text-[#173b70]">
+                                <p className="mt-3 text-fluid-lg font-semibold text-[#173b70]">
                                   {item.availabilityLabel}
                                 </p>
-                                <p className="mt-2 text-[0.8rem] text-[#7088a1]">
+                                <p className="mt-2 text-fluid-sm text-[#7088a1]">
                                   {item.canTake
                                     ? 'You can answer this assessment now.'
                                     : 'Open the assessment page to review the schedule details.'}
@@ -1028,10 +1141,10 @@ function SubjectDetails() {
 
                         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                           <div>
-                            <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Assessment action
                             </p>
-                            <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                            <p className="mt-2 text-fluid-sm text-[#7088a1]">
                               {item.attempt
                                 ? `Submitted ${formatDateTime(item.attempt.submittedAt)}`
                                 : item.canTake
@@ -1042,7 +1155,7 @@ function SubjectDetails() {
                           <button
                             type="button"
                             onClick={() => navigate(`/student/subjects/${subjectId}/assessments/${item.id}`)}
-                            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[0.8rem] font-semibold transition ${
+                            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
                               item.attempt || item.canTake
                                 ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] text-white hover:brightness-105'
                                 : 'border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] text-[#2f78bc] hover:bg-white'
@@ -1066,53 +1179,93 @@ function SubjectDetails() {
       </div>
 
       <Modal
-        open={isSubmissionModalOpen && Boolean(selectedActivity)}
-        title={selectedActivity?.submission ? 'Update submission' : 'Submit activity'}
+        open={isSubmissionModalOpen && Boolean(selectedSubmissionItem)}
+        title={selectedSubmissionItem?.submission ? 'Update submission' : `Submit ${selectedSubmissionLabel}`}
         description={
-          selectedActivity
-            ? `Send your ${selectedActivity.activityType === 'file' ? 'files' : 'response'} for ${selectedActivity.title}.`
+          selectedSubmissionItem
+            ? `Choose whether to send text or files for ${selectedSubmissionItem.title}.`
             : undefined
         }
         onClose={() => closeSubmissionModal()}
+        panelClassName="max-h-[calc(100dvh-0.75rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col"
+        bodyClassName="scrollbar-super-thin min-h-0 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5"
         actions={
           <>
             <button
               type="button"
               onClick={() => closeSubmissionModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmitActivity}
-              disabled={submitActivityMutation.isPending || !selectedActivity}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={submitActivityMutation.isPending || !selectedSubmissionItem}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitActivityMutation.isPending ? 'Saving...' : selectedActivity?.submission ? 'Update submission' : 'Submit now'}
+              {submitActivityMutation.isPending ? 'Saving...' : selectedSubmissionItem?.submission ? 'Update submission' : 'Submit now'}
             </button>
           </>
         }
       >
-        {selectedActivity ? (
-          <div className="space-y-5">
-            <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+        {selectedSubmissionItem ? (
+          <div className="space-y-4 sm:space-y-5">
+            <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-3.5 py-3 sm:px-4">
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
-                  {formatCalendarDate(selectedActivity.dueDate)}
+                <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  {formatCalendarDate(selectedSubmissionItem.dueDate)}
                 </span>
-                <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
-                  {selectedActivity.activityType === 'file' ? 'File upload' : 'Text only'}
+                <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  Text or file submission
                 </span>
               </div>
-              <p className="mt-3 text-[0.84rem] leading-[1.65] text-[#7088a1]">
-                {selectedActivity.detail}
-              </p>
+              <div className="scrollbar-super-thin mt-3 max-h-44 overflow-y-auto pr-1 sm:max-h-52">
+                <p className="formatted-text text-fluid-xs leading-[1.6] text-[#7088a1] sm:text-fluid-sm sm:leading-[1.65]">
+                  {selectedSubmissionItem.detail}
+                </p>
+              </div>
             </div>
 
-            {selectedActivity.activityType === 'text' ? (
+            <div>
+              <p className="mb-2 block text-fluid-base font-semibold text-[#173b70]">
+                Submission format
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmissionType('text');
+                    setSubmissionError(null);
+                  }}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                    submissionType === 'text'
+                      ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
+                      : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
+                  }`}
+                >
+                  Text response
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmissionType('file');
+                    setSubmissionError(null);
+                  }}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                    submissionType === 'file'
+                      ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
+                      : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
+                  }`}
+                >
+                  File upload
+                </button>
+              </div>
+            </div>
+
+            {submissionType === 'text' ? (
               <div>
-                <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="submission-text">
+                <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="submission-text">
                   Your response
                 </label>
                 <textarea
@@ -1122,9 +1275,9 @@ function SubjectDetails() {
                     setSubmissionText(event.target.value);
                     setSubmissionError(null);
                   }}
-                  rows={6}
+                  rows={5}
                   placeholder="Write your response here."
-                  className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+                  className={`min-h-[8.5rem] w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition sm:min-h-[10rem] ${
                     submissionError ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                   }`}
                 />
@@ -1133,15 +1286,15 @@ function SubjectDetails() {
               <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-[14px] font-semibold text-[#173b70]">Submission files</p>
-                    <p className="mt-1 text-[12px] text-[#7088a1]">
-                      Upload the files required for this activity.
+                    <p className="text-fluid-base font-semibold text-[#173b70]">Submission files</p>
+                    <p className="mt-1 text-fluid-xs text-[#7088a1]">
+                      Upload the files you want to send for this {selectedSubmissionLabel}.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => submissionAttachmentInputRef.current?.click()}
-                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                   >
                     <FiUploadCloud className="h-4 w-4" />
                     Upload files
@@ -1163,8 +1316,8 @@ function SubjectDetails() {
                         className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
-                          <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                          <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
+                          <p className="mt-1 text-fluid-xs text-[#7088a1]">{formatBytes(attachment.size)}</p>
                         </div>
                         <button
                           type="button"
@@ -1181,9 +1334,9 @@ function SubjectDetails() {
                   </div>
                 ) : (
                   <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
-                    <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
-                    <p className="mt-2 text-[0.82rem] text-[#7088a1]">
-                      Add the file set your instructor asked for.
+                    <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
+                    <p className="mt-2 text-fluid-sm text-[#7088a1]">
+                      Add the file set you want to submit.
                     </p>
                   </div>
                 )}
@@ -1191,7 +1344,7 @@ function SubjectDetails() {
             )}
 
             {submissionError ? (
-              <p className="text-[12px] font-medium text-rose-500">{submissionError}</p>
+              <p className="text-fluid-xs font-medium text-rose-500">{submissionError}</p>
             ) : null}
           </div>
         ) : null}
@@ -1209,3 +1362,4 @@ function SubjectDetails() {
 }
 
 export default SubjectDetails;
+

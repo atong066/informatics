@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+﻿import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -148,9 +148,9 @@ function statusTone(status: string) {
 
 function EmptyTabState({ label }: { label: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
-      <p className="text-[0.98rem] font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
-      <p className="mt-2 text-[0.84rem] text-[#7088a1]">
+    <div className="rounded-[1.4rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+      <p className="text-fluid-md font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
+      <p className="mt-2 text-fluid-sm text-[#6a839d]">
         This section will stay empty until records are added from the database.
       </p>
     </div>
@@ -1552,35 +1552,35 @@ function FacultySubjectDetails() {
       pageTitle={subject?.title ?? 'Subject'}
     >
       <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+        <section className="rounded-[1.65rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(238,245,251,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
           {subjectQuery.isLoading ? (
-            <p className="text-[0.95rem] text-[#6b8198]">Loading subject details...</p>
+            <p className="text-fluid-md text-[#6b8198]">Loading subject details...</p>
           ) : subject ? (
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-start gap-3.5">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#cfdfed_0%,#c1d3e3_100%)] text-[#255a91]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
                   <SubjectIcon className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-[#2f78bc]">
+                  <p className="text-fluid-2xs font-semibold uppercase tracking-[0.26em] text-[#2d7dc3]">
                     Faculty subject view
                   </p>
-                  <h1 className="mt-1.5 text-[1.7rem] font-semibold tracking-[-0.04em] text-[#173b70] sm:text-[1.9rem]">
+                  <h1 className="mt-1.5 text-fluid-2xl font-semibold tracking-[-0.04em] text-[#173b70] sm:text-fluid-3xl">
                     {subject.title}
                   </h1>
-                  <p className="mt-1.5 max-w-3xl text-[0.9rem] leading-[1.6] text-[#5e7891]">
+                  <p className="mt-1.5 max-w-3xl text-fluid-base leading-[1.6] text-[#607b95]">
                     {subject.description}
                   </p>
                 </div>
               </div>
 
-              <div className="grid min-w-[14rem] gap-2 self-start rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-3 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
-                <p className="text-[0.68rem] uppercase tracking-[0.2em] text-[#d5e2ef]">
+              <div className="grid min-w-[14rem] gap-2 self-start rounded-[1.2rem] bg-[linear-gradient(180deg,#2f4f76_0%,#223f5f_100%)] px-4 py-3 text-white shadow-[0_16px_28px_rgba(29,58,92,0.18)]">
+                <p className="text-fluid-2xs uppercase tracking-[0.2em] text-[#d5e2ef]">
                   Subject details
                 </p>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[1rem] font-semibold">{subject.code}</p>
-                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#eef5fb]">
+                  <p className="text-fluid-lg font-semibold">{subject.code}</p>
+                  <span className="rounded-full bg-white/10 px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#eef5fb]">
                     {activeCount} items
                   </span>
                 </div>
@@ -1590,7 +1590,7 @@ function FacultySubjectDetails() {
         </section>
 
         {subject ? (
-          <section className="mt-5 rounded-[1.55rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+          <section className="mt-5 rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-4 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-2">
                 {subjectTabs.map((tab) => {
@@ -1602,10 +1602,10 @@ function FacultySubjectDetails() {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[0.82rem] font-semibold transition ${
+                      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-fluid-sm font-semibold transition ${
                         isActive
-                          ? 'border-[#6f9fc9] bg-[linear-gradient(180deg,#cfdfef_0%,#c3d6e8_100%)] text-[#215f99] shadow-[0_6px_14px_rgba(43,121,186,0.08)]'
-                          : 'border-[#b7c6d4] bg-[rgba(210,220,230,0.96)] text-[#566f88] hover:bg-[rgba(217,226,235,0.98)]'
+                          ? 'border-[#8ab8de] bg-[linear-gradient(180deg,#edf6ff_0%,#dfecfa_100%)] text-[#215f99] shadow-[0_8px_16px_rgba(43,121,186,0.1)]'
+                          : 'border-[#d5e0ea] bg-[rgba(255,255,255,0.9)] text-[#5b738c] hover:bg-[#f2f7fc]'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -1619,7 +1619,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={openAddLessonModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add lesson
@@ -1631,7 +1631,7 @@ function FacultySubjectDetails() {
                   type="button"
                   onClick={openCreateModuleModal}
                   disabled={subject.lessonProgress.length === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add module
@@ -1642,7 +1642,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={openCreateActivityModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add activity
@@ -1653,7 +1653,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={openCreateAssignmentModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add assignment
@@ -1664,7 +1664,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={openCreateAssessmentModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-[0.82rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
                 >
                   <FiPlus className="h-4 w-4" />
                   Add assessment
@@ -1679,26 +1679,26 @@ function FacultySubjectDetails() {
                     {subject.lessonProgress.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
+                        className="rounded-[1.3rem] border border-[#d8e3ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] px-5 py-5 shadow-[0_12px_24px_rgba(39,77,117,0.08)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h2 className="text-[1rem] font-semibold text-[#173b70]">{item.lesson}</h2>
-                            <p className="mt-2 text-[0.82rem] leading-[1.6] text-[#7088a1]">
+                            <h2 className="text-fluid-lg font-semibold text-[#173b70]">{item.lesson}</h2>
+                            <p className="mt-2 text-fluid-sm leading-[1.6] text-[#68839d]">
                               {item.summary}
                             </p>
                           </div>
-                          <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.state)}`}>
+                          <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.state)}`}>
                             {item.state}
                           </span>
                         </div>
 
                         <div className="mt-4">
                           <div className="mb-2 flex items-center justify-between gap-3">
-                            <p className="text-[0.8rem] font-medium text-[#5f7892]">Completion</p>
-                            <p className="text-[0.8rem] font-semibold text-[#173b70]">{item.completion}%</p>
+                            <p className="text-fluid-sm font-medium text-[#5f7892]">Completion</p>
+                            <p className="text-fluid-sm font-semibold text-[#173b70]">{item.completion}%</p>
                           </div>
-                          <div className="h-[0.42rem] rounded-full bg-[#d5e1ea]">
+                          <div className="h-[0.42rem] rounded-full bg-[#e3ebf3]">
                             <div
                               className="h-full rounded-full bg-[#3c7de0]"
                               style={{ width: `${item.completion}%` }}
@@ -1706,19 +1706,19 @@ function FacultySubjectDetails() {
                           </div>
                         </div>
 
-                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.1rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,#f7fbff_0%,#ebf3f9_100%)] p-4">
                           <div>
-                            <p className="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Subtopics
                             </p>
-                            <p className="mt-2 text-[0.88rem] font-semibold text-[#37506c]">
+                            <p className="mt-2 text-fluid-base font-semibold text-[#37506c]">
                               {item.subtopics.length} subtopic{item.subtopics.length === 1 ? '' : 's'} added
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() => openSubtopicModal(item.id)}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#cddbe8] bg-white px-3 py-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-[#f3f8fd]"
                           >
                             <FiList className="h-3.5 w-3.5" />
                             Manage subtopics
@@ -1742,28 +1742,28 @@ function FacultySubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
-                            <p className="mt-2 text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
+                            <p className="mt-2 text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Topic
                             </p>
-                            <p className="mt-1 text-[0.86rem] text-[#43617d]">{item.topicTitle}</p>
+                            <p className="mt-1 text-fluid-base text-[#43617d]">{item.topicTitle}</p>
                           </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.progress)}`}>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.progress)}`}>
                             {item.progress}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.summary}</p>
+                        <p className="mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.summary}</p>
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
                           <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiLink2 className="h-4 w-4" />
-                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Reference links
                               </p>
                             </div>
-                            <p className="mt-3 text-[1.1rem] font-semibold text-[#173b70]">
+                            <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">
                               {item.referenceLinks.length}
                             </p>
                           </div>
@@ -1771,11 +1771,11 @@ function FacultySubjectDetails() {
                           <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiPaperclip className="h-4 w-4" />
-                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Attachments
                               </p>
                             </div>
-                            <p className="mt-3 text-[1.1rem] font-semibold text-[#173b70]">
+                            <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">
                               {item.attachments.length}
                             </p>
                           </div>
@@ -1785,7 +1785,7 @@ function FacultySubjectDetails() {
                           <button
                             type="button"
                             onClick={() => openEditModuleModal(item)}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                           >
                             <FiEdit2 className="h-3.5 w-3.5" />
                             Edit module
@@ -1794,7 +1794,7 @@ function FacultySubjectDetails() {
                             type="button"
                             onClick={() => handleDeleteModule(item.id)}
                             disabled={deleteModuleMutation.isPending}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-[0.8rem] font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-fluid-sm font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <FiTrash2 className="h-3.5 w-3.5" />
                             Delete module
@@ -1818,43 +1818,43 @@ function FacultySubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
                                 {formatCalendarDate(item.dueDate)}
                               </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 {item.activityType === 'file' ? 'File upload' : 'Text only'}
                               </span>
                             </div>
                           </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
 
                         <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div className="flex items-center gap-2 text-[#2f78bc]">
                             <FiUsers className="h-4 w-4" />
-                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Student submissions
                             </p>
                           </div>
                           <div className="mt-3 flex items-end justify-between gap-3">
                             <div>
-                              <p className="text-[1.1rem] font-semibold text-[#173b70]">
+                              <p className="text-fluid-xl font-semibold text-[#173b70]">
                                 {item.submittedCount} submitted
                               </p>
-                              <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                              <p className="mt-1 text-fluid-sm text-[#617d98]">
                                 out of {item.totalStudents} student{item.totalStudents === 1 ? '' : 's'}
                               </p>
                             </div>
                             <button
                               type="button"
                               onClick={() => navigate(`/faculty/subjects/${subjectId}/activities/${item.id}/submissions`)}
-                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                             >
                               View list
                               <FiArrowRight className="h-4 w-4" />
@@ -1866,7 +1866,7 @@ function FacultySubjectDetails() {
                           <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiPaperclip className="h-4 w-4" />
-                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Attached files
                               </p>
                             </div>
@@ -1877,13 +1877,13 @@ function FacultySubjectDetails() {
                                   href={attachment.dataUrl}
                                   download={attachment.name}
                                   onClick={(event) => event.stopPropagation()}
-                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                     <span className="truncate">{attachment.name}</span>
                                   </span>
-                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                     Download
                                   </span>
                                 </a>
@@ -1908,28 +1908,28 @@ function FacultySubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
                                 {formatCalendarDate(item.dueDate)}
                               </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 {item.assignmentType === 'file' ? 'File upload' : 'Text only'}
                               </span>
                             </div>
                           </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
 
                         {item.attachments.length > 0 ? (
                           <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiPaperclip className="h-4 w-4" />
-                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Attached files
                               </p>
                             </div>
@@ -1939,13 +1939,13 @@ function FacultySubjectDetails() {
                                   key={attachment.id ?? attachment.name}
                                   href={attachment.dataUrl}
                                   download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-[0.82rem] font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
                                     <span className="truncate">{attachment.name}</span>
                                   </span>
-                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                     Download
                                   </span>
                                 </a>
@@ -1972,42 +1972,42 @@ function FacultySubjectDetails() {
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h2 className="truncate text-[1rem] font-semibold text-[#173b70]">{item.title}</h2>
+                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
                                 {formatCalendarDate(item.schedule)}
                               </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 {formatAssessmentType(item.assessmentType)}
                               </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {item.targetSectionLabel}
                               </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                                 {formatAssessmentWindow(item.startTime, item.endTime)}
                               </span>
                             </div>
                           </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(item.status)}`}>
+                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
                             {item.status}
                           </span>
                         </div>
 
-                        <p className="mt-4 text-[0.84rem] leading-[1.65] text-[#617d98]">{item.detail}</p>
+                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
 
                         <div className="mt-5 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div>
-                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Question bank
                             </p>
-                            <p className="mt-2 text-[1.05rem] font-semibold text-[#173b70]">
+                            <p className="mt-2 text-fluid-lg font-semibold text-[#173b70]">
                               {item.questionCount} question{item.questionCount === 1 ? '' : 's'}
                             </p>
-                            <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                            <p className="mt-1 text-fluid-sm text-[#617d98]">
                               Open this card to add options and set the answer key.
                             </p>
                           </div>
-                          <span className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc]">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc]">
                             Build assessment
                             <FiArrowRight className="h-4 w-4" />
                           </span>
@@ -2015,13 +2015,13 @@ function FacultySubjectDetails() {
 
                         <div className="mt-4 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div>
-                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Exam takers
                             </p>
-                            <p className="mt-2 text-[1.05rem] font-semibold text-[#173b70]">
+                            <p className="mt-2 text-fluid-lg font-semibold text-[#173b70]">
                               {item.takenCount} of {item.totalStudents} students
                             </p>
-                            <p className="mt-1 text-[0.8rem] text-[#617d98]">
+                            <p className="mt-1 text-fluid-sm text-[#617d98]">
                               Review students who already completed this assessment.
                             </p>
                           </div>
@@ -2031,7 +2031,7 @@ function FacultySubjectDetails() {
                               event.stopPropagation();
                               navigate(`/faculty/subjects/${subjectId}/assessments/${item.id}/takers`);
                             }}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                           >
                             View students
                             <FiArrowRight className="h-4 w-4" />
@@ -2045,7 +2045,7 @@ function FacultySubjectDetails() {
                               event.stopPropagation();
                               openEditAssessmentModal(item);
                             }}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                           >
                             <FiEdit2 className="h-3.5 w-3.5" />
                             Edit assessment
@@ -2057,7 +2057,7 @@ function FacultySubjectDetails() {
                               handleDeleteAssessment(item.id);
                             }}
                             disabled={deleteAssessmentMutation.isPending}
-                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-[0.8rem] font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#d3b0b0] bg-[rgba(220,204,204,0.9)] px-3 py-2 text-fluid-sm font-semibold text-[#9f4a4a] transition hover:bg-[rgba(228,212,212,0.96)] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <FiTrash2 className="h-3.5 w-3.5" />
                             Delete assessment
@@ -2090,7 +2090,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={() => setIsAddLessonModalOpen(false)}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
@@ -2101,7 +2101,7 @@ function FacultySubjectDetails() {
                 addLessonMutation.mutate();
               }}
               disabled={addLessonMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {addLessonMutation.isPending ? 'Saving...' : 'Save lesson'}
             </button>
@@ -2110,7 +2110,7 @@ function FacultySubjectDetails() {
       >
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="lesson-title">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="lesson-title">
               Lesson title
             </label>
             <input
@@ -2121,18 +2121,18 @@ function FacultySubjectDetails() {
                 setLessonTitle(event.target.value);
                 setFieldErrors((current) => ({ ...current, lessonTitle: undefined }));
               }}
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.lessonTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
               placeholder="Introduction and orientation"
             />
             {fieldErrors.lessonTitle ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.lessonTitle}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.lessonTitle}</p>
             ) : null}
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="lesson-summary">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="lesson-summary">
               Summary
             </label>
             <textarea
@@ -2143,13 +2143,13 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, lessonSummary: undefined }));
               }}
               rows={4}
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.lessonSummary ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
               placeholder="Outline the lesson focus, expectations, and what students should learn."
             />
             {fieldErrors.lessonSummary ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.lessonSummary}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.lessonSummary}</p>
             ) : null}
           </div>
         </div>
@@ -2165,7 +2165,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={closeSubtopicModal}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Close
             </button>
@@ -2174,7 +2174,7 @@ function FacultySubjectDetails() {
                 type="button"
                 onClick={() => handleAddSubtopic(activeLesson.id)}
                 disabled={addSubtopicMutation.isPending}
-                className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {addSubtopicMutation.isPending ? 'Saving...' : 'Add subtopic'}
               </button>
@@ -2185,21 +2185,21 @@ function FacultySubjectDetails() {
         {activeLesson ? (
           <div className="space-y-4">
             <div className="rounded-[1rem] border border-[#bacbd9] bg-[rgba(255,255,255,0.82)] px-4 py-3">
-              <p className="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                 Progress summary
               </p>
               <div className="mt-3 flex items-center justify-between gap-3">
-                <p className="text-[0.92rem] font-semibold text-[#173b70]">
+                <p className="text-fluid-md font-semibold text-[#173b70]">
                   {activeLesson.subtopics.length} subtopic{activeLesson.subtopics.length === 1 ? '' : 's'}
                 </p>
-                <p className="text-[0.86rem] font-semibold text-[#2f78bc]">
+                <p className="text-fluid-base font-semibold text-[#2f78bc]">
                   {activeLesson.completion}% complete
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="subtopic-title">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="subtopic-title">
                 New subtopic
               </label>
               <input
@@ -2211,12 +2211,12 @@ function FacultySubjectDetails() {
                   setFieldErrors((current) => ({ ...current, subtopicTitle: undefined }));
                 }}
                 placeholder="Add a subtopic"
-                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                   fieldErrors.subtopicTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                 }`}
               />
               {fieldErrors.subtopicTitle ? (
-                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.subtopicTitle}</p>
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.subtopicTitle}</p>
               ) : null}
             </div>
 
@@ -2225,7 +2225,7 @@ function FacultySubjectDetails() {
                 activeLesson.subtopics.map((subtopic) => (
                   <label
                     key={subtopic.id}
-                    className="flex items-center gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3 text-[0.9rem] text-[#37506c]"
+                    className="flex items-center gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3 text-fluid-base text-[#37506c]"
                   >
                     <input
                       type="checkbox"
@@ -2246,8 +2246,8 @@ function FacultySubjectDetails() {
                 ))
               ) : (
                 <div className="rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
-                  <p className="text-[0.9rem] font-semibold text-[#173b70]">No subtopics yet</p>
-                  <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                  <p className="text-fluid-base font-semibold text-[#173b70]">No subtopics yet</p>
+                  <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add your first subtopic here to start building lesson progress.
                   </p>
                 </div>
@@ -2267,7 +2267,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={() => closeActivityModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
@@ -2275,7 +2275,7 @@ function FacultySubjectDetails() {
               type="button"
               onClick={handleSubmitActivity}
               disabled={createActivityMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createActivityMutation.isPending ? 'Saving...' : 'Save activity'}
             </button>
@@ -2284,7 +2284,7 @@ function FacultySubjectDetails() {
       >
         <div className="space-y-5">
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-title">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-title">
               Activity title
             </label>
             <input
@@ -2296,18 +2296,18 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, activityTitle: undefined }));
               }}
               placeholder="Week 1 reflection"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.activityTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.activityTitle ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityTitle}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.activityTitle}</p>
             ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-type">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-type">
                 Activity type
               </label>
               <CustomSelect
@@ -2330,7 +2330,7 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-deadline">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-deadline">
                 Deadline
               </label>
               <CustomDatePicker
@@ -2347,7 +2347,7 @@ function FacultySubjectDetails() {
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="activity-detail">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-detail">
               {activityType === 'file' ? 'Instructions or note (optional)' : 'Activity instructions'}
             </label>
             <textarea
@@ -2363,12 +2363,12 @@ function FacultySubjectDetails() {
                   ? 'Add optional guidance for students before they open the files.'
                   : 'Describe what students should read, write, or submit.'
               }
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.activityDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.activityDetail ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityDetail}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.activityDetail}</p>
             ) : null}
           </div>
 
@@ -2376,15 +2376,15 @@ function FacultySubjectDetails() {
             <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[14px] font-semibold text-[#173b70]">Activity files</p>
-                  <p className="mt-1 text-[12px] text-[#7088a1]">
+                  <p className="text-fluid-base font-semibold text-[#173b70]">Activity files</p>
+                  <p className="mt-1 text-fluid-xs text-[#7088a1]">
                     Upload the files students should download. Keep each file under 2 MB.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => activityAttachmentInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                 >
                   <FiUploadCloud className="h-4 w-4" />
                   Upload files
@@ -2399,7 +2399,7 @@ function FacultySubjectDetails() {
               </div>
 
               {fieldErrors.activityAttachments ? (
-                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.activityAttachments}</p>
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.activityAttachments}</p>
               ) : null}
 
               {activityAttachments.length > 0 ? (
@@ -2410,8 +2410,8 @@ function FacultySubjectDetails() {
                       className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
-                        <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                        <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
+                        <p className="mt-1 text-fluid-xs text-[#7088a1]">{formatBytes(attachment.size)}</p>
                       </div>
                       <button
                         type="button"
@@ -2428,8 +2428,8 @@ function FacultySubjectDetails() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
-                  <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
-                  <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                  <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
+                  <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add worksheets, PDFs, or activity reference files here.
                   </p>
                 </div>
@@ -2449,7 +2449,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={() => closeAssignmentModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
@@ -2457,7 +2457,7 @@ function FacultySubjectDetails() {
               type="button"
               onClick={handleSubmitAssignment}
               disabled={createAssignmentMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createAssignmentMutation.isPending ? 'Saving...' : 'Save assignment'}
             </button>
@@ -2466,7 +2466,7 @@ function FacultySubjectDetails() {
       >
         <div className="space-y-5">
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-title">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-title">
               Assignment title
             </label>
             <input
@@ -2478,18 +2478,18 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, assignmentTitle: undefined }));
               }}
               placeholder="Midterm reflection"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.assignmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.assignmentTitle ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentTitle}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assignmentTitle}</p>
             ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-type">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-type">
                 Assignment type
               </label>
               <CustomSelect
@@ -2512,7 +2512,7 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-deadline">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-deadline">
                 Deadline
               </label>
               <CustomDatePicker
@@ -2529,7 +2529,7 @@ function FacultySubjectDetails() {
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assignment-detail">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-detail">
               {assignmentType === 'file' ? 'Instructions or note (optional)' : 'Assignment instructions'}
             </label>
             <textarea
@@ -2545,12 +2545,12 @@ function FacultySubjectDetails() {
                   ? 'Add optional guidance for students before they open the files.'
                   : 'Describe what students need to complete and submit.'
               }
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.assignmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.assignmentDetail ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentDetail}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assignmentDetail}</p>
             ) : null}
           </div>
 
@@ -2558,15 +2558,15 @@ function FacultySubjectDetails() {
             <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-[14px] font-semibold text-[#173b70]">Assignment files</p>
-                  <p className="mt-1 text-[12px] text-[#7088a1]">
+                  <p className="text-fluid-base font-semibold text-[#173b70]">Assignment files</p>
+                  <p className="mt-1 text-fluid-xs text-[#7088a1]">
                     Upload the files students should download. Keep each file under 2 MB.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => assignmentAttachmentInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                 >
                   <FiUploadCloud className="h-4 w-4" />
                   Upload files
@@ -2581,7 +2581,7 @@ function FacultySubjectDetails() {
               </div>
 
               {fieldErrors.assignmentAttachments ? (
-                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assignmentAttachments}</p>
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assignmentAttachments}</p>
               ) : null}
 
               {assignmentAttachments.length > 0 ? (
@@ -2592,8 +2592,8 @@ function FacultySubjectDetails() {
                       className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
-                        <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                        <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
+                        <p className="mt-1 text-fluid-xs text-[#7088a1]">{formatBytes(attachment.size)}</p>
                       </div>
                       <button
                         type="button"
@@ -2610,8 +2610,8 @@ function FacultySubjectDetails() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
-                  <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
-                  <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                  <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
+                  <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add worksheets, templates, or assignment reference files here.
                   </p>
                 </div>
@@ -2635,7 +2635,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={() => closeAssessmentModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
@@ -2643,7 +2643,7 @@ function FacultySubjectDetails() {
               type="button"
               onClick={handleSubmitAssessment}
               disabled={createAssessmentMutation.isPending || updateAssessmentMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createAssessmentMutation.isPending || updateAssessmentMutation.isPending
                 ? 'Saving...'
@@ -2656,7 +2656,7 @@ function FacultySubjectDetails() {
       >
         <div className="space-y-5">
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-title">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assessment-title">
               Assessment title
             </label>
             <input
@@ -2668,18 +2668,18 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, assessmentTitle: undefined }));
               }}
               placeholder="Quiz 1: Platform concepts"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.assessmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.assessmentTitle ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentTitle}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assessmentTitle}</p>
             ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-type">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assessment-type">
                 Assessment type
               </label>
               <CustomSelect
@@ -2697,7 +2697,7 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-schedule">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assessment-schedule">
                 Assessment date
               </label>
               <CustomDatePicker
@@ -2715,7 +2715,7 @@ function FacultySubjectDetails() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-target-section">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assessment-target-section">
                 Section taking the exam
               </label>
               <CustomMultiSelect
@@ -2733,12 +2733,12 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]">
                 Assessment window
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-start-time">
+                  <label className="mb-2 block text-fluid-xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-start-time">
                     Start
                   </label>
                   <input
@@ -2749,17 +2749,17 @@ function FacultySubjectDetails() {
                       setAssessmentStartTime(event.target.value);
                       setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
                     }}
-                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                       fieldErrors.assessmentStartTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                     }`}
                   />
                   {fieldErrors.assessmentStartTime ? (
-                    <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentStartTime}</p>
+                    <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assessmentStartTime}</p>
                   ) : null}
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-[12px] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-end-time">
+                  <label className="mb-2 block text-fluid-xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]" htmlFor="assessment-end-time">
                     End
                   </label>
                   <input
@@ -2770,12 +2770,12 @@ function FacultySubjectDetails() {
                       setAssessmentEndTime(event.target.value);
                       setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
                     }}
-                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                       fieldErrors.assessmentEndTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                     }`}
                   />
                   {fieldErrors.assessmentEndTime ? (
-                    <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentEndTime}</p>
+                    <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assessmentEndTime}</p>
                   ) : null}
                 </div>
               </div>
@@ -2783,7 +2783,7 @@ function FacultySubjectDetails() {
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="assessment-detail">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assessment-detail">
               Notes or instructions
             </label>
             <textarea
@@ -2795,18 +2795,18 @@ function FacultySubjectDetails() {
               }}
               rows={4}
               placeholder="Add optional notes for students before you begin writing the questions."
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.assessmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.assessmentDetail ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.assessmentDetail}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assessmentDetail}</p>
             ) : null}
           </div>
 
           <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
-            <p className="text-[14px] font-semibold text-[#173b70]">Next step after saving</p>
-            <p className="mt-1 text-[12px] leading-6 text-[#7088a1]">
+            <p className="text-fluid-base font-semibold text-[#173b70]">Next step after saving</p>
+            <p className="mt-1 text-fluid-xs leading-6 text-[#7088a1]">
               The new assessment card will keep the chosen section and time window, then open a
               dedicated builder page where you can add questions, write options, and set the answer key.
             </p>
@@ -2824,7 +2824,7 @@ function FacultySubjectDetails() {
             <button
               type="button"
               onClick={() => closeModuleModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
             >
               Cancel
             </button>
@@ -2832,7 +2832,7 @@ function FacultySubjectDetails() {
               type="button"
               onClick={handleSubmitModule}
               disabled={createModuleMutation.isPending || updateModuleMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {createModuleMutation.isPending || updateModuleMutation.isPending
                 ? 'Saving...'
@@ -2846,7 +2846,7 @@ function FacultySubjectDetails() {
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="module-title">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="module-title">
                 Module title
               </label>
               <input
@@ -2858,17 +2858,17 @@ function FacultySubjectDetails() {
                   setFieldErrors((current) => ({ ...current, moduleTitle: undefined }));
                 }}
                 placeholder="Module 1 handout"
-                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                   fieldErrors.moduleTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                 }`}
               />
               {fieldErrors.moduleTitle ? (
-                <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.moduleTitle}</p>
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.moduleTitle}</p>
               ) : null}
             </div>
 
             <div>
-              <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="module-topic">
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="module-topic">
                 Topic
               </label>
               <CustomSelect
@@ -2886,7 +2886,7 @@ function FacultySubjectDetails() {
           </div>
 
           <div>
-            <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="module-summary">
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="module-summary">
               Summary
             </label>
             <textarea
@@ -2898,19 +2898,19 @@ function FacultySubjectDetails() {
               }}
               rows={4}
               placeholder="Describe what the file set or references cover."
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.moduleSummary ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
             {fieldErrors.moduleSummary ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.moduleSummary}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.moduleSummary}</p>
             ) : null}
           </div>
 
           <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div className="flex-1">
-                <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="module-link-input">
+                <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="module-link-input">
                   Reference link
                 </label>
                 <input
@@ -2922,7 +2922,7 @@ function FacultySubjectDetails() {
                     setFieldErrors((current) => ({ ...current, moduleLinkInput: undefined }));
                   }}
                   placeholder="https://example.com/reference"
-                  className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                  className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                     fieldErrors.moduleLinkInput ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                   }`}
                 />
@@ -2930,7 +2930,7 @@ function FacultySubjectDetails() {
               <button
                 type="button"
                 onClick={handleAddReferenceLink}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
               >
                 <FiLink2 className="h-4 w-4" />
                 Add link
@@ -2938,7 +2938,7 @@ function FacultySubjectDetails() {
             </div>
 
             {fieldErrors.moduleLinkInput ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.moduleLinkInput}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.moduleLinkInput}</p>
             ) : null}
 
             {moduleReferenceLinks.length > 0 ? (
@@ -2946,7 +2946,7 @@ function FacultySubjectDetails() {
                 {moduleReferenceLinks.map((link) => (
                   <div
                     key={link}
-                    className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#bcccd9] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-[12px] text-[#37506c]"
+                    className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#bcccd9] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-fluid-xs text-[#37506c]"
                   >
                     <FiExternalLink className="h-3.5 w-3.5 shrink-0 text-[#2f78bc]" />
                     <span className="truncate">{link}</span>
@@ -2969,15 +2969,15 @@ function FacultySubjectDetails() {
           <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[14px] font-semibold text-[#173b70]">Attachments</p>
-                <p className="mt-1 text-[12px] text-[#7088a1]">
+                <p className="text-fluid-base font-semibold text-[#173b70]">Attachments</p>
+                <p className="mt-1 text-fluid-xs text-[#7088a1]">
                   Upload module files for students. Keep each file under 2 MB.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => attachmentInputRef.current?.click()}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-[13px] font-semibold text-[#2f78bc] transition hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
               >
                 <FiUploadCloud className="h-4 w-4" />
                 Upload files
@@ -2992,7 +2992,7 @@ function FacultySubjectDetails() {
             </div>
 
             {fieldErrors.moduleAttachments ? (
-              <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.moduleAttachments}</p>
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.moduleAttachments}</p>
             ) : null}
 
             {moduleAttachments.length > 0 ? (
@@ -3003,8 +3003,8 @@ function FacultySubjectDetails() {
                     className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold text-[#173b70]">{attachment.name}</p>
-                      <p className="mt-1 text-[12px] text-[#7088a1]">{formatBytes(attachment.size)}</p>
+                      <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
+                      <p className="mt-1 text-fluid-xs text-[#7088a1]">{formatBytes(attachment.size)}</p>
                     </div>
                     <button
                       type="button"
@@ -3021,8 +3021,8 @@ function FacultySubjectDetails() {
               </div>
             ) : (
               <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
-                <p className="text-[0.9rem] font-semibold text-[#173b70]">No files uploaded yet</p>
-                <p className="mt-2 text-[0.82rem] text-[#7088a1]">
+                <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
+                <p className="mt-2 text-fluid-sm text-[#7088a1]">
                   Add handouts, PDFs, or other module references here.
                 </p>
               </div>
@@ -3043,3 +3043,4 @@ function FacultySubjectDetails() {
 }
 
 export default FacultySubjectDetails;
+

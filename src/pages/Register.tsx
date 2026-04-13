@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+﻿import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomDatePicker from '../components/CustomDatePicker';
@@ -199,23 +199,23 @@ function Register() {
               />
             </div>
             <div>
-              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-slate-950">
+              <p className="text-fluid-sm font-bold uppercase tracking-[0.14em] text-slate-950">
                 Informatics
               </p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#3498db]">
+              <p className="mt-1 text-fluid-3xs uppercase tracking-[0.2em] text-[#3498db]">
                 Registration v2
               </p>
             </div>
           </div>
 
           <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#3498db]">
+            <p className="text-fluid-3xs font-semibold uppercase tracking-[0.24em] text-[#3498db]">
               Student registration
             </p>
-            <h1 className="mt-3 font-display text-[2rem] leading-tight text-slate-950 sm:text-[1.8rem]">
+            <h1 className="mt-3 font-display text-fluid-3xl leading-tight text-slate-950 sm:text-fluid-3xl">
               Create your account
             </h1>
-            <p className="mt-2 text-[13px] leading-5 text-[#5d6d7e]">
+            <p className="mt-2 text-fluid-sm leading-5 text-[#5d6d7e]">
               Enter your student details below to begin registration.
             </p>
           </div>
@@ -223,11 +223,11 @@ function Register() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Last name
                 </span>
                 {fieldErrors.lastName ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.lastName}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -238,7 +238,7 @@ function Register() {
                   value={form.lastName}
                   onChange={handleInputChange}
                   placeholder="Dela Cruz"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.lastName
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.lastName
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -246,11 +246,11 @@ function Register() {
               </label>
 
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   First name
                 </span>
                 {fieldErrors.firstName ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.firstName}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -261,7 +261,7 @@ function Register() {
                   value={form.firstName}
                   onChange={handleInputChange}
                   placeholder="Juan"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.firstName
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.firstName
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -270,11 +270,11 @@ function Register() {
             </div>
 
             <label className="relative block">
-              <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+              <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                 Middle name
               </span>
               {fieldErrors.middleName ? (
-                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                   {fieldErrors.middleName}
                   <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                 </div>
@@ -285,7 +285,7 @@ function Register() {
                 value={form.middleName}
                 onChange={handleInputChange}
                 placeholder="Santos"
-                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.middleName
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.middleName
                     ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                     : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                   }`}
@@ -293,11 +293,11 @@ function Register() {
             </label>
 
             <label className="relative block">
-              <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+              <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                 Address
               </span>
               {fieldErrors.address ? (
-                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                   {fieldErrors.address}
                   <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                 </div>
@@ -308,7 +308,7 @@ function Register() {
                 value={form.address}
                 onChange={handleInputChange}
                 placeholder="Bayombong"
-                className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.address
+                className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.address
                     ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                     : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                   }`}
@@ -317,11 +317,11 @@ function Register() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Contact number
                 </span>
                 {fieldErrors.contactNumber ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.contactNumber}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -332,7 +332,7 @@ function Register() {
                   value={form.contactNumber}
                   onChange={handleInputChange}
                   placeholder="09XX XXX XXXX"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.contactNumber
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.contactNumber
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -340,11 +340,11 @@ function Register() {
               </label>
 
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Email
                 </span>
                 {fieldErrors.email ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.email}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -355,7 +355,7 @@ function Register() {
                   value={form.email}
                   onChange={handleInputChange}
                   placeholder="student@informatics.edu"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.email
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.email
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -365,7 +365,7 @@ function Register() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Section
                 </span>
                 <CustomSelect
@@ -384,7 +384,7 @@ function Register() {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Birthdate
                 </span>
                 <CustomDatePicker
@@ -403,21 +403,21 @@ function Register() {
             </div>
 
             <div className="pt-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#3498db]">
+              <p className="text-fluid-3xs font-semibold uppercase tracking-[0.22em] text-[#3498db]">
                 Account setup
               </p>
-              <p className="mt-2 text-[13px] leading-5 text-[#5d6d7e]">
+              <p className="mt-2 text-fluid-sm leading-5 text-[#5d6d7e]">
                 Choose your username and secure your account password.
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="relative block sm:col-span-2">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Username
                 </span>
                 {fieldErrors.username ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.username}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -428,7 +428,7 @@ function Register() {
                   value={form.username}
                   onChange={handleInputChange}
                   placeholder="juan.delacruz"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.username
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.username
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -438,11 +438,11 @@ function Register() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Password
                 </span>
                 {fieldErrors.password ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.password}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -453,7 +453,7 @@ function Register() {
                   value={form.password}
                   onChange={handleInputChange}
                   placeholder="Create a password"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.password
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.password
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -461,11 +461,11 @@ function Register() {
               </label>
 
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Confirm password
                 </span>
                 {fieldErrors.confirmPassword ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.confirmPassword}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -476,7 +476,7 @@ function Register() {
                   value={form.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Re-enter your password"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.confirmPassword
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.confirmPassword
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
                     }`}
@@ -487,14 +487,14 @@ function Register() {
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="w-full rounded-2xl bg-[#3498db] px-4 py-3 text-[15px] font-semibold text-white shadow-[0_14px_30px_rgba(52,152,219,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2d89c6] hover:shadow-[0_18px_36px_rgba(52,152,219,0.32)] focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+              className="w-full rounded-2xl bg-[#3498db] px-4 py-3 text-fluid-md font-semibold text-white shadow-[0_14px_30px_rgba(52,152,219,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2d89c6] hover:shadow-[0_18px_36px_rgba(52,152,219,0.32)] focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
             >
               {registerMutation.isPending ? 'Creating account...' : 'Create account'}
             </button>
           </form>
 
           <div className="mt-6 border-t border-[#d6dde2] pt-4">
-            <div className="flex items-center justify-between gap-4 text-[13px] text-[#7f8c8d]">
+            <div className="flex items-center justify-between gap-4 text-fluid-sm text-[#7f8c8d]">
               <p>Already have an account?</p>
               <Link
                 to="/login"
@@ -511,3 +511,4 @@ function Register() {
 }
 
 export default Register;
+

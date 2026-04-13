@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   FiAlertCircle,
@@ -208,13 +208,13 @@ function FacultyStudentList() {
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
+                  <p className="text-fluid-3xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
                     Student Directory
                   </p>
-                  <h2 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#173b70]">
+                  <h2 className="mt-2 text-fluid-2xl font-semibold tracking-[-0.04em] text-[#173b70]">
                     Review active students and follow-up records.
                   </h2>
-                  <p className="mt-2 text-[0.86rem] leading-6 text-[#5f7893]">
+                  <p className="mt-2 text-fluid-base leading-6 text-[#5f7893]">
                     Filter by section or status, search individual records, and export the
                     current result set without leaving the workspace.
                   </p>
@@ -268,7 +268,7 @@ function FacultyStudentList() {
                         setCurrentPage(1);
                       }}
                       placeholder="Search student, email, username, section"
-                      className="w-full bg-transparent text-[14px] text-[#25456d] outline-none placeholder:text-[#7b93aa]"
+                      className="w-full bg-transparent text-fluid-base text-[#25456d] outline-none placeholder:text-[#7b93aa]"
                     />
                   </label>
                 </div>
@@ -278,7 +278,7 @@ function FacultyStudentList() {
                     type="button"
                     onClick={() => exportStudentsToCsv(filteredStudents)}
                     disabled={filteredStudents.length === 0}
-                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-3 text-[14px] font-semibold text-[#31567f] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:bg-[rgba(217,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-55"
+                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-3 text-fluid-base font-semibold text-[#31567f] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:bg-[rgba(217,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     <FiDownload className="h-4 w-4" />
                     Export CSV
@@ -301,25 +301,25 @@ function FacultyStudentList() {
                           className="h-4 w-4 rounded border border-[#9eb2c6] accent-[#4b89c6]"
                         />
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Student
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Section
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Username
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Status
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Birthdate
                       </th>
-                      <th className="px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Contact
                       </th>
-                      <th className="px-4 py-4 text-right text-[11px] font-semibold uppercase tracking-[0.18em] text-[#617d99]">
+                      <th className="px-4 py-4 text-right text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#617d99]">
                         Actions
                       </th>
                     </tr>
@@ -356,29 +356,29 @@ function FacultyStudentList() {
                                   className="h-11 w-11 rounded-full border border-[#b6c7d6] object-cover"
                                 />
                               ) : (
-                                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#b6c7d6] bg-[linear-gradient(180deg,#cfdeeb_0%,#c2d4e3_100%)] text-[13px] font-semibold text-[#315c90]">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#b6c7d6] bg-[linear-gradient(180deg,#cfdeeb_0%,#c2d4e3_100%)] text-fluid-sm font-semibold text-[#315c90]">
                                   {getInitials(student)}
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="truncate text-[15px] font-semibold text-[#163d73]">
+                                <p className="truncate text-fluid-md font-semibold text-[#163d73]">
                                   {student.fullName}
                                 </p>
-                                <p className="truncate text-[13px] text-[#6f88a3]">
+                                <p className="truncate text-fluid-sm text-[#6f88a3]">
                                   {student.email}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4 align-middle text-[14px] font-medium text-[#45627f]">
+                          <td className="px-4 py-4 align-middle text-fluid-base font-medium text-[#45627f]">
                             {student.section || 'Not set'}
                           </td>
-                          <td className="px-4 py-4 align-middle text-[14px] text-[#45627f]">
+                          <td className="px-4 py-4 align-middle text-fluid-base text-[#45627f]">
                             @{student.username}
                           </td>
                           <td className="px-4 py-4 align-middle">
                             <span
-                              className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-semibold ${
+                              className={`inline-flex rounded-full border px-3 py-1 text-fluid-xs font-semibold ${
                                 student.status === 'Active'
                                   ? 'border-[#a8d8c0] bg-[rgba(209,231,218,0.92)] text-[#116745]'
                                   : 'border-[#d9c19d] bg-[rgba(230,220,201,0.92)] text-[#956018]'
@@ -387,10 +387,10 @@ function FacultyStudentList() {
                               {student.status}
                             </span>
                           </td>
-                          <td className="px-4 py-4 align-middle text-[14px] text-[#5d7692]">
+                          <td className="px-4 py-4 align-middle text-fluid-base text-[#5d7692]">
                             {formatBirthdate(student.birthdate)}
                           </td>
-                          <td className="px-4 py-4 align-middle text-[14px] text-[#5d7692]">
+                          <td className="px-4 py-4 align-middle text-fluid-base text-[#5d7692]">
                             {student.contactNumber || 'Not set'}
                           </td>
                           <td className="px-4 py-4 align-middle">
@@ -430,7 +430,7 @@ function FacultyStudentList() {
           </div>
 
           <div className="flex flex-col gap-4 border-t border-[#bfcedb] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div className="flex flex-wrap items-center gap-2 text-[13px] text-[#617c99]">
+            <div className="flex flex-wrap items-center gap-2 text-fluid-sm text-[#617c99]">
               <span className="rounded-full border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 py-1">
                 {startEntry}-{endEntry} of {filteredStudents.length}
               </span>
@@ -444,7 +444,7 @@ function FacultyStudentList() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                 disabled={currentPageSafe === 1}
-                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-[14px] font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiChevronLeft className="h-4 w-4" />
                 Prev
@@ -455,7 +455,7 @@ function FacultyStudentList() {
                   key={page}
                   type="button"
                   onClick={() => setCurrentPage(page)}
-                  className={`h-10 min-w-10 rounded-[0.95rem] border px-3 text-[14px] font-medium transition ${
+                  className={`h-10 min-w-10 rounded-[0.95rem] border px-3 text-fluid-base font-medium transition ${
                     page === currentPageSafe
                       ? 'border-[#4a89c6] bg-[#4a89c6] text-white shadow-[0_8px_18px_rgba(53,110,170,0.18)]'
                       : 'border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] text-[#4e6883] hover:bg-[rgba(218,227,236,0.98)]'
@@ -469,7 +469,7 @@ function FacultyStudentList() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                 disabled={currentPageSafe === pageCount}
-                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-[14px] font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
                 <FiChevronRight className="h-4 w-4" />
@@ -490,13 +490,13 @@ function FacultyStudentList() {
               <button
                 type="button"
                 onClick={() => setSelectedStudent(null)}
-                className="rounded-2xl border border-[#b7c7d6] bg-[rgba(209,220,231,0.96)] px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[rgba(217,227,236,0.98)]"
+                className="rounded-2xl border border-[#b7c7d6] bg-[rgba(209,220,231,0.96)] px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[rgba(217,227,236,0.98)]"
               >
                 Close
               </button>
               <a
                 href={`mailto:${selectedStudent.email}`}
-                className="rounded-2xl border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-105"
+                className="rounded-2xl border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105"
               >
                 Email student
               </a>
@@ -514,18 +514,18 @@ function FacultyStudentList() {
                   className="h-16 w-16 rounded-full border border-[#b6c7d6] object-cover"
                 />
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#b6c7d6] bg-[linear-gradient(180deg,#cfdeeb_0%,#c2d4e3_100%)] text-[1rem] font-semibold text-[#315c90]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#b6c7d6] bg-[linear-gradient(180deg,#cfdeeb_0%,#c2d4e3_100%)] text-fluid-lg font-semibold text-[#315c90]">
                   {getInitials(selectedStudent)}
                 </div>
               )}
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-[1.02rem] font-semibold text-[#173b70]">
+                  <p className="text-fluid-lg font-semibold text-[#173b70]">
                     {selectedStudent.fullName}
                   </p>
                   <span
-                    className={`inline-flex rounded-full border px-3 py-1 text-[12px] font-semibold ${
+                    className={`inline-flex rounded-full border px-3 py-1 text-fluid-xs font-semibold ${
                       selectedStudent.status === 'Active'
                         ? 'border-[#a8d8c0] bg-[rgba(209,231,218,0.92)] text-[#116745]'
                         : 'border-[#d9c19d] bg-[rgba(230,220,201,0.92)] text-[#956018]'
@@ -534,10 +534,10 @@ function FacultyStudentList() {
                     {selectedStudent.status}
                   </span>
                 </div>
-                <p className="mt-1 text-[0.84rem] text-[#5f7893]">
+                <p className="mt-1 text-fluid-sm text-[#5f7893]">
                   @{selectedStudent.username}
                 </p>
-                <p className="mt-2 text-[0.84rem] text-[#5f7893]">
+                <p className="mt-2 text-fluid-sm text-[#5f7893]">
                   Section: {selectedStudent.section || 'Not set'}
                 </p>
               </div>
@@ -582,10 +582,10 @@ function ToolbarMetric({
 }) {
   return (
     <div className="rounded-full border border-[#b7c8d7] bg-[rgba(209,220,231,0.92)] px-3.5 py-2 text-[#173b70] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-      <span className="text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-[#6f89a4]">
+      <span className="text-fluid-3xs font-semibold uppercase tracking-[0.16em] text-[#6f89a4]">
         {label}
       </span>
-      <span className="ml-2 text-[0.88rem] font-semibold">{value}</span>
+      <span className="ml-2 text-fluid-base font-semibold">{value}</span>
     </div>
   );
 }
@@ -599,7 +599,7 @@ function FilterShell({
 }) {
   return (
     <div className="rounded-[1.05rem] border border-[#b7c8d7] bg-[rgba(204,216,228,0.74)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
+      <p className="mb-2 text-fluid-3xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
         {label}
       </p>
       {children}
@@ -620,7 +620,7 @@ function TableMessageRow({
     <tr>
       <td colSpan={8} className="px-6 py-14">
         <div
-          className={`flex items-center justify-center gap-3 text-[14px] ${
+          className={`flex items-center justify-center gap-3 text-fluid-base ${
             tone === 'error' ? 'text-rose-700' : 'text-[#5f7893]'
           }`}
         >
@@ -683,10 +683,10 @@ function DetailCard({
         fullWidth ? 'sm:col-span-2' : ''
       }`}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
+      <p className="text-fluid-3xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
         {label}
       </p>
-      <p className="mt-2 break-words text-[0.92rem] font-semibold text-[#173b70]">
+      <p className="mt-2 break-words text-fluid-md font-semibold text-[#173b70]">
         {value}
       </p>
     </div>
@@ -694,3 +694,4 @@ function DetailCard({
 }
 
 export default FacultyStudentList;
+

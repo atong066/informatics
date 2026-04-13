@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 
 type CustomSelectProps = {
@@ -58,7 +58,7 @@ function CustomSelect({
       <input id={id} name={id} type="hidden" value={value} />
 
       {error ? (
-        <div className="pointer-events-none absolute -top-11 left-0 z-30 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+        <div className="pointer-events-none absolute -top-11 left-0 z-30 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
           {error}
           <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
         </div>
@@ -68,7 +68,7 @@ function CustomSelect({
         type="button"
         aria-controls={`${id}-listbox`}
         aria-expanded={isOpen}
-        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-[15px] outline-none transition duration-200 ${
+        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 ${
           isOpen
             ? isMuted
               ? 'border-[#7ea8cf] bg-[rgba(209,220,231,0.96)] text-[#21486d] ring-4 ring-[rgba(126,168,207,0.18)] shadow-[0_8px_18px_rgba(43,70,99,0.08)]'
@@ -97,7 +97,7 @@ function CustomSelect({
           {resolvedDisplayValue}
         </span>
         <span
-          className={`shrink-0 text-[12px] leading-none transition duration-200 ${
+          className={`shrink-0 text-fluid-xs leading-none transition duration-200 ${
             isOpen
               ? 'rotate-180 text-[#3498db]'
               : isMuted
@@ -126,7 +126,7 @@ function CustomSelect({
               <button
                 key={option.value}
                 type="button"
-                className={`block w-full px-4 py-3 text-left text-[15px] transition ${
+                className={`block w-full px-4 py-3 text-left text-fluid-md transition ${
                   isSelected
                     ? isMuted
                       ? 'bg-[rgba(194,209,224,0.92)] text-[#255a91]'
@@ -151,3 +151,4 @@ function CustomSelect({
 }
 
 export default CustomSelect;
+

@@ -5,7 +5,7 @@ export type StoredUser = {
   middleName: string;
   email: string;
   username: string;
-  role?: 'student' | 'faculty';
+  role?: 'student' | 'faculty' | 'admin';
   section: string;
   birthdate: string;
   address: string;
@@ -57,11 +57,21 @@ export function clearStoredUser() {
 }
 
 export function getNormalizedRole(user?: Pick<StoredUser, 'role'> | null) {
+  if (user?.role === 'admin') {
+    return 'admin';
+  }
+
   return user?.role === 'faculty' ? 'faculty' : 'student';
 }
 
 export function getDefaultPortalRoute(user?: Pick<StoredUser, 'role'> | null) {
-  return getNormalizedRole(user) === 'faculty'
+  const normalizedRole = getNormalizedRole(user);
+
+  if (normalizedRole === 'admin') {
+    return '/admin/dashboard';
+  }
+
+  return normalizedRole === 'faculty'
     ? '/faculty/dashboard'
     : '/student/dashboard';
 }

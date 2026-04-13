@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+﻿import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NotificationPopup from '../components/NotificationPopup';
@@ -179,13 +179,13 @@ function Login() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,152,219,0.16),transparent_38%)]" />
 
             <div className="relative">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#3498db]">
+              <p className="text-fluid-3xs font-semibold uppercase tracking-[0.24em] text-[#3498db]">
                 Secure portal
               </p>
-              <h1 className="mt-4 font-display text-[2.9rem] leading-[0.95] text-slate-950">
+              <h1 className="mt-4 font-display text-fluid-5xl leading-[0.95] text-slate-950">
                 Welcome back to your campus account.
               </h1>
-              <p className="mt-4 max-w-md text-[14px] leading-6 text-[#5d6d7e]">
+              <p className="mt-4 max-w-md text-fluid-base leading-6 text-[#5d6d7e]">
                 Continue with the same cleaner visual system used in registration,
                 tuned for everyday sign-in, schedules, and student support access.
               </p>
@@ -214,23 +214,23 @@ function Login() {
                 />
               </div>
               <div>
-                <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-slate-950">
+                <p className="text-fluid-sm font-bold uppercase tracking-[0.14em] text-slate-950">
                   Informatics
                 </p>
-                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#3498db]">
+                <p className="mt-1 text-fluid-3xs uppercase tracking-[0.2em] text-[#3498db]">
                   Student portal login
                 </p>
               </div>
             </div>
 
             <div className="mb-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#3498db]">
+              <p className="text-fluid-3xs font-semibold uppercase tracking-[0.24em] text-[#3498db]">
                 Secure access
               </p>
-              <h2 className="mt-3 font-display text-[2rem] leading-tight text-slate-950 sm:text-[1.8rem]">
+              <h2 className="mt-3 font-display text-fluid-3xl leading-tight text-slate-950 sm:text-fluid-3xl">
                 Sign in to your account
               </h2>
-              <p className="mt-2 text-[13px] leading-5 text-[#5d6d7e]">
+              <p className="mt-2 text-fluid-sm leading-5 text-[#5d6d7e]">
                 Use your username or school email together with your password to
                 continue to the portal.
               </p>
@@ -238,11 +238,11 @@ function Login() {
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <label className="relative block">
-                <span className="mb-2 block text-[13px] font-medium text-[#34495e]">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
                   Username or email
                 </span>
                 {fieldErrors.identifier ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.identifier}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -253,7 +253,7 @@ function Login() {
                   value={form.identifier}
                   onChange={handleInputChange}
                   placeholder="student@informatics.edu"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
                     fieldErrors.identifier
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
@@ -263,18 +263,18 @@ function Login() {
 
               <label className="relative block">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-[13px] font-medium text-[#34495e]">
+                  <span className="text-fluid-sm font-medium text-[#34495e]">
                     Password
                   </span>
                   <a
                     href="#"
-                    className="text-[13px] font-medium text-[#3498db] transition hover:text-[#2d89c6]"
+                    className="text-fluid-sm font-medium text-[#3498db] transition hover:text-[#2d89c6]"
                   >
                     Forgot password?
                   </a>
                 </div>
                 {fieldErrors.password ? (
-                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
                     {fieldErrors.password}
                     <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
                   </div>
@@ -285,7 +285,7 @@ function Login() {
                   value={form.password}
                   onChange={handleInputChange}
                   placeholder="Enter your password"
-                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-[15px] text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${
                     fieldErrors.password
                       ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
                       : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
@@ -293,7 +293,7 @@ function Login() {
                 />
               </label>
 
-              <div className="flex flex-col gap-3 text-[13px] text-[#5d6d7e] sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 text-fluid-sm text-[#5d6d7e] sm:flex-row sm:items-center sm:justify-between">
                 <label className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -307,14 +307,14 @@ function Login() {
               <button
                 type="submit"
                 disabled={loginMutation.isPending}
-                className="w-full rounded-2xl bg-[#3498db] px-4 py-3 text-[15px] font-semibold text-white shadow-[0_14px_30px_rgba(52,152,219,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2d89c6] hover:shadow-[0_18px_36px_rgba(52,152,219,0.32)] focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                className="w-full rounded-2xl bg-[#3498db] px-4 py-3 text-fluid-md font-semibold text-white shadow-[0_14px_30px_rgba(52,152,219,0.25)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#2d89c6] hover:shadow-[0_18px_36px_rgba(52,152,219,0.32)] focus:outline-none focus:ring-4 focus:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
               >
                 {loginMutation.isPending ? 'Signing in...' : 'Sign in to portal'}
               </button>
             </form>
 
             <div className="mt-6 grid gap-4 border-t border-[#d6dde2] pt-4">
-              <div className="flex items-center justify-between gap-4 text-[13px] text-[#7f8c8d]">
+              <div className="flex items-center justify-between gap-4 text-fluid-sm text-[#7f8c8d]">
                 <p>Need admin onboarding?</p>
                 <a
                   href="#"
@@ -323,7 +323,7 @@ function Login() {
                   Request access
                 </a>
               </div>
-              <div className="flex items-center justify-between gap-4 text-[13px] text-[#7f8c8d]">
+              <div className="flex items-center justify-between gap-4 text-fluid-sm text-[#7f8c8d]">
                 <p>New student applicant?</p>
                 <Link
                   to="/register"
@@ -341,3 +341,4 @@ function Login() {
 }
 
 export default Login;
+

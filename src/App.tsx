@@ -17,6 +17,10 @@ import FacultyActivitySubmissions from './pages/faculty/ActivitySubmissions';
 import FacultyAssessmentBuilder from './pages/faculty/AssessmentBuilder';
 import FacultyAssessmentTakers from './pages/faculty/AssessmentTakers';
 import FacultySubjectDetails from './pages/faculty/SubjectDetails';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminSubjects from './pages/admin/Subjects';
+import AdminCurriculums from './pages/admin/Curriculums';
+import AdminSections from './pages/admin/Sections';
 
 function App() {
   return (
@@ -61,6 +65,38 @@ function App() {
           element={(
             <RoleProtectedRoute role="student">
               <StudentAssessmentAttempt />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/dashboard"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminDashboard />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/subjects"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminSubjects />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/curriculums"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminCurriculums />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/sections"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminSections />
             </RoleProtectedRoute>
           )}
         />

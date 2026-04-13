@@ -1,4 +1,4 @@
-import { FiBookOpen, FiCode, FiCpu, FiDatabase, FiGrid, FiLogOut, FiUsers, FiX } from 'react-icons/fi';
+﻿import { FiBookOpen, FiCode, FiCpu, FiDatabase, FiGrid, FiLogOut, FiUsers, FiX } from 'react-icons/fi';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFacultySubjects } from '../../hooks/useFacultySubjects';
 import { clearStoredUser } from '../../lib/auth';
@@ -65,10 +65,10 @@ function FacultySidebar({
               />
             </div>
             <div>
-              <p className="text-[1.12rem] font-semibold tracking-[-0.03em] text-white">
+              <p className="text-fluid-xl font-semibold tracking-[-0.03em] text-white">
                 NALAKA LMS
               </p>
-              <p className="text-[12px] text-[#d0ddea]">Faculty Portal</p>
+              <p className="text-fluid-xs text-[#d0ddea]">Faculty Portal</p>
             </div>
           </div>
           <button
@@ -91,20 +91,20 @@ function FacultySidebar({
                   className="h-12 w-12 rounded-full object-cover shadow-[0_10px_22px_rgba(8,24,49,0.22)]"
                 />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#eef4fb] text-[1.05rem] font-bold text-[#2c6d9f]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#eef4fb] text-fluid-lg font-bold text-[#2c6d9f]">
                   {initials}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-[14px] font-semibold text-white">{fullName}</p>
-                <p className="mt-0.5 text-[12px] text-[#d0ddea]">@{username}</p>
+                <p className="truncate text-fluid-base font-semibold text-white">{fullName}</p>
+                <p className="mt-0.5 text-fluid-xs text-[#d0ddea]">@{username}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-5 px-2">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#b7c9da]">Faculty tools</p>
+          <p className="text-fluid-2xs uppercase tracking-[0.24em] text-[#b7c9da]">Faculty tools</p>
           <div className="mt-3 space-y-1.5">
             {facultyTools.map((item) => {
               const Icon = item.icon;
@@ -123,7 +123,7 @@ function FacultySidebar({
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="text-[14px] font-medium">{item.label}</span>
+                  <span className="text-fluid-base font-medium">{item.label}</span>
                 </button>
               );
             })}
@@ -131,7 +131,7 @@ function FacultySidebar({
         </div>
 
         <div className="mt-5 px-2">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#b7c9da]">
+          <p className="text-fluid-2xs uppercase tracking-[0.24em] text-[#b7c9da]">
             Student management
           </p>
           <div className="mt-3 space-y-1.5">
@@ -152,7 +152,7 @@ function FacultySidebar({
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="text-[14px] font-medium">{item.label}</span>
+                  <span className="text-fluid-base font-medium">{item.label}</span>
                 </button>
               );
             })}
@@ -160,12 +160,12 @@ function FacultySidebar({
         </div>
 
         <div className="mt-5 px-2">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#b7c9da]">Subjects</p>
+          <p className="text-fluid-2xs uppercase tracking-[0.24em] text-[#b7c9da]">Subjects</p>
           <div className="mt-3 space-y-1.5">
             {subjectsQuery.isLoading ? (
-              <p className="px-3 py-2 text-[12px] text-[#d7e6f4]">Loading subjects...</p>
+              <p className="px-3 py-2 text-fluid-xs text-[#d7e6f4]">Loading subjects...</p>
             ) : subjectsQuery.isError ? (
-              <p className="px-3 py-2 text-[12px] text-[#f8c2c2]">Failed to load subjects.</p>
+              <p className="px-3 py-2 text-fluid-xs text-[#f8c2c2]">Failed to load subjects.</p>
             ) : subjectItems.length > 0 ? (
               subjectItems.map((item) => {
                 const Icon = getSubjectIcon(item.iconKey);
@@ -189,8 +189,8 @@ function FacultySidebar({
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                      <p className="truncate text-[14px] font-medium">{item.title}</p>
-                      <span className="shrink-0 rounded-full border border-white/12 bg-white/7 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d0ddea]">
+                      <p className="truncate text-fluid-base font-medium">{item.title}</p>
+                      <span className="shrink-0 rounded-full border border-white/12 bg-white/7 px-2 py-0.5 text-fluid-3xs font-semibold uppercase tracking-[0.12em] text-[#d0ddea]">
                         {item.code}
                       </span>
                     </div>
@@ -198,7 +198,7 @@ function FacultySidebar({
                 );
               })
             ) : (
-              <p className="px-3 py-2 text-[12px] text-[#d7e6f4]">No subjects yet.</p>
+              <p className="px-3 py-2 text-fluid-xs text-[#d7e6f4]">No subjects yet.</p>
             )}
           </div>
         </div>
@@ -215,7 +215,7 @@ function FacultySidebar({
           >
             <span className="flex items-center gap-3">
               <FiLogOut className="h-4 w-4" />
-              <span className="text-[14px] font-medium">Sign out</span>
+              <span className="text-fluid-base font-medium">Sign out</span>
             </span>
             <span className="text-[#d0ddea]">{'>'}</span>
           </button>
@@ -226,3 +226,4 @@ function FacultySidebar({
 }
 
 export default FacultySidebar;
+

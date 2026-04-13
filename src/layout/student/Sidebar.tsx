@@ -1,4 +1,4 @@
-import {
+﻿import {
   FiBookOpen,
   FiCode,
   FiCpu,
@@ -74,10 +74,10 @@ function Sidebar({
               />
             </div>
             <div>
-              <p className="text-[1.35rem] font-semibold tracking-[-0.03em] text-white">
+              <p className="text-fluid-xl font-semibold tracking-[-0.03em] text-white">
                 NALAKA LMS
               </p>
-              <p className="text-[13px] text-[#c4d9ee]">Student Portal</p>
+              <p className="text-fluid-sm text-[#c4d9ee]">Student Portal</p>
             </div>
           </div>
           <button
@@ -100,25 +100,25 @@ function Sidebar({
                   className="h-14 w-14 rounded-full object-cover shadow-[0_10px_22px_rgba(8,24,49,0.22)]"
                 />
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eef4fb] text-[1.2rem] font-bold text-[#1d5f9a]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eef4fb] text-fluid-xl font-bold text-[#1d5f9a]">
                   {initials}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-[15px] font-semibold text-white">{fullName}</p>
-                <p className="mt-1 text-[13px] text-[#cfe0f0]">{username}</p>
+                <p className="truncate text-fluid-md font-semibold text-white">{fullName}</p>
+                <p className="mt-1 text-fluid-sm text-[#cfe0f0]">{username}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-6 px-2">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#b8cee3]">Subjects</p>
+          <p className="text-fluid-2xs uppercase tracking-[0.24em] text-[#b8cee3]">Subjects</p>
           <div className="mt-4 space-y-2">
             {subjectsQuery.isLoading ? (
-              <p className="px-4 py-2 text-[13px] text-[#d7e6f4]">Loading subjects...</p>
+              <p className="px-4 py-2 text-fluid-sm text-[#d7e6f4]">Loading subjects...</p>
             ) : subjectsQuery.isError ? (
-              <p className="px-4 py-2 text-[13px] text-[#f8c2c2]">Failed to load subjects.</p>
+              <p className="px-4 py-2 text-fluid-sm text-[#f8c2c2]">Failed to load subjects.</p>
             ) : subjectItems.length > 0 ? (
               subjectItems.map((item) => {
                 const Icon = getSubjectIcon(item.iconKey);
@@ -140,20 +140,20 @@ function Sidebar({
                   >
                     <Icon className="h-4 w-4 shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-[15px] font-medium">{item.title}</p>
-                      <p className="truncate text-[12px] text-[#c2d7eb]">{item.code}</p>
+                      <p className="text-fluid-md font-medium">{item.title}</p>
+                      <p className="truncate text-fluid-xs text-[#c2d7eb]">{item.code}</p>
                     </div>
                   </button>
                 );
               })
             ) : (
-              <p className="px-4 py-2 text-[13px] text-[#d7e6f4]">No subjects yet.</p>
+              <p className="px-4 py-2 text-fluid-sm text-[#d7e6f4]">No subjects yet.</p>
             )}
           </div>
         </div>
 
         <div className="mt-6 px-2">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[#b8cee3]">Support</p>
+          <p className="text-fluid-2xs uppercase tracking-[0.24em] text-[#b8cee3]">Support</p>
           <div className="mt-4 space-y-2">
             {supportItems.map((item) => {
               const Icon = item.icon;
@@ -173,7 +173,7 @@ function Sidebar({
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="text-[15px] font-medium">{item.label}</span>
+                  <span className="text-fluid-md font-medium">{item.label}</span>
                 </button>
               );
             })}
@@ -192,7 +192,7 @@ function Sidebar({
           >
             <span className="flex items-center gap-3">
               <FiLogOut className="h-4 w-4" />
-              <span className="text-[15px] font-medium">Sign out</span>
+              <span className="text-fluid-md font-medium">Sign out</span>
             </span>
             <span className="text-[#cfe0f0]">{'>'}</span>
           </button>
@@ -203,3 +203,4 @@ function Sidebar({
 }
 
 export default Sidebar;
+

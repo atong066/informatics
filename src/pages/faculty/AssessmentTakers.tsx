@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -238,33 +238,33 @@ function AssessmentTakers() {
       <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
         <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {takersQuery.isLoading ? (
-            <p className="text-[0.95rem] text-[#6b8198]">Loading assessment takers...</p>
+            <p className="text-fluid-md text-[#6b8198]">Loading assessment takers...</p>
           ) : payload ? (
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
                 <button
                   type="button"
                   onClick={() => navigate(`/faculty/subjects/${subjectId}`)}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.78rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                 >
                   <FiArrowLeft className="h-3.5 w-3.5" />
                   Back to assessments
                 </button>
 
-                <p className="mt-4 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
+                <p className="mt-4 text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
                   {payload.subject.title} | {payload.subject.code}
                 </p>
-                <h1 className="mt-2 text-[1.8rem] font-semibold tracking-[-0.04em] text-[#173b70]">
+                <h1 className="mt-2 text-fluid-3xl font-semibold tracking-[-0.04em] text-[#173b70]">
                   {payload.assessment.title}
                 </h1>
-                <p className="mt-2 max-w-3xl text-[0.92rem] leading-[1.65] text-[#5e7891]">
+                <p className="formatted-text mt-2 max-w-3xl text-fluid-md leading-[1.65] text-[#5e7891]">
                   {payload.assessment.detail}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                     {payload.assessment.targetSectionLabel}
                   </span>
-                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {formatAssessmentWindow(payload.assessment.startTime, payload.assessment.endTime)}
                   </span>
                 </div>
@@ -273,12 +273,12 @@ function AssessmentTakers() {
               <div className="grid min-w-[15rem] gap-3 rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
                 <div className="flex items-center gap-2 text-[#d5e2ef]">
                   <FiCheckCircle className="h-4 w-4" />
-                  <p className="text-[0.76rem] uppercase tracking-[0.16em]">Taker summary</p>
+                  <p className="text-fluid-xs uppercase tracking-[0.16em]">Taker summary</p>
                 </div>
-                <p className="text-[1.05rem] font-semibold">
+                <p className="text-fluid-lg font-semibold">
                   {payload.assessment.takenCount} of {payload.assessment.totalStudents} students
                 </p>
-                <p className="text-[0.82rem] text-[#d5e2ef]">
+                <p className="text-fluid-sm text-[#d5e2ef]">
                   Schedule: {formatCalendarDate(payload.assessment.schedule)}
                 </p>
               </div>
@@ -292,13 +292,13 @@ function AssessmentTakers() {
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                   <div className="max-w-3xl">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
+                    <p className="text-fluid-3xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
                       Assessment Results
                     </p>
-                    <h2 className="mt-2 text-[1.5rem] font-semibold tracking-[-0.04em] text-[#173b70]">
+                    <h2 className="mt-2 text-fluid-2xl font-semibold tracking-[-0.04em] text-[#173b70]">
                       Review students who already took this assessment.
                     </h2>
-                    <p className="mt-2 text-[0.86rem] leading-6 text-[#5f7893]">
+                    <p className="mt-2 text-fluid-base leading-6 text-[#5f7893]">
                       Filter by section, scan the latest submissions, and review score progress
                       from one table view.
                     </p>
@@ -330,7 +330,7 @@ function AssessmentTakers() {
                   <div className="rounded-[1.4rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
                     <label
                       htmlFor="faculty-assessment-search"
-                      className="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]"
+                      className="mb-2 block text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]"
                     >
                       Search
                     </label>
@@ -342,7 +342,7 @@ function AssessmentTakers() {
                         value={searchValue}
                         onChange={(event) => setSearchValue(event.target.value)}
                         placeholder="Search student, email, username, section"
-                        className="w-full bg-transparent text-[15px] text-[#21486d] outline-none placeholder:text-[#7f98b1]"
+                        className="w-full bg-transparent text-fluid-md text-[#21486d] outline-none placeholder:text-[#7f98b1]"
                       />
                     </div>
                   </div>
@@ -377,7 +377,7 @@ function AssessmentTakers() {
                             <TableCell>
                               <div>
                                 <p className="font-semibold text-[#173b70]">{student.fullName}</p>
-                                <p className="mt-1 text-[0.78rem] text-[#5e7891]">@{student.username}</p>
+                                <p className="mt-1 text-fluid-sm text-[#5e7891]">@{student.username}</p>
                               </div>
                             </TableCell>
                             <TableCell>{student.section}</TableCell>
@@ -391,7 +391,7 @@ function AssessmentTakers() {
                               </a>
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(student.status)}`}>
+                              <span className={`inline-flex rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(student.status)}`}>
                                 {student.status}
                               </span>
                             </TableCell>
@@ -400,7 +400,7 @@ function AssessmentTakers() {
                                 <p className="font-semibold text-[#173b70]">
                                   {student.score} / {student.totalPoints}
                                 </p>
-                                <p className="mt-1 text-[0.78rem] text-[#5e7891]">
+                                <p className="mt-1 text-fluid-sm text-[#5e7891]">
                                   {student.percentage.toFixed(1)}%
                                 </p>
                               </div>
@@ -413,8 +413,8 @@ function AssessmentTakers() {
                   </div>
                 ) : (
                   <div className="px-6 py-12 text-center">
-                    <p className="text-[1rem] font-semibold text-[#173b70]">No students found</p>
-                    <p className="mt-2 text-[0.84rem] text-[#7088a1]">
+                    <p className="text-fluid-lg font-semibold text-[#173b70]">No students found</p>
+                    <p className="mt-2 text-fluid-sm text-[#7088a1]">
                       Try another section filter, or wait for students to complete the assessment.
                     </p>
                   </div>
@@ -431,10 +431,10 @@ function AssessmentTakers() {
 function ToolbarMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-[8.2rem] rounded-[1.15rem] border border-[#b8c7d4] bg-[linear-gradient(180deg,#dbe5ed_0%,#d2dde8_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.34)]">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#6f89a4]">
+      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6f89a4]">
         {label}
       </p>
-      <p className="mt-2 text-[1.08rem] font-semibold text-[#173b70]">{value}</p>
+      <p className="mt-2 text-fluid-lg font-semibold text-[#173b70]">{value}</p>
     </div>
   );
 }
@@ -448,7 +448,7 @@ function FilterShell({
 }) {
   return (
     <div className="rounded-[1.4rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
-      <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
+      <p className="mb-2 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
         {label}
       </p>
       {children}
@@ -469,18 +469,18 @@ function StatCard({
     <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
       <div className="flex items-center gap-2 text-[#2f78bc]">
         {icon}
-        <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+        <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
           {label}
         </p>
       </div>
-      <p className="mt-3 text-[1.2rem] font-semibold text-[#173b70]">{value}</p>
+      <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">{value}</p>
     </div>
   );
 }
 
 function TableHead({ children }: { children: ReactNode }) {
   return (
-    <th className="border-b border-[#c6d4df] px-4 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+    <th className="border-b border-[#c6d4df] px-4 py-3 text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
       {children}
     </th>
   );
@@ -488,10 +488,11 @@ function TableHead({ children }: { children: ReactNode }) {
 
 function TableCell({ children }: { children: ReactNode }) {
   return (
-    <td className="border-b border-[#c6d4df] px-4 py-4 text-[0.84rem] text-[#37506c]">
+    <td className="border-b border-[#c6d4df] px-4 py-4 text-fluid-sm text-[#37506c]">
       {children}
     </td>
   );
 }
 
 export default AssessmentTakers;
+

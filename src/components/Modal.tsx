@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { FiX } from 'react-icons/fi';
 
 type ModalProps = {
@@ -41,11 +41,11 @@ function Modal({
       <div className={`modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
         <div className="flex items-start justify-between gap-4 border-b border-[#bccbd8] px-5 py-5 sm:px-6">
           <div>
-            <h3 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#173b70]">
+            <h3 className="text-fluid-xl font-semibold tracking-[-0.03em] text-[#173b70]">
               {title}
             </h3>
             {description ? (
-              <p className="mt-2 max-w-lg text-[14px] leading-6 text-[#627d98]">
+              <p className="mt-2 max-w-lg text-fluid-base leading-6 text-[#627d98]">
                 {description}
               </p>
             ) : null}
@@ -73,3 +73,4 @@ function Modal({
 }
 
 export default Modal;
+

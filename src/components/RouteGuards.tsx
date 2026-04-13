@@ -35,7 +35,7 @@ export function GuestOnlyRoute({ children }: RouteGuardProps) {
 export function RoleProtectedRoute({
   children,
   role,
-}: RouteGuardProps & { role: 'student' | 'faculty' }) {
+}: RouteGuardProps & { role: 'student' | 'faculty' | 'admin' }) {
   const hasSession = hasStoredSession();
   const storedUser = getStoredUser();
 

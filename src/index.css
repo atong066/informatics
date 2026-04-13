@@ -14,6 +14,32 @@
 @theme {
   --font-display: 'Fraunces', serif;
   --font-sans: 'Manrope', sans-serif;
+  --text-fluid-micro: clamp(0.58rem, 0.56rem + 0.05vw, 0.63rem);
+  --text-fluid-micro--line-height: 1.35;
+  --text-fluid-3xs: clamp(0.64rem, 0.62rem + 0.06vw, 0.7rem);
+  --text-fluid-3xs--line-height: 1.35;
+  --text-fluid-2xs: clamp(0.7rem, 0.67rem + 0.08vw, 0.76rem);
+  --text-fluid-2xs--line-height: 1.35;
+  --text-fluid-xs: clamp(0.76rem, 0.72rem + 0.12vw, 0.84rem);
+  --text-fluid-xs--line-height: 1.4;
+  --text-fluid-sm: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
+  --text-fluid-sm--line-height: 1.45;
+  --text-fluid-base: clamp(0.88rem, 0.84rem + 0.22vw, 1rem);
+  --text-fluid-base--line-height: 1.5;
+  --text-fluid-md: clamp(0.94rem, 0.89rem + 0.28vw, 1.08rem);
+  --text-fluid-md--line-height: 1.45;
+  --text-fluid-lg: clamp(1rem, 0.95rem + 0.36vw, 1.18rem);
+  --text-fluid-lg--line-height: 1.35;
+  --text-fluid-xl: clamp(1.12rem, 1.04rem + 0.48vw, 1.35rem);
+  --text-fluid-xl--line-height: 1.3;
+  --text-fluid-2xl: clamp(1.25rem, 1.11rem + 0.76vw, 1.7rem);
+  --text-fluid-2xl--line-height: 1.2;
+  --text-fluid-3xl: clamp(1.5rem, 1.28rem + 1.02vw, 2.15rem);
+  --text-fluid-3xl--line-height: 1.1;
+  --text-fluid-4xl: clamp(1.8rem, 1.55rem + 1.2vw, 2.45rem);
+  --text-fluid-4xl--line-height: 1.02;
+  --text-fluid-5xl: clamp(2.15rem, 1.8rem + 1.6vw, 3rem);
+  --text-fluid-5xl--line-height: 0.98;
 }
 
 * {
@@ -30,6 +56,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-size: clamp(0.94rem, 0.92rem + 0.1vw, 1rem);
+  line-height: 1.5;
 }
 
 a {
@@ -230,6 +258,34 @@ input {
 
 .dashboard-ring {
   animation: dashboard-ring 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.formatted-text {
+  white-space: break-spaces;
+  overflow-wrap: anywhere;
+}
+
+.scrollbar-super-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(104, 136, 164, 0.9) transparent;
+}
+
+.scrollbar-super-thin::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.scrollbar-super-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-super-thin::-webkit-scrollbar-thumb {
+  background: rgba(104, 136, 164, 0.9);
+  border-radius: 999px;
+}
+
+.scrollbar-super-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(87, 118, 146, 0.96);
 }
 
 @media (prefers-reduced-motion: reduce) {

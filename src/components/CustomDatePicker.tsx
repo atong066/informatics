@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type CustomDatePickerProps = {
@@ -95,7 +95,7 @@ function CustomDatePicker({
       <input id={id} name={id} type="hidden" value={value} />
 
       {error ? (
-        <div className="pointer-events-none absolute -top-11 left-0 z-30 rounded-xl border border-red-200 bg-white px-3 py-2 text-[12px] font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+        <div className="pointer-events-none absolute -top-11 left-0 z-30 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
           {error}
           <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
         </div>
@@ -105,7 +105,7 @@ function CustomDatePicker({
         type="button"
         aria-controls={`${id}-calendar`}
         aria-expanded={isOpen}
-        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-[15px] outline-none transition duration-200 focus:ring-4 focus:ring-blue-100 ${
+        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 focus:ring-4 focus:ring-blue-100 ${
           isOpen
             ? 'border-[#3498db] bg-white text-[#2c3e50] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(52,152,219,0.08)]'
             : error
@@ -214,7 +214,7 @@ function CustomDatePicker({
 
           {viewMode === 'day' ? (
             <div className="picker-view">
-              <div className="mb-2 grid grid-cols-7 text-center text-[11px] font-medium text-[#95a5a6]">
+              <div className="mb-2 grid grid-cols-7 text-center text-fluid-2xs font-medium text-[#95a5a6]">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <span key={day} className="py-1">
                     {day}
@@ -350,3 +350,4 @@ function parseInputDate(value: string) {
 
   return new Date(year, month - 1, day);
 }
+

@@ -26,7 +26,7 @@ function FacultyLayout({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <main className="h-screen overflow-hidden bg-[#c7d2de] text-slate-900">
+    <main className="h-screen overflow-hidden bg-[#dbe6f1] text-slate-900">
       <div className="relative grid h-full lg:grid-cols-[248px_1fr]">
         {isMobileSidebarOpen ? (
           <>
@@ -55,7 +55,7 @@ function FacultyLayout({
           />
         </div>
 
-        <div className="flex min-w-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#d0dbe7_0%,#c8d4e0_48%,#becbd8_100%)]">
+        <div className="flex min-w-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#eef4fa_0%,#e3ebf4_48%,#d9e4ef_100%)]">
           <FacultyNavbar
             firstName={firstName}
             department={department}
@@ -67,7 +67,7 @@ function FacultyLayout({
           <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(110,142,176,0.18),transparent_18%),radial-gradient(circle_at_top_right,rgba(184,199,216,0.28),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(98,126,154,0.14),transparent_28%),linear-gradient(180deg,rgba(208,219,231,0.22)_0%,rgba(208,219,231,0)_34%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(89,144,201,0.12),transparent_18%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.55),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(118,150,184,0.1),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0)_34%)]"
             />
             <div className="relative">{children}</div>
           </div>

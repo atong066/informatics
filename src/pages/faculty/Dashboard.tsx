@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { FiBookOpen, FiClipboard, FiClock, FiUsers } from 'react-icons/fi';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
 import FacultyLayout from '../../layout/faculty/FacultyLayout';
@@ -28,24 +28,24 @@ function FacultyDashboard() {
         <section className="overflow-hidden rounded-[2rem] border border-[#c9d5e0] bg-[linear-gradient(135deg,rgba(251,253,255,0.96)_0%,rgba(238,244,249,0.94)_100%)] px-6 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.08)]">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
+              <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
                 Today
               </p>
-              <h1 className="mt-3 max-w-3xl text-[2rem] font-semibold tracking-[-0.05em] text-[#173b70]">
+              <h1 className="mt-3 max-w-3xl text-fluid-3xl font-semibold tracking-[-0.05em] text-[#173b70]">
                 Welcome back, {activeUser.firstName}. Your classes, reviews, and faculty tasks are lined up.
               </h1>
-              <p className="mt-3 max-w-3xl text-[14px] leading-6 text-[#607b97]">
+              <p className="mt-3 max-w-3xl text-fluid-base leading-6 text-[#607b97]">
                 Use this workspace to track sections, prepare your timetable, and keep up with advising work.
               </p>
             </div>
 
             <div className="min-w-[260px] rounded-[1.75rem] bg-[linear-gradient(180deg,#2d4c70_0%,#365a81_100%)] px-5 py-5 text-white shadow-[0_18px_30px_rgba(24,46,74,0.22)]">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-[#bfd3e8]">Next block</p>
-              <p className="mt-3 text-[1.35rem] font-semibold tracking-[-0.04em]">
+              <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#bfd3e8]">Next block</p>
+              <p className="mt-3 text-fluid-xl font-semibold tracking-[-0.04em]">
                 Systems Analysis
               </p>
-              <p className="mt-2 text-[13px] text-[#d4e2ef]">10:00 AM to 11:30 AM</p>
-              <p className="mt-1 text-[13px] text-[#d4e2ef]">BSIT 2B • Lab 402</p>
+              <p className="mt-2 text-fluid-sm text-[#d4e2ef]">10:00 AM to 11:30 AM</p>
+              <p className="mt-1 text-fluid-sm text-[#d4e2ef]">BSIT 2B â€¢ Lab 402</p>
             </div>
           </div>
         </section>
@@ -72,8 +72,8 @@ function FacultyDashboard() {
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-[1rem] font-semibold text-[#123b74]">{title}</p>
-                      <p className="mt-1 text-[13px] text-[#7088a1]">{detail}</p>
+                      <p className="text-fluid-lg font-semibold text-[#123b74]">{title}</p>
+                      <p className="mt-1 text-fluid-sm text-[#7088a1]">{detail}</p>
                     </div>
                     <p className="text-sm font-semibold text-[#2b79ba]">{time}</p>
                   </div>
@@ -92,7 +92,7 @@ function FacultyDashboard() {
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-[1.4rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4 text-[14px] leading-6 text-[#48617d]"
+                  className="rounded-[1.4rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4 text-fluid-base leading-6 text-[#48617d]"
                 >
                   {item}
                 </div>
@@ -117,12 +117,12 @@ function MetricCard({
   return (
     <article className="rounded-[1.75rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.92)] p-5 shadow-[0_14px_28px_rgba(49,70,98,0.06)]">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[2rem] font-semibold leading-none text-[#123b74]">{value}</p>
+        <p className="text-fluid-3xl font-semibold leading-none text-[#123b74]">{value}</p>
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#dde9f6_0%,#cadcf0_100%)] text-[#2b79ba]">
           {icon}
         </div>
       </div>
-      <p className="mt-3 text-[13px] text-[#7088a1]">{label}</p>
+      <p className="mt-3 text-fluid-sm text-[#7088a1]">{label}</p>
     </article>
   );
 }
@@ -130,10 +130,10 @@ function MetricCard({
 function PanelHeader({ title, action }: { title: string; action: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <p className="text-[1.12rem] font-semibold text-[#123b74]">{title}</p>
+      <p className="text-fluid-xl font-semibold text-[#123b74]">{title}</p>
       <button
         type="button"
-        className="rounded-full border border-[#c9d8e6] bg-[#f7fbfe] px-4 py-2 text-[13px] font-semibold text-[#2b79ba]"
+        className="rounded-full border border-[#c9d8e6] bg-[#f7fbfe] px-4 py-2 text-fluid-sm font-semibold text-[#2b79ba]"
       >
         {action}
       </button>
@@ -142,3 +142,4 @@ function PanelHeader({ title, action }: { title: string; action: string }) {
 }
 
 export default FacultyDashboard;
+

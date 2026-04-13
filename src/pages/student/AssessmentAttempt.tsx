@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowLeft,
@@ -485,61 +485,61 @@ function AssessmentAttempt() {
       <div className="mx-auto w-full max-w-[94rem] px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b8cad8]">
           {assessmentQuery.isLoading ? (
-            <p className="text-[0.95rem] text-[#6b8198]">Loading assessment...</p>
+            <p className="text-fluid-md text-[#6b8198]">Loading assessment...</p>
           ) : payload ? (
             <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
                 <button
                   type="button"
                   onClick={() => navigate(`/student/subjects/${subjectId}`)}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(255,255,255,0.88)] px-3.5 py-2 text-[0.8rem] font-semibold text-[#2f78bc] transition hover:bg-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(255,255,255,0.88)] px-3.5 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                 >
                   <FiArrowLeft className="h-3.5 w-3.5" />
                   Back to subject
                 </button>
 
-                <p className="mt-4 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
+                <p className="mt-4 text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
                   {payload.subject.title} | {payload.subject.code}
                 </p>
-                <h1 className="mt-2 text-[2rem] font-semibold tracking-[-0.05em] text-[#173b70]">
+                <h1 className="mt-2 text-fluid-3xl font-semibold tracking-[-0.05em] text-[#173b70]">
                   {payload.assessment.title}
                 </h1>
-                <p className="mt-2 max-w-3xl text-[0.95rem] leading-[1.7] text-[#6b8198]">
+                <p className="mt-2 max-w-3xl text-fluid-md leading-[1.7] text-[#6b8198]">
                   {payload.assessment.detail || 'Review each question carefully before you submit your answers.'}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {formatCalendarDate(payload.assessment.schedule)}
                   </span>
-                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                     {formatAssessmentType(payload.assessment.assessmentType)}
                   </span>
-                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {payload.assessment.targetSectionLabel}
                   </span>
-                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {formatAssessmentWindow(payload.assessment.startTime, payload.assessment.endTime)}
                   </span>
                 </div>
               </div>
 
               <div className="min-w-[16rem] rounded-[1.5rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
-                <p className="text-[0.72rem] uppercase tracking-[0.18em] text-[#d5e2ef]">
+                <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#d5e2ef]">
                   Assessment status
                 </p>
-                <p className="mt-3 text-[1.15rem] font-semibold">
+                <p className="mt-3 text-fluid-xl font-semibold">
                   {payload.assessment.attempt ? scoreSummary?.value : payload.assessment.questionCount}
                   {!payload.assessment.attempt ? ` question${payload.assessment.questionCount === 1 ? '' : 's'}` : ''}
                 </p>
-                <p className="mt-2 text-[0.82rem] text-[#d5e2ef]">
+                <p className="mt-2 text-fluid-sm text-[#d5e2ef]">
                   {payload.assessment.attempt
                     ? scoreSummary?.meta
                     : payload.assessment.canTake
                       ? 'You can start and submit this assessment now.'
                       : payload.assessment.availabilityLabel}
                 </p>
-                <span className={`mt-4 inline-flex rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(payload.assessment.status)}`}>
+                <span className={`mt-4 inline-flex rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(payload.assessment.status)}`}>
                   {payload.assessment.status}
                 </span>
               </div>
@@ -554,45 +554,45 @@ function AssessmentAttempt() {
                 <div className="rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)]">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-[0.74rem] font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
+                      <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                         Result summary
                       </p>
-                      <h2 className="mt-2 text-[1.2rem] font-semibold text-[#173b70]">
+                      <h2 className="mt-2 text-fluid-xl font-semibold text-[#173b70]">
                         {scoreSummary?.label}
                       </h2>
-                      <p className="mt-2 text-[0.88rem] leading-[1.65] text-[#6b8198]">
+                      <p className="mt-2 text-fluid-base leading-[1.65] text-[#6b8198]">
                         {payload.assessment.attempt.manualReviewPending
                           ? 'Objective items were checked automatically. Essay responses still need faculty review before your final grade is complete.'
                           : 'Your assessment has been checked. Review the saved responses below.'}
                       </p>
                     </div>
-                    <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(payload.assessment.attempt.status)}`}>
+                    <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(payload.assessment.attempt.status)}`}>
                       {payload.assessment.attempt.status}
                     </span>
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Score
                       </p>
-                      <p className="mt-2 text-[1.15rem] font-semibold text-[#173b70]">
+                      <p className="mt-2 text-fluid-xl font-semibold text-[#173b70]">
                         {scoreSummary?.value}
                       </p>
                     </div>
                     <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Submitted
                       </p>
-                      <p className="mt-2 text-[0.95rem] font-semibold text-[#173b70]">
+                      <p className="mt-2 text-fluid-md font-semibold text-[#173b70]">
                         {formatDateTime(payload.assessment.attempt.submittedAt)}
                       </p>
                     </div>
                     <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Coverage
                       </p>
-                      <p className="mt-2 text-[0.95rem] font-semibold text-[#173b70]">
+                      <p className="mt-2 text-fluid-md font-semibold text-[#173b70]">
                         {payload.questions.length} question{payload.questions.length === 1 ? '' : 's'}
                       </p>
                     </div>
@@ -600,10 +600,10 @@ function AssessmentAttempt() {
                 </div>
 
                 <div className="rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)]">
-                  <p className="text-[0.74rem] font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                     Review notes
                   </p>
-                  <div className="mt-4 space-y-3 text-[0.86rem] leading-[1.65] text-[#6b8198]">
+                  <div className="mt-4 space-y-3 text-fluid-base leading-[1.65] text-[#6b8198]">
                     <p className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       Objective items are checked immediately after you submit.
                     </p>
@@ -633,19 +633,19 @@ function AssessmentAttempt() {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                          <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                             Question {index + 1}
                           </p>
-                          <h3 className="mt-2 text-[1rem] font-semibold text-[#173b70]">
+                          <h3 className="mt-2 text-fluid-lg font-semibold text-[#173b70]">
                             {question.prompt}
                           </h3>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                          <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                             {formatQuestionType(question.questionType)}
                           </span>
                           {attemptResponse ? (
-                            <span className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(attemptResponse.requiresManualReview ? 'Pending review' : attemptResponse.isCorrect ? 'Checked' : 'Closed')}`}>
+                            <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(attemptResponse.requiresManualReview ? 'Pending review' : attemptResponse.isCorrect ? 'Checked' : 'Closed')}`}>
                               {attemptResponse.requiresManualReview
                                 ? 'Pending review'
                                 : attemptResponse.isCorrect
@@ -664,7 +664,7 @@ function AssessmentAttempt() {
                             return (
                               <div
                                 key={option}
-                                className={`rounded-[1rem] border px-4 py-3 text-[0.9rem] ${
+                                className={`rounded-[1rem] border px-4 py-3 text-fluid-base ${
                                   isSelected
                                     ? attemptResponse?.requiresManualReview
                                       ? 'border-[#c8d9ec] bg-[#eef4fa] text-[#2f78bc]'
@@ -688,16 +688,16 @@ function AssessmentAttempt() {
                               key={pair.id}
                               className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3"
                             >
-                              <p className="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                                 Prompt
                               </p>
-                              <p className="mt-2 text-[0.92rem] font-semibold text-[#173b70]">
+                              <p className="mt-2 text-fluid-md font-semibold text-[#173b70]">
                                 {pair.prompt}
                               </p>
-                              <p className="mt-3 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                              <p className="mt-3 text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                                 Your answer
                               </p>
-                              <p className="mt-2 text-[0.9rem] text-[#45627f]">
+                              <p className="mt-2 text-fluid-base text-[#45627f]">
                                 {draft.matchingAnswers[pairIndex] || 'No answer submitted'}
                               </p>
                             </div>
@@ -707,10 +707,10 @@ function AssessmentAttempt() {
 
                       {question.questionType === 'fill-in-the-blanks' ? (
                         <div className="mt-4 rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                          <p className="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                          <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                             Your answer
                           </p>
-                          <p className="mt-2 text-[0.92rem] text-[#45627f]">
+                          <p className="mt-2 text-fluid-md text-[#45627f]">
                             {draft.answer || 'No answer submitted'}
                           </p>
                         </div>
@@ -719,18 +719,18 @@ function AssessmentAttempt() {
                       {question.questionType === 'essay' ? (
                         <div className="mt-4 space-y-3">
                           <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                               Your response
                             </p>
-                            <p className="mt-2 whitespace-pre-wrap text-[0.92rem] leading-[1.7] text-[#45627f]">
+                            <p className="mt-2 whitespace-pre-wrap text-fluid-md leading-[1.7] text-[#45627f]">
                               {draft.answer || 'No answer submitted'}
                             </p>
                           </div>
                           <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                               Rubric points
                             </p>
-                            <p className="mt-2 text-[0.92rem] text-[#45627f]">
+                            <p className="mt-2 text-fluid-md text-[#45627f]">
                               Up to {question.rubricTotalPoints} point{question.rubricTotalPoints === 1 ? '' : 's'} after manual review.
                             </p>
                           </div>
@@ -745,13 +745,13 @@ function AssessmentAttempt() {
             <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
               <div className="flex flex-col gap-4 rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-[0.74rem] font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                     Assessment in progress
                   </p>
-                  <h2 className="mt-2 text-[1.2rem] font-semibold text-[#173b70]">
+                  <h2 className="mt-2 text-fluid-xl font-semibold text-[#173b70]">
                     Answer all items, then finish to check your exam.
                   </h2>
-                  <p className="mt-2 text-[0.88rem] leading-[1.65] text-[#6b8198]">
+                  <p className="mt-2 text-fluid-base leading-[1.65] text-[#6b8198]">
                     Multiple-choice, true or false, matching type, and fill-in-the-blanks
                     are checked automatically after submission. Essay answers are saved
                     and left for manual review.
@@ -760,18 +760,18 @@ function AssessmentAttempt() {
 
                 <div className="grid gap-3 sm:min-w-[17rem] sm:grid-cols-2 lg:grid-cols-1">
                   <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                    <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Answered
                     </p>
-                    <p className="mt-2 text-[1.1rem] font-semibold text-[#173b70]">
+                    <p className="mt-2 text-fluid-xl font-semibold text-[#173b70]">
                       {answeredCount} / {payload.questions.length}
                     </p>
                   </div>
                   <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                    <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Submission
                     </p>
-                    <p className="mt-2 text-[0.92rem] font-semibold text-[#173b70]">
+                    <p className="mt-2 text-fluid-md font-semibold text-[#173b70]">
                       One attempt only
                     </p>
                   </div>
@@ -793,14 +793,14 @@ function AssessmentAttempt() {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                          <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                             Question {index + 1}
                           </p>
-                          <h3 className="mt-2 text-[1rem] font-semibold text-[#173b70]">
+                          <h3 className="mt-2 text-fluid-lg font-semibold text-[#173b70]">
                             {question.prompt}
                           </h3>
                         </div>
-                        <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                        <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                           {formatQuestionType(question.questionType)}
                         </span>
                       </div>
@@ -815,7 +815,7 @@ function AssessmentAttempt() {
                                 key={option}
                                 type="button"
                                 onClick={() => updateAnswer(question.id, option)}
-                                className={`rounded-[1rem] border px-4 py-3 text-left text-[0.9rem] font-medium transition ${
+                                className={`rounded-[1rem] border px-4 py-3 text-left text-fluid-base font-medium transition ${
                                   isSelected
                                     ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
                                     : 'border-[#cad8e3] bg-[rgba(255,255,255,0.9)] text-[#5d7690] hover:bg-white'
@@ -836,15 +836,15 @@ function AssessmentAttempt() {
                               className="grid gap-3 rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-center"
                             >
                               <div>
-                                <p className="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                                <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                                   Prompt
                                 </p>
-                                <p className="mt-2 text-[0.92rem] font-semibold text-[#173b70]">
+                                <p className="mt-2 text-fluid-md font-semibold text-[#173b70]">
                                   {pair.prompt}
                                 </p>
                               </div>
                               <div>
-                                <p className="mb-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
+                                <p className="mb-2 text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                                   Match
                                 </p>
                                 <CustomSelect
@@ -868,7 +868,7 @@ function AssessmentAttempt() {
                         <div className="mt-4">
                           <label
                             htmlFor={`student-fill-${question.id}`}
-                            className="mb-2 block text-[0.82rem] font-semibold text-[#173b70]"
+                            className="mb-2 block text-fluid-sm font-semibold text-[#173b70]"
                           >
                             Your answer
                           </label>
@@ -878,7 +878,7 @@ function AssessmentAttempt() {
                             value={draft.answer}
                             onChange={(event) => updateAnswer(question.id, event.target.value)}
                             placeholder="Type the missing answer"
-                            className="w-full rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                            className="w-full rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                           />
                         </div>
                       ) : null}
@@ -888,11 +888,11 @@ function AssessmentAttempt() {
                           <div className="mb-2 flex items-center justify-between gap-3">
                             <label
                               htmlFor={`student-essay-${question.id}`}
-                              className="block text-[0.82rem] font-semibold text-[#173b70]"
+                              className="block text-fluid-sm font-semibold text-[#173b70]"
                             >
                               Your response
                             </label>
-                            <span className="text-[0.78rem] font-medium text-[#6b8198]">
+                            <span className="text-fluid-sm font-medium text-[#6b8198]">
                               {question.rubricTotalPoints} point{question.rubricTotalPoints === 1 ? '' : 's'} rubric
                             </span>
                           </div>
@@ -902,7 +902,7 @@ function AssessmentAttempt() {
                             onChange={(event) => updateAnswer(question.id, event.target.value)}
                             rows={7}
                             placeholder="Write your essay response here."
-                            className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                            className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                           />
                         </div>
                       ) : null}
@@ -913,10 +913,10 @@ function AssessmentAttempt() {
 
               <div className="mt-6 flex flex-col gap-4 rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-center lg:justify-between">
                 <div className="max-w-2xl">
-                  <p className="text-[0.82rem] font-semibold text-[#173b70]">
+                  <p className="text-fluid-sm font-semibold text-[#173b70]">
                     Finish and check exam
                   </p>
-                  <p className="mt-2 text-[0.84rem] leading-[1.65] text-[#6b8198]">
+                  <p className="mt-2 text-fluid-sm leading-[1.65] text-[#6b8198]">
                     Submitting will lock this assessment. Objective items are checked
                     immediately, while essay items wait for manual review.
                   </p>
@@ -925,7 +925,7 @@ function AssessmentAttempt() {
                   type="button"
                   onClick={handleSubmitAssessment}
                   disabled={submitAssessmentMutation.isPending || payload.questions.length === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-5 py-3 text-[0.88rem] font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-5 py-3 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <FiSend className="h-4 w-4" />
                   {submitAssessmentMutation.isPending ? 'Submitting...' : 'Finish and check exam'}
@@ -938,26 +938,26 @@ function AssessmentAttempt() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
                   <FiClock className="h-6 w-6" />
                 </div>
-                <h2 className="mt-4 text-[1.15rem] font-semibold text-[#173b70]">
+                <h2 className="mt-4 text-fluid-xl font-semibold text-[#173b70]">
                   This assessment is not open right now
                 </h2>
-                <p className="mt-2 text-[0.9rem] leading-[1.65] text-[#6b8198]">
+                <p className="mt-2 text-fluid-base leading-[1.65] text-[#6b8198]">
                   {payload.assessment.questionCount === 0
                     ? 'Your instructor has not added any questions yet.'
                     : `Current availability: ${payload.assessment.availabilityLabel}. Return during the scheduled assessment window.`}
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  <span className="rounded-full border border-[#c6d6e2] bg-white px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-white px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {formatCalendarDate(payload.assessment.schedule)}
                   </span>
-                  <span className="rounded-full border border-[#c6d6e2] bg-white px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  <span className="rounded-full border border-[#c6d6e2] bg-white px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
                     {formatAssessmentWindow(payload.assessment.startTime, payload.assessment.endTime)}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => navigate(`/student/subjects/${subjectId}`)}
-                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-white px-4 py-2.5 text-[0.84rem] font-semibold text-[#2f78bc] transition hover:bg-[#f8fbfd]"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f8fbfd]"
                 >
                   <FiArrowLeft className="h-4 w-4" />
                   Back to subject
@@ -980,3 +980,4 @@ function AssessmentAttempt() {
 }
 
 export default AssessmentAttempt;
+

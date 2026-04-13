@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+﻿import { useMemo, type ReactNode } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -55,18 +55,7 @@ type SubjectProgressItem = StudentSubject & {
   remainingCount: number;
 };
 
-function getSubjectIcon(iconKey: string) {
-  switch (iconKey) {
-    case 'database':
-      return FiDatabase;
-    case 'code':
-      return FiCode;
-    case 'cpu':
-      return FiCpu;
-    default:
-      return FiBookOpen;
-  }
-}
+const EMPTY_SUBJECTS: StudentSubject[] = [];
 
 function average(values: number[]) {
   if (values.length === 0) {
@@ -105,11 +94,30 @@ function getProgressState(progress: number, remainingCount: number) {
   };
 }
 
+function SubjectIconGlyph({
+  iconKey,
+  className,
+}: {
+  iconKey: string;
+  className: string;
+}) {
+  switch (iconKey) {
+    case 'database':
+      return <FiDatabase className={className} />;
+    case 'code':
+      return <FiCode className={className} />;
+    case 'cpu':
+      return <FiCpu className={className} />;
+    default:
+      return <FiBookOpen className={className} />;
+  }
+}
+
 function Dashboard() {
   const { activeUser, isError } = useCurrentStudent();
   const token = getStoredToken();
   const subjectsQuery = useStudentSubjects(Boolean(activeUser && !isError));
-  const subjects = subjectsQuery.data ?? [];
+  const subjects = subjectsQuery.data ?? EMPTY_SUBJECTS;
 
   const subjectDetailsQueries = useQueries({
     queries: subjects.map((subject) => ({
@@ -319,19 +327,19 @@ function Dashboard() {
     >
       <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 py-4 sm:px-5 lg:px-6">
         <section
-          className="dashboard-rise relative overflow-hidden rounded-[2.35rem] border border-[#173552] bg-[#0d2339] px-6 py-6 text-white shadow-[0_28px_70px_rgba(8,20,35,0.28)] sm:px-8 sm:py-8"
+          className="dashboard-rise relative min-w-0 max-w-full overflow-hidden rounded-[2.35rem] border border-[#173552] bg-[#0d2339] px-6 py-6 text-white shadow-[0_28px_70px_rgba(8,20,35,0.28)] sm:px-8 sm:py-8"
           style={{ animationDelay: '40ms' }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,178,255,0.18),transparent_30%),radial-gradient(circle_at_75%_25%,rgba(113,209,167,0.1),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
-          <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_340px] xl:items-end">
-            <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-[#96b9d8]">
+          <div className="relative grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_340px] xl:items-end">
+            <div className="min-w-0">
+              <p className="text-fluid-2xs font-semibold uppercase tracking-[0.28em] text-[#96b9d8]">
                 Student Workspace
               </p>
-              <h1 className="mt-4 max-w-[11ch] font-display text-[2.45rem] leading-[0.93] tracking-[-0.05em] text-white sm:text-[3rem]">
+              <h1 className="mt-4 max-w-[11ch] font-display text-fluid-4xl leading-[0.93] tracking-[-0.05em] text-white sm:text-fluid-5xl">
                 Study board for {activeUser.firstName}.
               </h1>
-              <p className="mt-4 max-w-2xl text-[0.95rem] leading-7 text-[#c5d5e5]">
+              <p className="mt-4 max-w-2xl text-fluid-md leading-7 text-[#c5d5e5]">
                 Current section, live subject load, and lesson progress synced from
                 your latest records.
               </p>
@@ -346,24 +354,24 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="rounded-[1.8rem] border border-white/10 bg-white/7 p-4 backdrop-blur-md">
+            <div className="min-w-0 rounded-[1.8rem] border border-white/10 bg-white/7 p-4 backdrop-blur-md">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <ProgressRing progress={summary.averageProgress} label="Synced" />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#96b9d8]">
+                  <p className="text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#96b9d8]">
                     Focus Subject
                   </p>
-                  <h2 className="mt-2 text-[1.25rem] font-semibold tracking-[-0.03em] text-white">
+                  <h2 className="mt-2 text-fluid-xl font-semibold tracking-[-0.03em] text-white">
                     {focusSubject?.title ?? 'No active subject yet'}
                   </h2>
-                  <p className="mt-2 text-[0.84rem] leading-6 text-[#c5d5e5]">
+                  <p className="mt-2 text-fluid-sm leading-6 text-[#c5d5e5]">
                     {focusSubject
                       ? `${focusSubject.remainingCount} open records and ${focusSubject.progress}% completion.`
                       : 'Subject data will appear here once records are available.'}
                   </p>
 
-                  <div className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-[0.8rem] text-[#d2dfeb]">
+                  <div className="mt-3 space-y-1.5 border-t border-white/10 pt-3 text-fluid-sm text-[#d2dfeb]">
                     <MetaRow label="Email" value={activeUser.email} />
                     <MetaRow label="Username" value={`@${activeUser.username}`} />
                   </div>
@@ -373,7 +381,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid min-w-0 gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
           <MetricTile
             title="Courses"
             value={String(summary.subjectCount)}
@@ -404,9 +412,9 @@ function Dashboard() {
           />
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_340px]">
+        <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_340px]">
           <article
-            className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+            className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
             style={{ animationDelay: '140ms' }}
           >
             <SectionHeading
@@ -440,9 +448,9 @@ function Dashboard() {
             </div>
           </article>
 
-          <div className="grid gap-4">
+          <div className="grid min-w-0 gap-4">
             <article
-              className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
               style={{ animationDelay: '200ms' }}
             >
               <SectionHeading
@@ -463,22 +471,22 @@ function Dashboard() {
                     <Link
                       key={item.id}
                       to={`/student/subjects/${item.subjectId}`}
-                      className="dashboard-hover group flex items-center gap-3 rounded-[1.2rem] border border-[#dde7ef] bg-white px-3.5 py-3.5"
+                      className="dashboard-hover group flex min-w-0 max-w-full items-center gap-3 rounded-[1.2rem] border border-[#dde7ef] bg-white px-3.5 py-3.5"
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
                         <FiArrowRight className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[0.92rem] font-semibold text-[#173b70]">
+                        <p className="truncate text-fluid-md font-semibold text-[#173b70]">
                           {item.title}
                         </p>
-                        <p className="mt-0.5 text-[0.78rem] text-[#7088a1]">
+                        <p className="mt-0.5 text-fluid-sm text-[#7088a1]">
                           {item.subtitle}
                         </p>
                       </div>
 
-                      <span className="shrink-0 rounded-full border border-[#d6e3ef] bg-[#f4f8fb] px-3 py-1 text-[0.72rem] font-semibold text-[#536f8a]">
+                      <span className="shrink-0 rounded-full border border-[#d6e3ef] bg-[#f4f8fb] px-3 py-1 text-fluid-2xs font-semibold text-[#536f8a]">
                         {item.status}
                       </span>
                     </Link>
@@ -493,7 +501,7 @@ function Dashboard() {
             </article>
 
             <article
-              className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
               style={{ animationDelay: '250ms' }}
             >
               <SectionHeading
@@ -505,10 +513,10 @@ function Dashboard() {
                 {coverageRows.map((row) => (
                   <div key={row.label}>
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-[0.86rem] font-semibold text-[#173b70]">
+                      <p className="text-fluid-base font-semibold text-[#173b70]">
                         {row.label}
                       </p>
-                      <span className="text-[0.78rem] font-semibold text-[#4d6883]">
+                      <span className="text-fluid-sm font-semibold text-[#4d6883]">
                         {row.value}
                       </span>
                     </div>
@@ -518,7 +526,7 @@ function Dashboard() {
                         style={{ width: `${row.percent}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-[0.75rem] leading-5 text-[#7088a1]">
+                    <p className="mt-2 text-fluid-xs leading-5 text-[#7088a1]">
                       {row.helper}
                     </p>
                   </div>
@@ -529,7 +537,7 @@ function Dashboard() {
         </section>
 
         <section
-          className="dashboard-rise rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+          className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
           style={{ animationDelay: '290ms' }}
         >
           <SectionHeading
@@ -537,7 +545,7 @@ function Dashboard() {
             detail="Quick access to each course space, along with the current record density and description."
           />
 
-          <div className="mt-4 grid gap-2.5 lg:grid-cols-2">
+          <div className="mt-4 grid min-w-0 gap-2.5 lg:grid-cols-2">
             {hasDashboardError ? (
               <EmptyState
                 title="Subject directory unavailable"
@@ -572,10 +580,10 @@ function SectionHeading({
   return (
     <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h2 className="text-[1.18rem] font-semibold tracking-[-0.03em] text-[#173b70]">
+        <h2 className="text-fluid-xl font-semibold tracking-[-0.03em] text-[#173b70]">
           {title}
         </h2>
-        <p className="mt-0.5 text-[0.82rem] leading-5 text-[#7088a1]">{detail}</p>
+        <p className="mt-0.5 text-fluid-sm leading-5 text-[#7088a1]">{detail}</p>
       </div>
     </div>
   );
@@ -596,15 +604,15 @@ function MetricTile({
 }) {
   return (
     <article
-      className="dashboard-rise rounded-[1.4rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.82)] px-4 py-3.5 shadow-[0_14px_30px_rgba(30,52,78,0.06)] backdrop-blur-sm"
+      className="dashboard-rise min-w-0 max-w-full rounded-[1.4rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.82)] px-4 py-3.5 shadow-[0_14px_30px_rgba(30,52,78,0.06)] backdrop-blur-sm"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[0.76rem] font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
+          <p className="text-fluid-xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
             {title}
           </p>
-          <p className="mt-2.5 text-[2rem] font-semibold leading-none tracking-[-0.04em] text-[#163b70]">
+          <p className="mt-2.5 text-fluid-3xl font-semibold leading-none tracking-[-0.04em] text-[#163b70]">
             {value}
           </p>
         </div>
@@ -613,7 +621,7 @@ function MetricTile({
         </div>
       </div>
 
-      <p className="mt-2 text-[0.78rem] leading-5 text-[#7088a1]">{detail}</p>
+      <p className="mt-2 text-fluid-sm leading-5 text-[#7088a1]">{detail}</p>
     </article>
   );
 }
@@ -623,29 +631,28 @@ function SubjectRow({
 }: {
   subject: SubjectProgressItem;
 }) {
-  const SubjectIcon = getSubjectIcon(subject.iconKey);
   const state = getProgressState(subject.progress, subject.remainingCount);
 
   return (
     <Link
       to={`/student/subjects/${subject.id}`}
-      className="dashboard-hover group grid gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center"
+      className="dashboard-hover group grid min-w-0 max-w-full gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center"
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
-        <SubjectIcon className="h-5 w-5" />
+        <SubjectIconGlyph iconKey={subject.iconKey} className="h-5 w-5" />
       </div>
 
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[0.98rem] font-semibold text-[#173b70]">
+          <h3 className="text-fluid-md font-semibold text-[#173b70]">
             {subject.title}
           </h3>
-          <span className="rounded-full border border-[#dbe6ef] bg-[#f4f8fb] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#56718b]">
+          <span className="rounded-full border border-[#dbe6ef] bg-[#f4f8fb] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#56718b]">
             {subject.code}
           </span>
         </div>
 
-        <p className="mt-0.5 text-[0.78rem] leading-5 text-[#7088a1]">
+        <p className="mt-0.5 text-fluid-sm leading-5 text-[#7088a1]">
           {subject.lessons} lessons / {subject.modules} modules / {subject.remainingCount} open
         </p>
 
@@ -656,7 +663,7 @@ function SubjectRow({
               style={{ width: `${subject.progress}%` }}
             />
           </div>
-          <span className="w-14 shrink-0 text-right text-[0.86rem] font-semibold text-[#173b70]">
+          <span className="w-14 shrink-0 text-right text-fluid-base font-semibold text-[#173b70]">
             {subject.progress}%
           </span>
         </div>
@@ -664,7 +671,7 @@ function SubjectRow({
 
       <div className="flex items-center justify-between gap-3 lg:justify-end">
         <span
-          className={`rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${state.className}`}
+          className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${state.className}`}
         >
           {state.label}
         </span>
@@ -675,32 +682,30 @@ function SubjectRow({
 }
 
 function DirectoryItem({ subject }: { subject: SubjectProgressItem }) {
-  const SubjectIcon = getSubjectIcon(subject.iconKey);
-
   return (
     <Link
       to={`/student/subjects/${subject.id}`}
-      className="dashboard-hover group flex items-start gap-3.5 rounded-[1.35rem] border border-[#dbe6ef] bg-white/76 px-3.5 py-3.5"
+      className="dashboard-hover group flex min-w-0 max-w-full items-start gap-3.5 rounded-[1.35rem] border border-[#dbe6ef] bg-white/76 px-3.5 py-3.5"
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
-        <SubjectIcon className="h-5 w-5" />
+        <SubjectIconGlyph iconKey={subject.iconKey} className="h-5 w-5" />
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[0.94rem] font-semibold text-[#173b70]">
+          <h3 className="text-fluid-md font-semibold text-[#173b70]">
             {subject.title}
           </h3>
-          <span className="text-[0.74rem] font-medium text-[#69829a]">
+          <span className="text-fluid-xs font-medium text-[#69829a]">
             {subject.code}
           </span>
         </div>
 
-        <p className="mt-1.5 text-[0.8rem] leading-5 text-[#7088a1]">
+        <p className="mt-1.5 text-fluid-sm leading-5 text-[#7088a1]">
           {subject.description}
         </p>
 
-        <div className="mt-2.5 flex flex-wrap gap-1.5 text-[0.72rem] text-[#58718b]">
+        <div className="mt-2.5 flex flex-wrap gap-1.5 text-fluid-2xs text-[#58718b]">
           <DirectoryTag label={`${subject.lessons} lessons`} />
           <DirectoryTag label={`${subject.modules} modules`} />
           <DirectoryTag label={`${subject.completedCount} complete`} />
@@ -751,8 +756,8 @@ function ProgressRing({
         <span
           className={
             compact
-              ? 'text-[0.9rem] font-semibold tracking-[-0.03em]'
-              : 'text-[1.35rem] font-semibold tracking-[-0.04em]'
+              ? 'text-fluid-base font-semibold tracking-[-0.03em]'
+              : 'text-fluid-xl font-semibold tracking-[-0.04em]'
           }
         >
           {progress}%
@@ -760,8 +765,8 @@ function ProgressRing({
         <span
           className={
             compact
-              ? 'text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-[#6f89a4]'
-              : 'text-[0.66rem] font-semibold uppercase tracking-[0.2em] text-[#9bb8d1]'
+              ? 'text-fluid-micro font-semibold uppercase tracking-[0.18em] text-[#6f89a4]'
+              : 'text-fluid-3xs font-semibold uppercase tracking-[0.2em] text-[#9bb8d1]'
           }
         >
           {label}
@@ -774,10 +779,10 @@ function ProgressRing({
 function InfoPill({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-full border border-white/12 bg-white/7 px-3.5 py-2 backdrop-blur-sm">
-      <span className="text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-[#93b4d2]">
+      <span className="text-fluid-3xs font-semibold uppercase tracking-[0.18em] text-[#93b4d2]">
         {label}
       </span>
-      <span className="ml-2 text-[0.84rem] font-semibold text-white">{value}</span>
+      <span className="ml-2 text-fluid-sm font-semibold text-white">{value}</span>
     </div>
   );
 }
@@ -793,17 +798,18 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 
 function PanelMessage({ message }: { message: string }) {
   return (
-    <div className="px-4 py-6 text-[0.88rem] text-[#6b8198] sm:px-5">{message}</div>
+    <div className="px-4 py-6 text-fluid-base text-[#6b8198] sm:px-5">{message}</div>
   );
 }
 
 function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-[1.2rem] border border-dashed border-[#dbe6ef] bg-[#fbfdff] px-4 py-4">
-      <p className="text-[0.92rem] font-semibold text-[#173b70]">{title}</p>
-      <p className="mt-1.5 text-[0.8rem] leading-5 text-[#7088a1]">{body}</p>
+      <p className="text-fluid-md font-semibold text-[#173b70]">{title}</p>
+      <p className="mt-1.5 text-fluid-sm leading-5 text-[#7088a1]">{body}</p>
     </div>
   );
 }
 
 export default Dashboard;
+

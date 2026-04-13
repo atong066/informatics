@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { jsPDF } from 'jspdf';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
@@ -340,8 +340,8 @@ function PdfPreviewContent({ data }: { data: Uint8Array | null }) {
     return (
       <div className="flex h-full items-center justify-center bg-[linear-gradient(180deg,#eef3f8_0%,#dde6ef_100%)] px-6 text-center">
         <div>
-          <p className="text-[1rem] font-semibold text-[#173b70]">Preparing preview...</p>
-          <p className="mt-2 text-[0.84rem] text-[#617d98]">
+          <p className="text-fluid-lg font-semibold text-[#173b70]">Preparing preview...</p>
+          <p className="mt-2 text-fluid-sm text-[#617d98]">
             Rendering the assessment pages for a cleaner in-app preview.
           </p>
         </div>
@@ -353,8 +353,8 @@ function PdfPreviewContent({ data }: { data: Uint8Array | null }) {
     return (
       <div className="flex h-full items-center justify-center bg-[linear-gradient(180deg,#eef3f8_0%,#dde6ef_100%)] px-6 text-center">
         <div>
-          <p className="text-[1rem] font-semibold text-[#173b70]">Preview unavailable</p>
-          <p className="mt-2 text-[0.84rem] text-[#617d98]">{errorMessage}</p>
+          <p className="text-fluid-lg font-semibold text-[#173b70]">Preview unavailable</p>
+          <p className="mt-2 text-fluid-sm text-[#617d98]">{errorMessage}</p>
         </div>
       </div>
     );
@@ -373,7 +373,7 @@ function PdfPreviewContent({ data }: { data: Uint8Array | null }) {
               alt={`Assessment PDF page ${index + 1}`}
               className="w-full rounded-[0.7rem] border border-[#e0e7ef] bg-white"
             />
-            <figcaption className="mt-3 text-center text-[0.76rem] font-semibold uppercase tracking-[0.12em] text-[#6b8198]">
+            <figcaption className="mt-3 text-center text-fluid-xs font-semibold uppercase tracking-[0.12em] text-[#6b8198]">
               Page {index + 1}
             </figcaption>
           </figure>
@@ -959,7 +959,7 @@ function AssessmentBuilder() {
       <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
         <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {assessmentQuery.isLoading ? (
-            <p className="text-[0.95rem] text-[#6b8198]">Loading assessment builder...</p>
+            <p className="text-fluid-md text-[#6b8198]">Loading assessment builder...</p>
           ) : payload ? (
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
@@ -967,7 +967,7 @@ function AssessmentBuilder() {
                   <button
                     type="button"
                     onClick={() => navigate(`/faculty/subjects/${subjectId}`)}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.78rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                   >
                     <FiArrowLeft className="h-3.5 w-3.5" />
                     Back to assessments
@@ -976,7 +976,7 @@ function AssessmentBuilder() {
                     type="button"
                     onClick={handleViewPdf}
                     disabled={payload.questions.length === 0}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.78rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiEye className="h-3.5 w-3.5" />
                     View PDF
@@ -985,20 +985,20 @@ function AssessmentBuilder() {
                     type="button"
                     onClick={handleExportPdf}
                     disabled={payload.questions.length === 0}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3 py-1.5 text-[0.78rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiDownload className="h-3.5 w-3.5" />
                     Export PDF
                   </button>
                 </div>
 
-                <p className="mt-4 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
+                <p className="mt-4 text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2f78bc]">
                   {payload.subject.title} | {payload.subject.code}
                 </p>
-                <h1 className="mt-2 text-[1.8rem] font-semibold tracking-[-0.04em] text-[#173b70]">
+                <h1 className="mt-2 text-fluid-3xl font-semibold tracking-[-0.04em] text-[#173b70]">
                   {payload.assessment.title}
                 </h1>
-                <p className="mt-2 max-w-3xl text-[0.92rem] leading-[1.65] text-[#5e7891]">
+                <p className="formatted-text mt-2 max-w-3xl text-fluid-md leading-[1.65] text-[#5e7891]">
                   {payload.assessment.detail}
                 </p>
               </div>
@@ -1006,18 +1006,18 @@ function AssessmentBuilder() {
               <div className="grid min-w-[15rem] gap-3 rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
                 <div className="flex items-center gap-2 text-[#d5e2ef]">
                   <FiClipboard className="h-4 w-4" />
-                  <p className="text-[0.76rem] uppercase tracking-[0.16em]">Assessment summary</p>
+                  <p className="text-fluid-xs uppercase tracking-[0.16em]">Assessment summary</p>
                 </div>
-                <p className="text-[1.05rem] font-semibold">
+                <p className="text-fluid-lg font-semibold">
                   {formatAssessmentType(payload.assessment.assessmentType)}
                 </p>
-                <p className="text-[0.82rem] text-[#d5e2ef]">
+                <p className="text-fluid-sm text-[#d5e2ef]">
                   Scheduled: {formatCalendarDate(payload.assessment.schedule)}
                 </p>
-                <p className="text-[0.82rem] text-[#d5e2ef]">
+                <p className="text-fluid-sm text-[#d5e2ef]">
                   Section: {payload.assessment.targetSectionLabel}
                 </p>
-                <p className="text-[0.82rem] text-[#d5e2ef]">
+                <p className="text-fluid-sm text-[#d5e2ef]">
                   Time: {formatAssessmentWindow(payload.assessment.startTime, payload.assessment.endTime)}
                 </p>
               </div>
@@ -1031,11 +1031,11 @@ function AssessmentBuilder() {
               <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiCheckCircle className="h-4 w-4" />
-                  <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                     Status
                   </p>
                 </div>
-                <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${statusTone(payload.assessment.status)}`}>
+                <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(payload.assessment.status)}`}>
                   {payload.assessment.status}
                 </span>
               </div>
@@ -1043,11 +1043,11 @@ function AssessmentBuilder() {
               <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiHelpCircle className="h-4 w-4" />
-                  <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                     Questions
                   </p>
                 </div>
-                <p className="mt-3 text-[1.2rem] font-semibold text-[#173b70]">
+                <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">
                   {payload.assessment.questionCount}
                 </p>
               </div>
@@ -1055,11 +1055,11 @@ function AssessmentBuilder() {
               <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiClock className="h-4 w-4" />
-                  <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                     Schedule
                   </p>
                 </div>
-                <p className="mt-3 text-[1.2rem] font-semibold text-[#173b70]">
+                <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">
                   {formatCalendarDate(payload.assessment.schedule)}
                 </p>
               </div>
@@ -1069,24 +1069,24 @@ function AssessmentBuilder() {
               <div className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                    <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Question form
                     </p>
-                    <h2 className="mt-2 text-[1.15rem] font-semibold text-[#173b70]">
+                    <h2 className="mt-2 text-fluid-xl font-semibold text-[#173b70]">
                       {questionTypeMetadata[questionType].title}
                     </h2>
-                    <p className="mt-2 max-w-2xl text-[0.84rem] leading-[1.65] text-[#6b8198]">
+                    <p className="mt-2 max-w-2xl text-fluid-sm leading-[1.65] text-[#6b8198]">
                       {questionTypeMetadata[questionType].helper}
                     </p>
                   </div>
-                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                     {questionTypeMetadata[questionType].badge}
                   </span>
                 </div>
 
                 <div className="mt-5 space-y-4">
                   <div>
-                    <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="question-type">
+                    <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="question-type">
                       Question type
                     </label>
                     <CustomSelect
@@ -1113,7 +1113,7 @@ function AssessmentBuilder() {
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="question-prompt">
+                    <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="question-prompt">
                       Question prompt
                     </label>
                     <textarea
@@ -1125,12 +1125,12 @@ function AssessmentBuilder() {
                       }}
                       rows={4}
                       placeholder="What should students answer?"
-                      className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition ${
+                      className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                         fieldErrors.prompt ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                       }`}
                     />
                     {fieldErrors.prompt ? (
-                      <p className="mt-2 text-[12px] font-medium text-rose-500">{fieldErrors.prompt}</p>
+                      <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.prompt}</p>
                     ) : null}
                   </div>
 
@@ -1143,7 +1143,7 @@ function AssessmentBuilder() {
                           return (
                             <div key={label}>
                               <label
-                                className="mb-2 block text-[14px] font-semibold text-[#173b70]"
+                                className="mb-2 block text-fluid-base font-semibold text-[#173b70]"
                                 htmlFor={`option-${index}`}
                               >
                                 {label}
@@ -1165,7 +1165,7 @@ function AssessmentBuilder() {
                                   }));
                                 }}
                                 placeholder={`Write ${label.toLowerCase()}`}
-                                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                   fieldErrors.options
                                     ? 'border-rose-300'
                                     : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1177,11 +1177,11 @@ function AssessmentBuilder() {
                       </div>
 
                       {fieldErrors.options ? (
-                        <p className="text-[12px] font-medium text-rose-500">{fieldErrors.options}</p>
+                        <p className="text-fluid-xs font-medium text-rose-500">{fieldErrors.options}</p>
                       ) : null}
 
                       <div>
-                        <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="question-answer-key">
+                        <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="question-answer-key">
                           Answer key
                         </label>
                         <CustomSelect
@@ -1203,21 +1203,21 @@ function AssessmentBuilder() {
                   {questionType === 'true-false' ? (
                     <>
                       <div className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(216,226,235,0.8)] px-4 py-4">
-                        <p className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
+                        <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                           Options
                         </p>
-                        <p className="mt-2 text-[0.9rem] text-[#37506c]">
+                        <p className="mt-2 text-fluid-base text-[#37506c]">
                           Students will answer using <span className="font-semibold text-[#173b70]">True</span> or{' '}
                           <span className="font-semibold text-[#173b70]">False</span>.
                         </p>
                       </div>
 
                       {fieldErrors.options ? (
-                        <p className="text-[12px] font-medium text-rose-500">{fieldErrors.options}</p>
+                        <p className="text-fluid-xs font-medium text-rose-500">{fieldErrors.options}</p>
                       ) : null}
 
                       <div>
-                        <label className="mb-2 block text-[14px] font-semibold text-[#173b70]" htmlFor="question-answer-key">
+                        <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="question-answer-key">
                           Correct answer
                         </label>
                         <CustomSelect
@@ -1240,8 +1240,8 @@ function AssessmentBuilder() {
                     <>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[14px] font-semibold text-[#173b70]">Matching pairs</p>
-                          <p className="mt-1 text-[0.82rem] text-[#6b8198]">
+                          <p className="text-fluid-base font-semibold text-[#173b70]">Matching pairs</p>
+                          <p className="mt-1 text-fluid-sm text-[#6b8198]">
                             Add the left-side prompt and the correct item it should match with.
                           </p>
                         </div>
@@ -1251,7 +1251,7 @@ function AssessmentBuilder() {
                             setMatchingPairs((current) => [...current, createEmptyMatchingPair()]);
                             setFieldErrors((current) => ({ ...current, matchingPairs: undefined }));
                           }}
-                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                         >
                           Add pair
                         </button>
@@ -1264,7 +1264,7 @@ function AssessmentBuilder() {
                             className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
                           >
                             <div className="mb-3 flex items-center justify-between gap-3">
-                              <p className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                                 Pair {index + 1}
                               </p>
                               <button
@@ -1277,7 +1277,7 @@ function AssessmentBuilder() {
                                   );
                                 }}
                                 disabled={matchingPairs.length <= 2}
-                                className="text-[0.76rem] font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="text-fluid-xs font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 Remove
                               </button>
@@ -1285,7 +1285,7 @@ function AssessmentBuilder() {
 
                             <div className="grid gap-3 sm:grid-cols-2">
                               <div>
-                                <label className="mb-2 block text-[13px] font-semibold text-[#173b70]">
+                                <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                   Prompt
                                 </label>
                                 <input
@@ -1300,7 +1300,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, matchingPairs: undefined }));
                                   }}
                                   placeholder="Example: CPU"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.matchingPairs
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1308,7 +1308,7 @@ function AssessmentBuilder() {
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-[13px] font-semibold text-[#173b70]">
+                                <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                   Match
                                 </label>
                                 <input
@@ -1323,7 +1323,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, matchingPairs: undefined }));
                                   }}
                                   placeholder="Example: Processes instructions"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.matchingPairs
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1336,7 +1336,7 @@ function AssessmentBuilder() {
                       </div>
 
                       {fieldErrors.matchingPairs ? (
-                        <p className="text-[12px] font-medium text-rose-500">{fieldErrors.matchingPairs}</p>
+                        <p className="text-fluid-xs font-medium text-rose-500">{fieldErrors.matchingPairs}</p>
                       ) : null}
                     </>
                   ) : null}
@@ -1345,8 +1345,8 @@ function AssessmentBuilder() {
                     <>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[14px] font-semibold text-[#173b70]">Accepted answers</p>
-                          <p className="mt-1 text-[0.82rem] text-[#6b8198]">
+                          <p className="text-fluid-base font-semibold text-[#173b70]">Accepted answers</p>
+                          <p className="mt-1 text-fluid-sm text-[#6b8198]">
                             Add the answer or answers you will accept for the blank.
                           </p>
                         </div>
@@ -1356,7 +1356,7 @@ function AssessmentBuilder() {
                             setFillAnswers((current) => [...current, '']);
                             setFieldErrors((current) => ({ ...current, fillAnswers: undefined }));
                           }}
-                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                         >
                           Add answer
                         </button>
@@ -1377,7 +1377,7 @@ function AssessmentBuilder() {
                                 setFieldErrors((current) => ({ ...current, fillAnswers: undefined }));
                               }}
                               placeholder={`Accepted answer ${index + 1}`}
-                              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                 fieldErrors.fillAnswers
                                   ? 'border-rose-300'
                                   : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1393,7 +1393,7 @@ function AssessmentBuilder() {
                                 );
                               }}
                               disabled={fillAnswers.length <= 1}
-                              className="shrink-0 text-[0.76rem] font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
+                              className="shrink-0 text-fluid-xs font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               Remove
                             </button>
@@ -1402,7 +1402,7 @@ function AssessmentBuilder() {
                       </div>
 
                       {fieldErrors.fillAnswers ? (
-                        <p className="text-[12px] font-medium text-rose-500">{fieldErrors.fillAnswers}</p>
+                        <p className="text-fluid-xs font-medium text-rose-500">{fieldErrors.fillAnswers}</p>
                       ) : null}
                     </>
                   ) : null}
@@ -1411,8 +1411,8 @@ function AssessmentBuilder() {
                     <>
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[14px] font-semibold text-[#173b70]">Rubric criteria</p>
-                          <p className="mt-1 text-[0.82rem] text-[#6b8198]">
+                          <p className="text-fluid-base font-semibold text-[#173b70]">Rubric criteria</p>
+                          <p className="mt-1 text-fluid-sm text-[#6b8198]">
                             Add the criteria you will use to check the essay and assign points.
                           </p>
                         </div>
@@ -1422,7 +1422,7 @@ function AssessmentBuilder() {
                             setRubricCriteria((current) => [...current, createEmptyRubricCriterion()]);
                             setFieldErrors((current) => ({ ...current, rubricCriteria: undefined }));
                           }}
-                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-[0.76rem] font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                          className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
                         >
                           Add rubric
                         </button>
@@ -1435,7 +1435,7 @@ function AssessmentBuilder() {
                             className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
                           >
                             <div className="mb-3 flex items-center justify-between gap-3">
-                              <p className="text-[0.82rem] font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
+                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                                 Criterion {index + 1}
                               </p>
                               <button
@@ -1448,7 +1448,7 @@ function AssessmentBuilder() {
                                   );
                                 }}
                                 disabled={rubricCriteria.length <= 1}
-                                className="text-[0.76rem] font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="text-fluid-xs font-semibold text-[#6b8198] transition hover:text-[#2f78bc] disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 Remove
                               </button>
@@ -1456,7 +1456,7 @@ function AssessmentBuilder() {
 
                             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
                               <div>
-                                <label className="mb-2 block text-[13px] font-semibold text-[#173b70]">
+                                <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                   Criterion
                                 </label>
                                 <input
@@ -1473,7 +1473,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, rubricCriteria: undefined }));
                                   }}
                                   placeholder="Example: Clarity of explanation"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.rubricCriteria
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1481,7 +1481,7 @@ function AssessmentBuilder() {
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-[13px] font-semibold text-[#173b70]">
+                                <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                   Points
                                 </label>
                                 <input
@@ -1499,7 +1499,7 @@ function AssessmentBuilder() {
                                     );
                                     setFieldErrors((current) => ({ ...current, rubricCriteria: undefined }));
                                   }}
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-[14px] text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.rubricCriteria
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1509,7 +1509,7 @@ function AssessmentBuilder() {
                             </div>
 
                             <div className="mt-3">
-                              <label className="mb-2 block text-[13px] font-semibold text-[#173b70]">
+                              <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                 Description
                               </label>
                               <textarea
@@ -1525,7 +1525,7 @@ function AssessmentBuilder() {
                                 }}
                                 rows={3}
                                 placeholder="Optional notes on how this criterion should be checked"
-                                className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-white/95 px-4 py-3 text-[14px] leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                                className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-white/95 px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                               />
                             </div>
                           </div>
@@ -1533,7 +1533,7 @@ function AssessmentBuilder() {
                       </div>
 
                       {fieldErrors.rubricCriteria ? (
-                        <p className="text-[12px] font-medium text-rose-500">{fieldErrors.rubricCriteria}</p>
+                        <p className="text-fluid-xs font-medium text-rose-500">{fieldErrors.rubricCriteria}</p>
                       ) : null}
                     </>
                   ) : null}
@@ -1542,7 +1542,7 @@ function AssessmentBuilder() {
                     type="button"
                     onClick={handleSubmitQuestion}
                     disabled={addQuestionMutation.isPending}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2 text-[0.84rem] font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiPlus className="h-4 w-4" />
                     {addQuestionMutation.isPending ? 'Saving question...' : 'Add question'}
@@ -1553,12 +1553,12 @@ function AssessmentBuilder() {
               <div className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                    <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Saved questions
                     </p>
-                    <h2 className="mt-2 text-[1.15rem] font-semibold text-[#173b70]">Current question bank</h2>
+                    <h2 className="mt-2 text-fluid-xl font-semibold text-[#173b70]">Current question bank</h2>
                   </div>
-                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                     {payload.questions.length} total
                   </span>
                 </div>
@@ -1571,11 +1571,11 @@ function AssessmentBuilder() {
                         className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-[0.92rem] font-semibold text-[#173b70]">
+                          <p className="text-fluid-md font-semibold text-[#173b70]">
                             {index + 1}. {question.prompt}
                           </p>
                           <span
-                            className={`shrink-0 rounded-full border px-3 py-1 text-[0.72rem] font-semibold ${questionTypeBadgeTone(question.questionType)}`}
+                            className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${questionTypeBadgeTone(question.questionType)}`}
                           >
                             {formatQuestionType(question.questionType)}
                           </span>
@@ -1590,7 +1590,7 @@ function AssessmentBuilder() {
                               return (
                                 <div
                                   key={`${question.id}-${optionLabel}`}
-                                  className={`flex items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-3 text-[0.82rem] ${
+                                  className={`flex items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-3 text-fluid-sm ${
                                     isAnswer
                                       ? 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]'
                                       : 'border-[#c3d2de] bg-[rgba(214,224,234,0.94)] text-[#37506c]'
@@ -1602,7 +1602,7 @@ function AssessmentBuilder() {
                                       : option}
                                   </span>
                                   {isAnswer ? (
-                                    <span className="rounded-full border border-[#bce8cf] bg-white/70 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.08em]">
+                                    <span className="rounded-full border border-[#bce8cf] bg-white/70 px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em]">
                                       Answer key
                                     </span>
                                   ) : null}
@@ -1617,16 +1617,16 @@ function AssessmentBuilder() {
                             {question.matchingPairs.map((pair, pairIndex) => (
                               <div
                                 key={pair.id}
-                                className="grid gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3 text-[0.82rem] text-[#37506c] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                                className="grid gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3 text-fluid-sm text-[#37506c] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
                               >
                                 <div>
-                                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
+                                  <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                                     Prompt {pairIndex + 1}
                                   </p>
                                   <p className="mt-1 font-medium">{pair.prompt}</p>
                                 </div>
                                 <div>
-                                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
+                                  <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                                     Match {pairIndex + 1}
                                   </p>
                                   <p className="mt-1 font-medium">{pair.match}</p>
@@ -1638,14 +1638,14 @@ function AssessmentBuilder() {
 
                         {question.questionType === 'fill-in-the-blanks' ? (
                           <div className="mt-4 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
-                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
+                            <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                               Accepted answers
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                               {question.fillAnswers.map((answer, answerIndex) => (
                                 <span
                                   key={`${question.id}-fill-answer-${answerIndex}`}
-                                  className="rounded-full border border-[#cde4d2] bg-[#eef8f0] px-3 py-1 text-[0.76rem] font-semibold text-[#2c7a4b]"
+                                  className="rounded-full border border-[#cde4d2] bg-[#eef8f0] px-3 py-1 text-fluid-xs font-semibold text-[#2c7a4b]"
                                 >
                                   {answer}
                                 </span>
@@ -1657,10 +1657,10 @@ function AssessmentBuilder() {
                         {question.questionType === 'essay' ? (
                           <div className="mt-4 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
                             <div className="flex items-center justify-between gap-3">
-                              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
+                              <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                                 Rubric criteria
                               </p>
-                              <span className="rounded-full border border-[#d6c7f1] bg-[#f4effd] px-2.5 py-1 text-[0.68rem] font-semibold text-[#6f4db8]">
+                              <span className="rounded-full border border-[#d6c7f1] bg-[#f4effd] px-2.5 py-1 text-fluid-2xs font-semibold text-[#6f4db8]">
                                 {question.rubricCriteria.reduce((total, criterion) => total + criterion.points, 0)} pts
                               </span>
                             </div>
@@ -1672,12 +1672,12 @@ function AssessmentBuilder() {
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <p className="font-medium text-[#173b70]">{criterion.criterion}</p>
-                                    <span className="rounded-full border border-[#d6c7f1] bg-[#f4effd] px-2.5 py-1 text-[0.68rem] font-semibold text-[#6f4db8]">
+                                    <span className="rounded-full border border-[#d6c7f1] bg-[#f4effd] px-2.5 py-1 text-fluid-2xs font-semibold text-[#6f4db8]">
                                       {criterion.points} pts
                                     </span>
                                   </div>
                                   {criterion.description ? (
-                                    <p className="mt-2 text-[0.78rem] leading-[1.6] text-[#5e7891]">
+                                    <p className="mt-2 text-fluid-sm leading-[1.6] text-[#5e7891]">
                                       {criterion.description}
                                     </p>
                                   ) : null}
@@ -1690,8 +1690,8 @@ function AssessmentBuilder() {
                     ))
                   ) : (
                     <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
-                      <p className="text-[0.98rem] font-semibold text-[#173b70]">No questions yet</p>
-                      <p className="mt-2 text-[0.84rem] text-[#7088a1]">
+                      <p className="text-fluid-md font-semibold text-[#173b70]">No questions yet</p>
+                      <p className="mt-2 text-fluid-sm text-[#7088a1]">
                         Start with the form on the left to build the assessment question bank.
                       </p>
                     </div>
@@ -1714,7 +1714,7 @@ function AssessmentBuilder() {
           <button
             type="button"
             onClick={closePdfPreviewModal}
-            className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
           >
             Close
           </button>
@@ -1735,3 +1735,4 @@ function AssessmentBuilder() {
 }
 
 export default AssessmentBuilder;
+
