@@ -33,6 +33,11 @@ function getNonJsonMessage(response: Response, text: string, fallbackMessage: st
     : fallbackMessage;
 }
 
+export function isRequestTooLargeResponse(response: Response, message?: string) {
+  return response.status === 413
+    || /too large|smaller recording|without uploading/i.test(message ?? '');
+}
+
 export async function readApiResponse<TResponse extends ApiResponseBody>(
   response: Response,
   fallbackMessage: string,

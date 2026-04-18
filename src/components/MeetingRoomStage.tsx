@@ -19,7 +19,7 @@ import {
   FiVideoOff,
   FiX,
 } from 'react-icons/fi';
-import { readApiResponse } from '../lib/apiResponse';
+import { isRequestTooLargeResponse, readApiResponse } from '../lib/apiResponse';
 
 type MeetingStatus = 'scheduled' | 'live' | 'ended';
 type MeetingRoomLayout = 'balanced' | 'faculty-focus';
@@ -203,6 +203,10 @@ function formatRecordingSize(size: number) {
 
 function getOversizedRecordingWarning(size: number) {
   return `Faculty screen recording was ${formatRecordingSize(size)}, over the 100 MB limit, so the session ended without AI notes.`;
+}
+
+function getRecordingUploadTooLargeWarning(size: number) {
+  return `Faculty screen recording was ${formatRecordingSize(size)} and could not be uploaded, so the session ended without AI notes.`;
 }
 
 function hasParticipantMedia(participant: RemoteParticipant) {
@@ -2251,6 +2255,23 @@ function MeetingRoomStage({
     }
   }
 
+  async function submitEndSession(recording: RecordingPayload | null) {
+    const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${meetingId}/end`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(recording ? { recording } : {}),
+    });
+    const data = await readApiResponse<{
+      message?: string;
+      data?: unknown;
+    }>(response, 'Unable to end the session.');
+
+    return { data, response };
+  }
+
   async function endSession() {
     if (!token || !canEndSession || isEndingSession) {
       return;
@@ -2266,22 +2287,21 @@ function MeetingRoomStage({
 
     try {
       const { recording, warning } = await buildRecordingPayload();
+      let uploadWarning = warning;
+      let result = await submitEndSession(recording);
 
-      const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${meetingId}/end`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(recording ? { recording } : {}),
-      });
-      const data = await readApiResponse<{
-        message?: string;
-        data?: unknown;
-      }>(response, 'Unable to end the session.');
+      if (
+        recording
+        && !result.response.ok
+        && isRequestTooLargeResponse(result.response, result.data.message)
+      ) {
+        uploadWarning = uploadWarning ?? getRecordingUploadTooLargeWarning(recording.size);
+        setRoomMessage('Recording was too large to upload. Ending the session without AI notes...');
+        result = await submitEndSession(null);
+      }
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Unable to end the session.');
+      if (!result.response.ok) {
+        throw new Error(result.data.message || 'Unable to end the session.');
       }
 
       if (screenStreamRef.current) {
@@ -2291,10 +2311,10 @@ function MeetingRoomStage({
       }
 
       const endedMessage = [
-        data.message || (recording
+        result.data.message || (recording && !uploadWarning
           ? 'Session ended. Recording was saved for later viewing.'
           : 'Session ended successfully.'),
-        warning,
+        uploadWarning,
       ].filter(Boolean).join(' ');
 
       cleanupRoom(true);
@@ -2302,7 +2322,7 @@ function MeetingRoomStage({
       setRoomMessage(endedMessage);
       onMeetingEnded?.({
         message: endedMessage,
-        data: data.data,
+        data: result.data.data,
       });
     } catch (error) {
       setRoomError(error instanceof Error ? error.message : 'Unable to end the session.');

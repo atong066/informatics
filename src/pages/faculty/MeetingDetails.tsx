@@ -19,7 +19,7 @@ import Modal from '../../components/Modal';
 import NotificationPopup from '../../components/NotificationPopup';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
 import FacultyLayout from '../../layout/faculty/FacultyLayout';
-import { readApiResponse } from '../../lib/apiResponse';
+import { isRequestTooLargeResponse, readApiResponse } from '../../lib/apiResponse';
 import { getStoredToken } from '../../lib/auth';
 
 type RecordingPayload = {
@@ -200,6 +200,10 @@ function meetingTone(status: string) {
   }
 }
 
+function getDroppedRecordingMessage(recording: RecordingPayload) {
+  return `Recording was ${formatBytes(recording.size)} and could not be uploaded, so the conference ended without AI notes.`;
+}
+
 async function readRecordingFile(file: File) {
   if (file.size > meetingRecordingMaxBytes) {
     throw new Error(`Recording is ${formatBytes(file.size)}, over the 100 MB limit.`);
@@ -323,25 +327,46 @@ function FacultyMeetingDetails() {
 
   const endMeetingMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${meetingId}/end`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(selectedRecording ? { recording: selectedRecording } : {}),
-      });
+      const submitEndMeeting = async (recording: RecordingPayload | null) => {
+        const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${meetingId}/end`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(recording ? { recording } : {}),
+        });
+        const data = await readApiResponse<{
+          message?: string;
+          data?: unknown;
+        }>(response, 'Failed to end conference');
 
-      const data = (await response.json()) as {
-        message?: string;
-        data?: unknown;
+        return { data, response };
       };
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to end conference');
+      let droppedRecordingMessage = '';
+      let result = await submitEndMeeting(selectedRecording);
+
+      if (
+        selectedRecording
+        && !result.response.ok
+        && isRequestTooLargeResponse(result.response, result.data.message)
+      ) {
+        droppedRecordingMessage = getDroppedRecordingMessage(selectedRecording);
+        result = await submitEndMeeting(null);
       }
 
-      return data;
+      if (!result.response.ok) {
+        throw new Error(result.data.message || 'Failed to end conference');
+      }
+
+      return {
+        ...result.data,
+        message: [
+          result.data.message,
+          droppedRecordingMessage,
+        ].filter(Boolean).join(' '),
+      };
     },
     onSuccess: async (data) => {
       cacheEndedMeeting(queryClient, subjectId, meetingId, data.data);
