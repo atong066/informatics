@@ -19,6 +19,7 @@ import Modal from '../../components/Modal';
 import NotificationPopup from '../../components/NotificationPopup';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
 import FacultyLayout from '../../layout/faculty/FacultyLayout';
+import { readApiResponse } from '../../lib/apiResponse';
 import { getStoredToken } from '../../lib/auth';
 
 type RecordingPayload = {
@@ -27,6 +28,8 @@ type RecordingPayload = {
   mimeType: string;
   size: number;
 };
+
+const meetingRecordingMaxBytes = 100 * 1024 * 1024;
 
 type MeetingRecord = {
   id: string;
@@ -198,6 +201,10 @@ function meetingTone(status: string) {
 }
 
 async function readRecordingFile(file: File) {
+  if (file.size > meetingRecordingMaxBytes) {
+    throw new Error(`Recording is ${formatBytes(file.size)}, over the 100 MB limit.`);
+  }
+
   return new Promise<RecordingPayload>((resolve, reject) => {
     const reader = new FileReader();
 
@@ -279,10 +286,10 @@ function FacultyMeetingDetails() {
         },
       });
 
-      const data = (await response.json()) as {
+      const data = await readApiResponse<{
         message?: string;
         data?: unknown;
-      };
+      }>(response, 'Failed to end conference');
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to start conference');
@@ -355,6 +362,7 @@ function FacultyMeetingDetails() {
         queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] }),
         queryClient.invalidateQueries({ queryKey: ['faculty-classroom'] }),
       ]);
+      navigate(`/faculty/subjects/${subjectId}`, { replace: true });
     },
     onError: (error: Error) => {
       setPopupState({
@@ -487,6 +495,7 @@ function FacultyMeetingDetails() {
                     queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] }),
                     queryClient.invalidateQueries({ queryKey: ['faculty-classroom'] }),
                   ]);
+                  navigate(`/faculty/subjects/${subjectId}`, { replace: true });
                 }}
               />
 

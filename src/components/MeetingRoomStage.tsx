@@ -19,6 +19,7 @@ import {
   FiVideoOff,
   FiX,
 } from 'react-icons/fi';
+import { readApiResponse } from '../lib/apiResponse';
 
 type MeetingStatus = 'scheduled' | 'live' | 'ended';
 type MeetingRoomLayout = 'balanced' | 'faculty-focus';
@@ -84,6 +85,12 @@ type MeetingRoomState = {
   screenShare: ScreenShareState;
 };
 
+type MeetingEndedPayload = {
+  message?: string;
+  data?: unknown;
+  endedByUserId?: string;
+};
+
 type JoinMeetingResult =
   | {
     ok: true;
@@ -136,6 +143,7 @@ const defaultDrawingPermission: DrawingPermission = {
 };
 
 const defaultDrawingColor = '#12815a';
+const meetingRecordingMaxBytes = 100 * 1024 * 1024;
 const drawingColorOptions = [
   defaultDrawingColor,
   '#2563eb',
@@ -174,6 +182,92 @@ function getSupportedRecordingMimeType(hasVideo: boolean) {
 
 function getRecordingFileExtension(mimeType: string) {
   return mimeType.startsWith('audio/') ? 'webm' : 'webm';
+}
+
+function formatRecordingSize(size: number) {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let value = size;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  const formattedValue = unitIndex === 0 || value >= 10
+    ? Math.round(value).toString()
+    : value.toFixed(1);
+
+  return `${formattedValue} ${units[unitIndex]}`;
+}
+
+function getOversizedRecordingWarning(size: number) {
+  return `Faculty screen recording was ${formatRecordingSize(size)}, over the 100 MB limit, so the session ended without AI notes.`;
+}
+
+function hasParticipantMedia(participant: RemoteParticipant) {
+  return Boolean(participant.stream || participant.screenStream);
+}
+
+function preferRemoteParticipant(
+  current: RemoteParticipant | undefined,
+  candidate: RemoteParticipant,
+) {
+  if (!current) {
+    return candidate;
+  }
+
+  if (!hasParticipantMedia(current) && hasParticipantMedia(candidate)) {
+    return candidate;
+  }
+
+  if (hasParticipantMedia(current) && !hasParticipantMedia(candidate)) {
+    return current;
+  }
+
+  return candidate;
+}
+
+function uniqueMeetingParticipants(
+  participants: MeetingParticipant[],
+  selfUserId?: string | null,
+) {
+  const participantByUserId = new Map<string, MeetingParticipant>();
+
+  participants.forEach((participant) => {
+    if (selfUserId && participant.userId === selfUserId) {
+      return;
+    }
+
+    participantByUserId.set(participant.userId, participant);
+  });
+
+  return [...participantByUserId.values()];
+}
+
+function uniqueRemoteParticipants(
+  participants: RemoteParticipant[],
+  selfUserId?: string | null,
+  excludedSocketId?: string | null,
+) {
+  const participantByUserId = new Map<string, RemoteParticipant>();
+
+  participants.forEach((participant) => {
+    if (participant.socketId === excludedSocketId) {
+      return;
+    }
+
+    if (selfUserId && participant.userId === selfUserId) {
+      return;
+    }
+
+    participantByUserId.set(
+      participant.userId,
+      preferRemoteParticipant(participantByUserId.get(participant.userId), participant),
+    );
+  });
+
+  return [...participantByUserId.values()];
 }
 
 type LocalMediaResult = {
@@ -427,6 +521,7 @@ function MeetingRoomStage({
   const recordingMimeTypeRef = useRef('video/webm');
   const screenRecordingPromptedRef = useRef(false);
   const selfRef = useRef<MeetingParticipant | null>(null);
+  const joinSequenceRef = useRef(0);
   const activeScreenShareRef = useRef<ScreenShareState>({
     active: false,
     participant: null,
@@ -473,14 +568,25 @@ function MeetingRoomStage({
   const canJoinRoom = meetingStatus === 'live';
   const isFacultyFocusLayout = layout === 'faculty-focus' && role === 'faculty';
   const usesMainStageLayout = isFacultyFocusLayout || role === 'student';
+  const uniqueRemoteRoomParticipants = uniqueRemoteParticipants(
+    remoteParticipants,
+    selfParticipant?.userId,
+  );
+  const studentFacultyStageParticipant = role === 'student'
+    ? uniqueRemoteRoomParticipants.find((participant) => participant.role === 'faculty' && participant.isHost)
+      ?? uniqueRemoteRoomParticipants.find((participant) => participant.role === 'faculty')
+      ?? null
+    : null;
   const activeRemoteScreenShareSocketId = activeScreenShare.active && activeScreenShare.participant?.socketId !== selfParticipant?.socketId
     ? activeScreenShare.participant?.socketId
     : null;
-  const visibleRemoteParticipants = [...remoteParticipants]
-    .filter((participant) => participant.socketId !== selfParticipant?.socketId)
-    .filter((participant) => participant.socketId !== activeRemoteScreenShareSocketId)
-    .filter((participant) =>
-      !(isFacultyFocusLayout && selfParticipant && participant.userId === selfParticipant.userId))
+  const participantStripExcludedSocketId = activeRemoteScreenShareSocketId
+    ?? (role === 'student' ? studentFacultyStageParticipant?.socketId ?? null : null);
+  const visibleRemoteParticipants = uniqueRemoteParticipants(
+    remoteParticipants,
+    selfParticipant?.userId,
+    participantStripExcludedSocketId,
+  )
     .sort((left, right) => {
       if (left.role !== right.role) {
         return left.role === 'student' ? -1 : 1;
@@ -492,7 +598,7 @@ function MeetingRoomStage({
 
       return left.displayName.localeCompare(right.displayName);
     });
-  const participantCount = visibleRemoteParticipants.length + (localStream || canJoinRoom ? 1 : 0);
+  const participantCount = uniqueRemoteRoomParticipants.length + (localStream || canJoinRoom ? 1 : 0);
   const hasLocalAudio = Boolean(localStream?.getAudioTracks().length);
   const hasLocalVideo = Boolean(localStream?.getVideoTracks().length);
   const localPreviewStream = hasLocalVideo && isVideoEnabled ? localStream : null;
@@ -510,17 +616,35 @@ function MeetingRoomStage({
         ? `${localIdentityDetail} microphone connected, camera off`
         : 'Joined without local camera or microphone';
   const remoteScreenShareEntry = activeRemoteScreenShareSocketId
-    ? remoteParticipants.find((participant) => participant.socketId === activeRemoteScreenShareSocketId) ?? null
+    ? uniqueRemoteRoomParticipants.find((participant) => participant.socketId === activeRemoteScreenShareSocketId) ?? null
     : null;
   const remoteScreenShareParticipant = remoteScreenShareEntry ?? activeScreenShare.participant;
   const sharedScreenStream = screenStream ?? remoteScreenShareEntry?.screenStream ?? null;
   const hasSharedScreenStage = Boolean(screenStream || activeRemoteScreenShareSocketId);
-  const mainStageLabel = hasSharedScreenStage ? 'Screen share' : localTileLabel;
-  const mainStageStream = hasSharedScreenStage ? sharedScreenStream : localPreviewStream;
+  const usesStudentFacultyStage = role === 'student' && !hasSharedScreenStage;
+  const mainStageIsLocal = Boolean(screenStream || (!usesStudentFacultyStage && !hasSharedScreenStage));
+  const isFacultyScreenStage = hasSharedScreenStage
+    && (remoteScreenShareParticipant?.role === 'faculty' || (role === 'faculty' && Boolean(screenStream)));
+  const mainStageLabel = hasSharedScreenStage
+    ? isFacultyScreenStage
+      ? 'Faculty screen'
+      : 'Screen share'
+    : usesStudentFacultyStage
+      ? studentFacultyStageParticipant?.displayName ?? 'Faculty stage'
+      : localTileLabel;
+  const mainStageStream = hasSharedScreenStage
+    ? sharedScreenStream
+    : usesStudentFacultyStage
+      ? studentFacultyStageParticipant?.stream ?? null
+      : localPreviewStream;
   const mainStageDetail = hasSharedScreenStage
     ? screenStream
       ? 'Your shared screen'
       : `${remoteScreenShareParticipant?.displayName ?? 'A participant'} is sharing their screen`
+    : usesStudentFacultyStage
+      ? studentFacultyStageParticipant
+        ? 'Faculty live feed'
+        : 'Waiting for the faculty stage to appear.'
     : localTileDetail;
   const facultyMainStageDetail = hasSharedScreenStage
     ? mainStageDetail
@@ -529,9 +653,13 @@ function MeetingRoomStage({
       : localTileDetail;
   const largeMainStageDetail = isFacultyFocusLayout ? facultyMainStageDetail : mainStageDetail;
   const largeStageBadge = hasSharedScreenStage
-    ? 'Screen share'
+    ? isFacultyScreenStage
+      ? 'Faculty screen'
+      : 'Screen share'
     : isFacultyFocusLayout
       ? 'Faculty stage'
+      : usesStudentFacultyStage
+        ? 'Faculty stage'
       : 'Classroom stage';
   const participantStripTitle = isFacultyFocusLayout
     ? 'Students and guests appear below the main stage.'
@@ -544,6 +672,11 @@ function MeetingRoomStage({
     : 'Other participants will line up underneath the main stage as soon as they join the live room.';
   const remoteStudentParticipants = remoteParticipants
     .filter((participant) => participant.role === 'student')
+    .filter((participant) => participant.userId !== selfParticipant?.userId);
+  const uniqueRemoteStudentParticipants = uniqueRemoteParticipants(
+    remoteStudentParticipants,
+    selfParticipant?.userId,
+  )
     .sort((left, right) => left.displayName.localeCompare(right.displayName));
   const selectedDrawerIds = new Set(drawingPermission.allowedUserIds);
   const drawingAllowed = Boolean(
@@ -587,15 +720,39 @@ function MeetingRoomStage({
     return hasVideo && !hasAudio;
   }
 
+  function closeRemoteParticipantConnection(socketId: string) {
+    const peerConnection = getPeerConnection(socketId);
+
+    peerConnection?.close();
+    peersRef.current.delete(socketId);
+    pendingOfferParticipantsRef.current.delete(socketId);
+    remoteParticipantsRef.current.delete(socketId);
+  }
+
+  function pruneDuplicateRemoteUser(participant: MeetingParticipant) {
+    remoteParticipantsRef.current.forEach((entry) => {
+      if (entry.userId === participant.userId && entry.socketId !== participant.socketId) {
+        closeRemoteParticipantConnection(entry.socketId);
+      }
+    });
+  }
+
   function upsertRemoteParticipant(participant: MeetingParticipant, stream?: MediaStream | null) {
+    if (participant.userId === (selfRef.current?.userId ?? selfParticipant?.userId)) {
+      return;
+    }
+
+    pruneDuplicateRemoteUser(participant);
     remoteParticipantsRef.current.set(participant.socketId, participant);
 
     setRemoteParticipants((current) => {
-      const existingParticipant = current.find((entry) => entry.socketId === participant.socketId);
+      const currentWithoutDuplicateUser = current.filter((entry) =>
+        entry.userId !== participant.userId || entry.socketId === participant.socketId);
+      const existingParticipant = currentWithoutDuplicateUser.find((entry) => entry.socketId === participant.socketId);
       const isScreenStream = isScreenShareStream(participant, stream ?? null);
 
       if (existingParticipant) {
-        return current.map((entry) =>
+        return currentWithoutDuplicateUser.map((entry) =>
           entry.socketId === participant.socketId
             ? {
               ...entry,
@@ -608,7 +765,7 @@ function MeetingRoomStage({
       }
 
       return [
-        ...current,
+        ...currentWithoutDuplicateUser,
         {
           ...participant,
           stream: stream && !isScreenStream ? stream : null,
@@ -619,8 +776,7 @@ function MeetingRoomStage({
   }
 
   function removeRemoteParticipant(socketId: string) {
-    remoteParticipantsRef.current.delete(socketId);
-    pendingOfferParticipantsRef.current.delete(socketId);
+    closeRemoteParticipantConnection(socketId);
     setRemoteParticipants((current) =>
       current.filter((participant) => participant.socketId !== socketId));
   }
@@ -629,10 +785,14 @@ function MeetingRoomStage({
     const targets = new Map<string, MeetingParticipant>();
 
     remoteParticipants.forEach((participant) => {
-      targets.set(participant.socketId, participant);
+      if (participant.userId !== selfRef.current?.userId) {
+        targets.set(participant.userId, participant);
+      }
     });
     remoteParticipantsRef.current.forEach((participant) => {
-      targets.set(participant.socketId, participant);
+      if (participant.userId !== selfRef.current?.userId) {
+        targets.set(participant.userId, participant);
+      }
     });
 
     return [...targets.values()];
@@ -685,6 +845,8 @@ function MeetingRoomStage({
   }
 
   function cleanupRoom(announceLeave: boolean) {
+    joinSequenceRef.current += 1;
+
     if (isClosingRef.current) {
       return;
     }
@@ -709,6 +871,7 @@ function MeetingRoomStage({
       mediaRecorderRef.current.stop();
     }
     mediaRecorderRef.current = null;
+    recordingChunksRef.current = [];
     recordingSourceRef.current = null;
     recordingMimeTypeRef.current = 'video/webm';
     screenRecordingPromptedRef.current = false;
@@ -1441,20 +1604,34 @@ function MeetingRoomStage({
     await stopSessionRecording();
 
     if (recordingChunksRef.current.length === 0) {
-      return null;
+      return {
+        recording: null,
+        warning: null,
+      };
     }
 
     const mimeType = recordingChunksRef.current[0]?.type || recordingMimeTypeRef.current || 'video/webm';
     const recordingBlob = new Blob(recordingChunksRef.current, { type: mimeType });
+
+    if (recordingBlob.size > meetingRecordingMaxBytes) {
+      return {
+        recording: null,
+        warning: getOversizedRecordingWarning(recordingBlob.size),
+      };
+    }
+
     const dataUrl = await blobToDataUrl(recordingBlob);
     const extension = getRecordingFileExtension(mimeType);
 
     return {
-      name: `${meetingId}-recording-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`,
-      dataUrl,
-      mimeType,
-      size: recordingBlob.size,
-    } satisfies RecordingPayload;
+      recording: {
+        name: `${meetingId}-recording-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`,
+        dataUrl,
+        mimeType,
+        size: recordingBlob.size,
+      } satisfies RecordingPayload,
+      warning: null,
+    };
   }
 
   async function startScreenShare() {
@@ -1688,13 +1865,22 @@ function MeetingRoomStage({
       applyScreenShareState(result.roomState.screenShare);
     }
 
-    result.participants.forEach((participant) => {
+    const nextParticipants = uniqueMeetingParticipants(result.participants, result.self.userId);
+    const nextParticipantSocketIds = new Set(nextParticipants.map((participant) => participant.socketId));
+
+    peersRef.current.forEach((_peerConnection, socketId) => {
+      if (!nextParticipantSocketIds.has(socketId)) {
+        closeRemoteParticipantConnection(socketId);
+      }
+    });
+    remoteParticipantsRef.current.clear();
+    nextParticipants.forEach((participant) => {
       remoteParticipantsRef.current.set(participant.socketId, participant);
     });
     setRemoteParticipants((current) => {
       const currentBySocketId = new Map(current.map((participant) => [participant.socketId, participant]));
 
-      return result.participants.map((participant) => {
+      return nextParticipants.map((participant) => {
         const existingParticipant = currentBySocketId.get(participant.socketId);
 
         return {
@@ -1774,6 +1960,9 @@ function MeetingRoomStage({
       return;
     }
 
+    const joinSequence = joinSequenceRef.current + 1;
+
+    joinSequenceRef.current = joinSequence;
     isJoiningRef.current = true;
     setIsConnecting(true);
     setRoomError(null);
@@ -1781,6 +1970,11 @@ function MeetingRoomStage({
 
     const mediaResult = await requestLocalMedia();
     const stream = mediaResult.stream;
+
+    if (joinSequenceRef.current !== joinSequence || socketRef.current || !canJoinRoom) {
+      stream?.getTracks().forEach((track) => track.stop());
+      return;
+    }
 
     localStreamRef.current = stream;
     setLocalStream(stream);
@@ -1808,10 +2002,6 @@ function MeetingRoomStage({
     });
 
     socket.on('meeting:user-left', (payload: { socketId: string }) => {
-      const peerConnection = getPeerConnection(payload.socketId);
-
-      peerConnection?.close();
-      peersRef.current.delete(payload.socketId);
       removeRemoteParticipant(payload.socketId);
     });
 
@@ -1861,6 +2051,22 @@ function MeetingRoomStage({
         : 'Screen sharing has stopped.');
     });
 
+    socket.on('meeting:ended', (payload: MeetingEndedPayload = {}) => {
+      if (payload.endedByUserId && payload.endedByUserId === selfRef.current?.userId) {
+        return;
+      }
+
+      const endedMessage = payload.message || 'Conference ended successfully';
+
+      cleanupRoom(false);
+      setRoomError(null);
+      setRoomMessage(endedMessage);
+      onMeetingEnded?.({
+        message: endedMessage,
+        data: payload.data,
+      });
+    });
+
     socket.on('disconnect', () => {
       if (isClosingRef.current) {
         return;
@@ -1891,8 +2097,22 @@ function MeetingRoomStage({
         });
       });
 
+      if (joinSequenceRef.current !== joinSequence || socketRef.current !== socket || isClosingRef.current) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        stream?.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       await applyJoinResult(socket, result, mediaResult.notice, stream);
     } catch (error) {
+      if (joinSequenceRef.current !== joinSequence) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        stream?.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
       cleanupRoom(false);
       setRoomError(
         error instanceof Error
@@ -1901,8 +2121,10 @@ function MeetingRoomStage({
       );
       setRoomMessage('Connection failed.');
     } finally {
-      isJoiningRef.current = false;
-      setIsConnecting(false);
+      if (joinSequenceRef.current === joinSequence) {
+        isJoiningRef.current = false;
+        setIsConnecting(false);
+      }
     }
   }
 
@@ -2034,12 +2256,6 @@ function MeetingRoomStage({
       return;
     }
 
-    if (!mediaRecorderRef.current && recordingChunksRef.current.length === 0) {
-      setRoomError('Share the faculty screen first so the whole-session video can be recorded and saved.');
-      setRoomMessage('Session is still live.');
-      return;
-    }
-
     setIsEndingSession(true);
     setRoomError(null);
     setRoomMessage(
@@ -2049,7 +2265,7 @@ function MeetingRoomStage({
     );
 
     try {
-      const recording = await buildRecordingPayload();
+      const { recording, warning } = await buildRecordingPayload();
 
       const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${meetingId}/end`, {
         method: 'POST',
@@ -2059,10 +2275,10 @@ function MeetingRoomStage({
         },
         body: JSON.stringify(recording ? { recording } : {}),
       });
-      const data = (await response.json()) as {
+      const data = await readApiResponse<{
         message?: string;
         data?: unknown;
-      };
+      }>(response, 'Unable to end the session.');
 
       if (!response.ok) {
         throw new Error(data.message || 'Unable to end the session.');
@@ -2074,11 +2290,18 @@ function MeetingRoomStage({
         });
       }
 
+      const endedMessage = [
+        data.message || (recording
+          ? 'Session ended. Recording was saved for later viewing.'
+          : 'Session ended successfully.'),
+        warning,
+      ].filter(Boolean).join(' ');
+
       cleanupRoom(true);
       setRoomError(null);
-      setRoomMessage(data.message || 'Session ended. Recording was saved for later viewing.');
+      setRoomMessage(endedMessage);
       onMeetingEnded?.({
-        message: data.message || 'Session ended. Recording was saved for later viewing.',
+        message: endedMessage,
         data: data.data,
       });
     } catch (error) {
@@ -2226,7 +2449,7 @@ function MeetingRoomStage({
             </div>
             {drawingPermission.mode === 'selected' ? (
               <div className="inline-flex min-h-11 max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/12 bg-white/8 px-2 py-1">
-                {remoteStudentParticipants.length > 0 ? remoteStudentParticipants.map((participant) => {
+                {uniqueRemoteStudentParticipants.length > 0 ? uniqueRemoteStudentParticipants.map((participant) => {
                   const isSelected = selectedDrawerIds.has(participant.userId);
 
                   return (
@@ -2411,7 +2634,7 @@ function MeetingRoomStage({
               label={mainStageLabel}
               detail={largeMainStageDetail}
               stream={mainStageStream}
-              muted
+              muted={mainStageIsLocal}
               tone="local"
               variant="feature"
               badgeLabel={largeStageBadge}
@@ -2458,7 +2681,7 @@ function MeetingRoomStage({
               <div className="mt-4 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {visibleRemoteParticipants.map((participant) => (
                   <VideoTile
-                    key={participant.socketId}
+                    key={participant.userId}
                     label={participant.displayName}
                     detail={`${participant.role === 'faculty' ? 'Faculty' : 'Student'}${participant.isHost ? ' host' : ''}`}
                     stream={participant.stream}
@@ -2485,7 +2708,7 @@ function MeetingRoomStage({
                 label={mainStageLabel}
                 detail={mainStageDetail}
                 stream={mainStageStream}
-                muted
+                muted={mainStageIsLocal}
                 tone="local"
                 fit={hasSharedScreenStage ? 'contain' : 'cover'}
                 fullscreenActive={isStageFullscreen}
@@ -2515,7 +2738,7 @@ function MeetingRoomStage({
             <div className="grid gap-4">
               {visibleRemoteParticipants.map((participant) => (
                 <VideoTile
-                  key={participant.socketId}
+                  key={participant.userId}
                   label={participant.displayName}
                   detail={`${participant.role === 'faculty' ? 'Faculty' : 'Student'}${participant.isHost ? ' host' : ''}`}
                   stream={participant.stream}

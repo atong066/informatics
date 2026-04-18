@@ -83,10 +83,13 @@ function AdminSections() {
   );
   const curriculumOptions = useMemo(
     () =>
-      curriculums.map((curriculum) => ({
-        value: curriculum.id,
-        label: `${curriculum.title} | ${curriculum.code}`,
-      })),
+      [
+        { value: '', label: 'No curriculum yet' },
+        ...curriculums.map((curriculum) => ({
+          value: curriculum.id,
+          label: `${curriculum.title} | ${curriculum.code}`,
+        })),
+      ],
     [curriculums],
   );
   const facultyOptions = useMemo(
@@ -223,10 +226,6 @@ function AdminSections() {
       nextErrors.name = 'Section name is required';
     }
 
-    if (!sectionForm.curriculumId) {
-      nextErrors.curriculumId = 'Curriculum is required';
-    }
-
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors);
       return;
@@ -268,11 +267,11 @@ function AdminSections() {
             Section planning
           </p>
           <h1 className="mt-2 max-w-4xl text-fluid-2xl font-semibold tracking-[-0.05em] text-[#173b47]">
-            Connect each section to a curriculum and adviser.
+            Create sections now, connect curriculum when it is ready.
           </h1>
           <p className="mt-2 max-w-3xl text-fluid-sm leading-6 text-[#607c88]">
-            The section decides the curriculum students belong to. Assign faculty teaching loads,
-            subjects, and schedules from Faculty management.
+            Curriculum is optional during section setup. Assign faculty teaching loads, subjects,
+            and schedules from Faculty management.
           </p>
         </section>
 
@@ -284,7 +283,7 @@ function AdminSections() {
                   {editingSectionId ? 'Edit section' : 'Add section'}
                 </p>
                 <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                  Add the section name, choose its curriculum, and optionally set an adviser.
+                  Add the section name, optionally choose a curriculum, and optionally set an adviser.
                 </p>
               </div>
               {editingSectionId ? (
@@ -308,18 +307,18 @@ function AdminSections() {
                     setSectionForm((current) => ({ ...current, name: event.target.value }));
                     setFieldErrors((current) => ({ ...current, name: '' }));
                   }}
-                  placeholder="BSIT-2A"
+                  placeholder="DCS-B7 - 2"
                   className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
                 />
               </InputField>
 
-              <InputField label="Curriculum" error={fieldErrors.curriculumId}>
+              <InputField label="Curriculum (optional)" error={fieldErrors.curriculumId}>
                 <CustomSelect
                   id="section-curriculum"
                   value={sectionForm.curriculumId}
                   onChange={(value) => applyCurriculum(value)}
                   options={curriculumOptions}
-                  placeholder={curriculumOptions.length ? 'Choose curriculum' : 'Create a curriculum first'}
+                  placeholder={curriculumOptions.length ? 'Optional curriculum' : 'No curriculums yet'}
                   tone="muted"
                 />
               </InputField>
@@ -363,8 +362,8 @@ function AdminSections() {
                 <div>
                   <p className="text-fluid-xl font-semibold text-[#173b47]">Existing sections</p>
                   <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                    Each section inherits a curriculum. Faculty loads control which subjects become
-                    visible to students.
+                    Sections can stay unlinked until curriculum planning is ready. Faculty loads
+                    control which subjects become visible to students.
                   </p>
                 </div>
                 <div className="rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">

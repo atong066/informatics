@@ -373,6 +373,7 @@ function FacultyMeetingClassroom() {
                     queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] }),
                     queryClient.invalidateQueries({ queryKey: ['faculty-classroom'] }),
                   ]);
+                  navigate(`/faculty/subjects/${subjectId}`, { replace: true });
                 }}
               />
             </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowLeft,
   FiClock,
@@ -110,6 +110,7 @@ function StudentMeetingDetails() {
   const navigate = useNavigate();
   const { activeUser, isError } = useCurrentStudent();
   const token = getStoredToken();
+  const queryClient = useQueryClient();
   const [notesModalOpen, setNotesModalOpen] = useState(false);
   const [recordingModalOpen, setRecordingModalOpen] = useState(false);
 
@@ -203,6 +204,13 @@ function StudentMeetingDetails() {
                 meetingId={meeting.id}
                 meetingStatus={meeting.status}
                 role="student"
+                onMeetingEnded={async () => {
+                  await Promise.all([
+                    queryClient.invalidateQueries({ queryKey: ['student-meeting-detail', subjectId, meetingId] }),
+                    queryClient.invalidateQueries({ queryKey: ['student-subject-detail', subjectId] }),
+                  ]);
+                  navigate(`/student/subjects/${subjectId}`, { replace: true });
+                }}
               />
 
               <article className="rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
