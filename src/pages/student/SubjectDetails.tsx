@@ -2,20 +2,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowRight,
-  FiPaperclip,
-  FiExternalLink,
   FiBookOpen,
   FiCheckCircle,
   FiClipboard,
   FiCode,
   FiCpu,
   FiDatabase,
+  FiEye,
+  FiExternalLink,
   FiLayers,
-  FiTrendingUp,
   FiPackage,
+  FiPaperclip,
   FiSend,
   FiTrash2,
+  FiTrendingUp,
   FiUploadCloud,
+  FiVideo,
 } from 'react-icons/fi';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import Modal from '../../components/Modal';
@@ -38,6 +40,9 @@ type StudentSubmissionRecord = {
   textContent: string;
   attachments: AttachmentRecord[];
   submittedAt: string;
+  reviewScore: number | null;
+  reviewComment: string;
+  reviewedAt: string;
 };
 
 type AssessmentAttemptSummary = {
@@ -49,6 +54,28 @@ type AssessmentAttemptSummary = {
   manualReviewPending: boolean;
   percentage: number;
   submittedAt: string;
+};
+
+type MeetingRecord = {
+  id: string;
+  title: string;
+  agenda: string;
+  roomName: string;
+  status: 'scheduled' | 'live' | 'ended';
+  startedAt: string;
+  endedAt: string;
+  aiStatus: 'idle' | 'processing' | 'ready' | 'failed';
+  aiStatusLabel: string;
+  transcriptText: string;
+  aiNotes: string;
+  recordingName: string;
+  recordingUrl: string;
+  recordingMimeType: string;
+  recordingSize: number;
+  noteError: string;
+  createdAt: string;
+  updatedAt: string;
+  joinUrl: string;
 };
 
 type SubjectDetailsResponse = {
@@ -123,6 +150,7 @@ type SubjectDetailsResponse = {
     availabilityLabel: string;
     status: string;
   }>;
+  meetings: MeetingRecord[];
 };
 
 const subjectTabs = [
@@ -131,9 +159,13 @@ const subjectTabs = [
   { id: 'activities', label: 'Activities', icon: FiLayers },
   { id: 'assignments', label: 'Assignments', icon: FiClipboard },
   { id: 'assessments', label: 'Assessment', icon: FiCheckCircle },
+  { id: 'meetings', label: 'Meetings', icon: FiVideo },
 ] as const;
 
 type SubmissionTargetKind = 'activity' | 'assignment';
+
+const MAX_ATTACHMENT_BYTES = 2_000_000;
+const MAX_TOTAL_ATTACHMENT_BYTES = 5_000_000;
 
 function getSubjectIcon(iconKey: string) {
   switch (iconKey) {
@@ -155,15 +187,20 @@ function statusTone(status: string) {
     case 'Active':
     case 'Checked':
     case 'Available':
+    case 'Live':
+    case 'Ready':
       return 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]';
     case 'Submitted':
     case 'Pending review':
+    case 'Ended':
       return 'border-[#c8d9ec] bg-[#eef4fa] text-[#2f78bc]';
     case 'In progress':
     case 'Due soon':
     case 'Upcoming':
+    case 'Processing':
       return 'border-[#f2d9bc] bg-[#fff5e8] text-[#b06b15]';
     case 'Closed':
+    case 'Failed':
       return 'border-[#ecd0d0] bg-[#fff2f2] text-[#b35a5a]';
     default:
       return 'border-[#d6e1ea] bg-[#f4f8fb] text-[#607790]';
@@ -199,9 +236,9 @@ function formatCalendarDate(value: string) {
   });
 }
 
-function formatDateTime(value: string) {
+function formatDateTime(value: string, fallback = 'Not submitted yet') {
   if (!value) {
-    return 'Not submitted yet';
+    return fallback;
   }
 
   const parsedDate = new Date(value);
@@ -229,6 +266,44 @@ function formatBytes(size: number) {
   }
 
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getAttachmentSizeError(attachments: Array<Pick<AttachmentRecord, 'name' | 'size'>>) {
+  const oversizedAttachment = attachments.find((attachment) => attachment.size > MAX_ATTACHMENT_BYTES);
+
+  if (oversizedAttachment) {
+    return `Attachment "${oversizedAttachment.name}" is too large. Keep each file under 2 MB.`;
+  }
+
+  const totalAttachmentBytes = attachments.reduce((sum, attachment) => sum + attachment.size, 0);
+
+  if (totalAttachmentBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+    return 'Attachments are too large. Keep the total under 5 MB.';
+  }
+
+  return null;
+}
+
+async function parseApiResponse<T>(response: Response, fallbackMessage: string) {
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(responseText) as T;
+  } catch {
+    if (response.status === 413) {
+      throw new Error('This submission is too large for the server to accept. Use smaller files and keep the total under 5 MB.');
+    }
+
+    throw new Error(
+      response.ok
+        ? 'The server returned a web page instead of an API response. Check that the backend is reachable from this device.'
+        : fallbackMessage,
+    );
+  }
 }
 
 function formatAssessmentType(value: 'quiz' | 'quarter-exam') {
@@ -262,6 +337,17 @@ function formatAssessmentWindow(startTime: string, endTime: string) {
   }
 
   return formatTimeLabel(startTime || endTime);
+}
+
+function formatMeetingStatus(status: MeetingRecord['status']) {
+  switch (status) {
+    case 'live':
+      return 'Live';
+    case 'ended':
+      return 'Ended';
+    default:
+      return 'Scheduled';
+  }
 }
 
 function getAssessmentAttemptScoreSummary(attempt: AssessmentAttemptSummary) {
@@ -342,6 +428,7 @@ function SubjectDetails() {
   const [submissionText, setSubmissionText] = useState('');
   const [submissionAttachments, setSubmissionAttachments] = useState<AttachmentRecord[]>([]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [selectedRecording, setSelectedRecording] = useState<MeetingRecord | null>(null);
   const [popupState, setPopupState] = useState<{
     open: boolean;
     title: string;
@@ -363,10 +450,10 @@ function SubjectDetails() {
         },
       });
 
-      const data = (await response.json()) as {
+      const data = await parseApiResponse<{
         message?: string;
         data?: SubjectDetailsResponse;
-      };
+      }>(response, 'Failed to load subject details');
 
       if (!response.ok || !data.data) {
         throw new Error(data.message || 'Failed to load subject details');
@@ -375,6 +462,10 @@ function SubjectDetails() {
       return data.data;
     },
     enabled: Boolean(token && activeUser && !isError && subjectId),
+    refetchInterval: (query) =>
+      query.state.data?.meetings.some((meeting) => meeting.aiStatus === 'processing')
+        ? 5000
+        : false,
   });
 
   if (!activeUser || isError) {
@@ -419,6 +510,8 @@ function SubjectDetails() {
         return subject.assignments.length;
       case 'assessments':
         return subject.assessments.length;
+      case 'meetings':
+        return subject.meetings.length;
       default:
         return 0;
     }
@@ -450,10 +543,10 @@ function SubjectDetails() {
         },
       );
 
-      const data = (await response.json()) as {
+      const data = await parseApiResponse<{
         message?: string;
         errors?: Record<string, string[]>;
-      };
+      }>(response, 'Failed to submit activity');
 
       if (!response.ok) {
         throw {
@@ -544,6 +637,22 @@ function SubjectDetails() {
 
   const handleSubmissionFilesSelected = async (event: ChangeEvent<HTMLInputElement>) => {
     try {
+      const sizeError = getAttachmentSizeError([
+        ...submissionAttachments,
+        ...Array.from(event.target.files ?? []),
+      ]);
+
+      if (sizeError) {
+        setSubmissionError(sizeError);
+        setPopupState({
+          open: true,
+          title: 'Unable to attach file',
+          message: sizeError,
+          variant: 'error',
+        });
+        return;
+      }
+
       const files = await readFilesAsDataUrls(event.target.files);
 
       if (files.length === 0) {
@@ -580,6 +689,13 @@ function SubjectDetails() {
 
     if (submissionType === 'file' && submissionAttachments.length === 0) {
       setSubmissionError('Upload at least one file before submitting');
+      return;
+    }
+
+    const sizeError = getAttachmentSizeError(submissionAttachments);
+
+    if (sizeError) {
+      setSubmissionError(sizeError);
       return;
     }
 
@@ -864,6 +980,24 @@ function SubjectDetails() {
                           </div>
                         </div>
 
+                        {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
+                          <div className="mt-4 rounded-[1rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#12815a]">
+                              Faculty review
+                            </p>
+                            {item.submission.reviewScore !== null ? (
+                              <p className="mt-2 text-fluid-base font-semibold text-[#173b70]">
+                                Score: {item.submission.reviewScore}
+                              </p>
+                            ) : null}
+                            {item.submission.reviewComment ? (
+                              <p className="formatted-text mt-2 text-fluid-sm leading-[1.65] text-[#45627f]">
+                                {item.submission.reviewComment}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
+
                         {item.submission?.textContent ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -987,6 +1121,24 @@ function SubjectDetails() {
                             </button>
                           </div>
                         </div>
+
+                        {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
+                          <div className="mt-4 rounded-[1rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
+                            <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#12815a]">
+                              Faculty review
+                            </p>
+                            {item.submission.reviewScore !== null ? (
+                              <p className="mt-2 text-fluid-base font-semibold text-[#173b70]">
+                                Score: {item.submission.reviewScore}
+                              </p>
+                            ) : null}
+                            {item.submission.reviewComment ? (
+                              <p className="formatted-text mt-2 text-fluid-sm leading-[1.65] text-[#45627f]">
+                                {item.submission.reviewComment}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
 
                         {item.submission?.textContent ? (
                           <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
@@ -1173,10 +1325,136 @@ function SubjectDetails() {
                   <EmptyTabState label="Assessment" />
                 )
               ) : null}
+
+              {activeTab === 'meetings' ? (
+                subject.meetings.length > 0 ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {subject.meetings.map((item) => {
+                      const meetingStatusLabel = formatMeetingStatus(item.status);
+
+                      return (
+                        <article
+                          key={item.id}
+                          className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(meetingStatusLabel)}`}>
+                                  {meetingStatusLabel}
+                                </span>
+                                <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.aiStatusLabel)}`}>
+                                  AI notes: {item.aiStatusLabel}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
+                              <p className="text-fluid-2xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
+                                Room
+                              </p>
+                              <p className="mt-1 max-w-[12rem] break-all text-fluid-xs font-semibold text-[#173b70]">
+                                {item.roomName}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#7088a1]">
+                            {item.agenda || 'No agenda published for this conference yet.'}
+                          </p>
+
+                          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Session timing
+                              </p>
+                              <p className="mt-2 text-fluid-sm text-[#45627f]">
+                                Created {formatDateTime(item.createdAt)}
+                              </p>
+                              <p className="mt-1 text-fluid-xs text-[#7088a1]">
+                                Started {formatDateTime(item.startedAt, 'not yet')} and ended {formatDateTime(item.endedAt, 'not yet')}
+                              </p>
+                            </div>
+
+                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Notes status
+                              </p>
+                              <p className="mt-2 text-fluid-sm font-semibold text-[#173b70]">
+                                {item.aiStatusLabel}
+                              </p>
+                              <p className="mt-1 text-fluid-xs text-[#7088a1]">
+                                {item.aiNotes
+                                  ? 'Notes are ready to review.'
+                                  : item.aiStatus === 'processing'
+                                    ? 'The instructor recording is still being processed.'
+                                    : 'Open the conference page for the latest room details.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <div>
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Conference action
+                              </p>
+                              <p className="mt-2 text-fluid-sm text-[#7088a1]">
+                                {item.status === 'live'
+                                  ? 'The conference is live. Open the room for the latest status and notes.'
+                                  : item.status === 'ended'
+                                    ? 'Review the conference summary and transcript.'
+                                    : 'This conference has been scheduled but has not started yet.'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/student/subjects/${subjectId}/meetings/${item.id}`)}
+                              className="inline-flex items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                            >
+                              {item.status === 'ended' ? 'Review conference' : 'Open room'}
+                              <FiArrowRight className="h-4 w-4" />
+                            </button>
+                            {item.recordingUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedRecording(item)}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#d8e3ec] bg-white px-3.5 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f8fbfd]"
+                              >
+                                <FiEye className="h-4 w-4" />
+                                Play recording
+                              </button>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <EmptyTabState label="Meetings" />
+                )
+              ) : null}
             </div>
           </section>
         ) : null}
       </div>
+
+      <Modal
+        open={Boolean(selectedRecording)}
+        title="Session recording"
+        description={selectedRecording?.recordingName || selectedRecording?.title || 'Saved class recording'}
+        onClose={() => setSelectedRecording(null)}
+        panelClassName="max-w-5xl"
+      >
+        {selectedRecording?.recordingUrl ? (
+          selectedRecording.recordingMimeType.startsWith('audio/') ? (
+            <audio src={selectedRecording.recordingUrl} controls className="w-full" />
+          ) : (
+            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+          )
+        ) : (
+          <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
+        )}
+      </Modal>
 
       <Modal
         open={isSubmissionModalOpen && Boolean(selectedSubmissionItem)}
@@ -1362,4 +1640,3 @@ function SubjectDetails() {
 }
 
 export default SubjectDetails;
-

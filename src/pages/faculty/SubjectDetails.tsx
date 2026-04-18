@@ -5,21 +5,25 @@ import {
   FiBookOpen,
   FiCheckCircle,
   FiClipboard,
+  FiClock,
   FiCode,
   FiCpu,
   FiDatabase,
   FiEdit2,
+  FiEye,
   FiExternalLink,
   FiLayers,
   FiLink2,
   FiList,
   FiPackage,
   FiPaperclip,
+  FiPlay,
   FiPlus,
   FiTrash2,
   FiTrendingUp,
   FiUploadCloud,
   FiUsers,
+  FiVideo,
 } from 'react-icons/fi';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import CustomDatePicker from '../../components/CustomDatePicker';
@@ -37,6 +41,28 @@ type AttachmentRecord = {
   dataUrl: string;
   mimeType: string;
   size: number;
+};
+
+type MeetingRecord = {
+  id: string;
+  title: string;
+  agenda: string;
+  roomName: string;
+  status: 'scheduled' | 'live' | 'ended';
+  startedAt: string;
+  endedAt: string;
+  aiStatus: 'idle' | 'processing' | 'ready' | 'failed';
+  aiStatusLabel: string;
+  transcriptText: string;
+  aiNotes: string;
+  recordingName: string;
+  recordingUrl: string;
+  recordingMimeType: string;
+  recordingSize: number;
+  noteError: string;
+  createdAt: string;
+  updatedAt: string;
+  joinUrl: string;
 };
 
 type FacultySubjectDetailsResponse = {
@@ -88,6 +114,8 @@ type FacultySubjectDetailsResponse = {
     dueDate: string;
     assignmentType: 'text' | 'file';
     attachments: AttachmentRecord[];
+    submittedCount: number;
+    totalStudents: number;
     status: string;
   }>;
   assessments: Array<{
@@ -105,6 +133,7 @@ type FacultySubjectDetailsResponse = {
     totalStudents: number;
     status: string;
   }>;
+  meetings: MeetingRecord[];
 };
 
 const subjectTabs = [
@@ -113,6 +142,7 @@ const subjectTabs = [
   { id: 'activities', label: 'Activities', icon: FiLayers },
   { id: 'assignments', label: 'Assignments', icon: FiClipboard },
   { id: 'assessments', label: 'Assessment', icon: FiCheckCircle },
+  { id: 'meetings', label: 'Meetings', icon: FiVideo },
 ] as const;
 
 type SubjectTabId = (typeof subjectTabs)[number]['id'];
@@ -136,11 +166,18 @@ function statusTone(status: string) {
     case 'Scheduled':
     case 'Active':
     case 'Completed':
+    case 'Live':
+    case 'Ready':
       return 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]';
     case 'In progress':
     case 'Due soon':
     case 'Upcoming':
+    case 'Processing':
       return 'border-[#f2d9bc] bg-[#fff5e8] text-[#b06b15]';
+    case 'Ended':
+      return 'border-[#c8d9ec] bg-[#eef4fa] text-[#2f78bc]';
+    case 'Failed':
+      return 'border-[#ecd0d0] bg-[#fff2f2] text-[#b35a5a]';
     default:
       return 'border-[#d6e1ea] bg-[#f4f8fb] text-[#607790]';
   }
@@ -187,6 +224,26 @@ function formatCalendarDate(value: string) {
   });
 }
 
+function formatDateTime(value: string, fallback = 'Not available') {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 function formatTimeLabel(value: string) {
   if (!value) {
     return '';
@@ -214,6 +271,17 @@ function formatAssessmentWindow(startTime: string, endTime: string) {
   }
 
   return formatTimeLabel(startTime || endTime);
+}
+
+function formatMeetingStatus(status: MeetingRecord['status']) {
+  switch (status) {
+    case 'live':
+      return 'Live';
+    case 'ended':
+      return 'Ended';
+    default:
+      return 'Scheduled';
+  }
 }
 
 const activityTypeOptions = [
@@ -283,6 +351,8 @@ function FacultySubjectDetails() {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+  const [selectedRecording, setSelectedRecording] = useState<MeetingRecord | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
   const [editingAssessmentId, setEditingAssessmentId] = useState<string | null>(null);
@@ -312,6 +382,8 @@ function FacultySubjectDetails() {
   const [assessmentSchedule, setAssessmentSchedule] = useState('');
   const [assessmentStartTime, setAssessmentStartTime] = useState('');
   const [assessmentEndTime, setAssessmentEndTime] = useState('');
+  const [meetingTitle, setMeetingTitle] = useState('');
+  const [meetingAgenda, setMeetingAgenda] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{
     lessonTitle?: string;
     lessonSummary?: string;
@@ -338,6 +410,7 @@ function FacultySubjectDetails() {
     assessmentSchedule?: string;
     assessmentStartTime?: string;
     assessmentEndTime?: string;
+    meetingTitle?: string;
   }>({});
   const [popupState, setPopupState] = useState<{
     open: boolean;
@@ -372,6 +445,10 @@ function FacultySubjectDetails() {
       return data.data;
     },
     enabled: Boolean(token && activeUser && !isError && subjectId),
+    refetchInterval: (query) =>
+      query.state.data?.meetings.some((meeting) => meeting.aiStatus === 'processing')
+        ? 5000
+        : false,
   });
 
   const addLessonMutation = useMutation({
@@ -949,6 +1026,100 @@ function FacultySubjectDetails() {
     },
   });
 
+  const createMeetingMutation = useMutation({
+    mutationFn: async ({ title, agenda }: { title: string; agenda: string }) => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          agenda,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to create conference',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeMeetingModal(true);
+      setPopupState({
+        open: true,
+        title: 'Conference scheduled',
+        message: 'The meeting is now ready from the Meetings tab.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        meetingTitle: error.errors?.title?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to schedule conference',
+        message: error.message || 'Please review the conference details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const startMeetingMutation = useMutation({
+    mutationFn: async (nextMeetingId: string) => {
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${nextMeetingId}/start`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to start conference');
+      }
+
+      return data;
+    },
+    onSuccess: async (_data, nextMeetingId) => {
+      setPopupState({
+        open: true,
+        title: 'Conference started',
+        message: 'Students can now open the live room.',
+        variant: 'success',
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] }),
+        queryClient.invalidateQueries({ queryKey: ['faculty-classroom'] }),
+      ]);
+      navigate(`/faculty/subjects/${subjectId}/meetings/${nextMeetingId}/classroom`);
+    },
+    onError: (error: Error) => {
+      setPopupState({
+        open: true,
+        title: 'Unable to start conference',
+        message: error.message || 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
   if (!activeUser || isError) {
     return null;
   }
@@ -986,6 +1157,8 @@ function FacultySubjectDetails() {
         return subject.assignments.length;
       case 'assessments':
         return subject.assessments.length;
+      case 'meetings':
+        return subject.meetings.length;
       default:
         return 0;
     }
@@ -1077,6 +1250,24 @@ function FacultySubjectDetails() {
     resetAssessmentForm();
   }
 
+  function resetMeetingForm() {
+    setMeetingTitle('');
+    setMeetingAgenda('');
+    setFieldErrors((current) => ({
+      ...current,
+      meetingTitle: undefined,
+    }));
+  }
+
+  function closeMeetingModal(force = false) {
+    if (!force && createMeetingMutation.isPending) {
+      return;
+    }
+
+    setIsMeetingModalOpen(false);
+    resetMeetingForm();
+  }
+
   function resetModuleForm() {
     setEditingModuleId(null);
     setModuleTitle('');
@@ -1137,6 +1328,11 @@ function FacultySubjectDetails() {
   const openCreateAssessmentModal = () => {
     resetAssessmentForm();
     setIsAssessmentModalOpen(true);
+  };
+
+  const openCreateMeetingModal = () => {
+    resetMeetingForm();
+    setIsMeetingModalOpen(true);
   };
 
   const openEditAssessmentModal = (assessmentRecord: FacultySubjectDetailsResponse['assessments'][number]) => {
@@ -1541,6 +1737,26 @@ function FacultySubjectDetails() {
     deleteAssessmentMutation.mutate(assessmentId);
   };
 
+  const handleSubmitMeeting = () => {
+    const trimmedTitle = meetingTitle.trim();
+    const trimmedAgenda = meetingAgenda.trim();
+
+    if (!trimmedTitle) {
+      setFieldErrors((current) => ({
+        ...current,
+        meetingTitle: 'Meeting title is required',
+      }));
+      return;
+    }
+
+    setMeetingTitle(trimmedTitle);
+    setMeetingAgenda(trimmedAgenda);
+    createMeetingMutation.mutate({
+      title: trimmedTitle,
+      agenda: trimmedAgenda,
+    });
+  };
+
   return (
     <FacultyLayout
       firstName={activeUser.firstName}
@@ -1668,6 +1884,17 @@ function FacultySubjectDetails() {
                 >
                   <FiPlus className="h-4 w-4" />
                   Add assessment
+                </button>
+              ) : null}
+
+              {activeTab === 'meetings' ? (
+                <button
+                  type="button"
+                  onClick={openCreateMeetingModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
+                >
+                  <FiPlus className="h-4 w-4" />
+                  Schedule conference
                 </button>
               ) : null}
             </div>
@@ -1925,6 +2152,33 @@ function FacultySubjectDetails() {
 
                         <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
 
+                        <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div className="flex items-center gap-2 text-[#2f78bc]">
+                            <FiUsers className="h-4 w-4" />
+                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                              Student submissions
+                            </p>
+                          </div>
+                          <div className="mt-3 flex items-end justify-between gap-3">
+                            <div>
+                              <p className="text-fluid-xl font-semibold text-[#173b70]">
+                                {item.submittedCount} submitted
+                              </p>
+                              <p className="mt-1 text-fluid-sm text-[#617d98]">
+                                out of {item.totalStudents} student{item.totalStudents === 1 ? '' : 's'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/faculty/subjects/${subjectId}/assignments/${item.id}/submissions`)}
+                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
+                            >
+                              View list
+                              <FiArrowRight className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+
                         {item.attachments.length > 0 ? (
                           <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
@@ -2070,10 +2324,214 @@ function FacultySubjectDetails() {
                   <EmptyTabState label="Assessment" />
                 )
               ) : null}
+
+              {activeTab === 'meetings' ? (
+                subject.meetings.length > 0 ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {subject.meetings.map((item) => {
+                      const meetingStatusLabel = formatMeetingStatus(item.status);
+
+                      return (
+                        <article
+                          key={item.id}
+                          className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(meetingStatusLabel)}`}>
+                                  {meetingStatusLabel}
+                                </span>
+                                <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.aiStatusLabel)}`}>
+                                  AI notes: {item.aiStatusLabel}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
+                              <p className="text-fluid-2xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
+                                Room
+                              </p>
+                              <p className="mt-1 max-w-[12rem] break-all text-fluid-xs font-semibold text-[#173b70]">
+                                {item.roomName}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">
+                            {item.agenda || 'No agenda added for this conference yet.'}
+                          </p>
+
+                          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Timeline
+                              </p>
+                              <p className="mt-2 text-fluid-sm text-[#45627f]">
+                                Created {formatDateTime(item.createdAt)}
+                              </p>
+                              <p className="mt-1 text-fluid-xs text-[#7088a1]">
+                                Started {formatDateTime(item.startedAt, 'not yet')} and ended {formatDateTime(item.endedAt, 'not yet')}
+                              </p>
+                            </div>
+
+                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                                Recording
+                              </p>
+                              <p className="mt-2 text-fluid-sm font-semibold text-[#173b70]">
+                                {item.recordingName || 'No recording uploaded'}
+                              </p>
+                              <p className="mt-1 text-fluid-xs text-[#7088a1]">
+                                {item.recordingName ? formatBytes(item.recordingSize) : 'Attach one when ending the conference to generate notes.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => navigate(
+                                item.status === 'ended'
+                                  ? `/faculty/subjects/${subjectId}/meetings/${item.id}`
+                                  : `/faculty/subjects/${subjectId}/meetings/${item.id}/classroom`,
+                              )}
+                              className="inline-flex items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                            >
+                              <FiArrowRight className="h-3.5 w-3.5" />
+                              {item.status === 'ended' ? 'Review conference' : 'Open classroom'}
+                            </button>
+                            {item.recordingUrl ? (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedRecording(item)}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#c9d8e6] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#2b79ba] transition hover:bg-[#f4f8fb]"
+                              >
+                                <FiEye className="h-3.5 w-3.5" />
+                                Play recording
+                              </button>
+                            ) : null}
+
+                            {item.status === 'scheduled' ? (
+                              <button
+                                type="button"
+                                onClick={() => startMeetingMutation.mutate(item.id)}
+                                disabled={startMeetingMutation.isPending}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <FiPlay className="h-3.5 w-3.5" />
+                                Start now
+                              </button>
+                            ) : null}
+
+                            {item.status === 'live' ? (
+                              <div className="inline-flex items-center gap-2 rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc]">
+                                <FiClock className="h-3.5 w-3.5" />
+                                Session is live
+                              </div>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <EmptyTabState label="Meetings" />
+                )
+              ) : null}
             </div>
           </section>
         ) : null}
       </div>
+
+      <Modal
+        open={Boolean(selectedRecording)}
+        title="Session recording"
+        description={selectedRecording?.recordingName || selectedRecording?.title || 'Saved class recording'}
+        onClose={() => setSelectedRecording(null)}
+        panelClassName="max-w-5xl"
+      >
+        {selectedRecording?.recordingUrl ? (
+          selectedRecording.recordingMimeType.startsWith('audio/') ? (
+            <audio src={selectedRecording.recordingUrl} controls className="w-full" />
+          ) : (
+            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+          )
+        ) : (
+          <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
+        )}
+      </Modal>
+
+      <Modal
+        open={isMeetingModalOpen}
+        title="Schedule conference"
+        description="Create a subject meeting room now, then start it whenever your class session begins."
+        onClose={closeMeetingModal}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => closeMeetingModal()}
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitMeeting}
+              disabled={createMeetingMutation.isPending}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {createMeetingMutation.isPending ? 'Saving...' : 'Save conference'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="meeting-title">
+              Conference title
+            </label>
+            <input
+              id="meeting-title"
+              type="text"
+              value={meetingTitle}
+              onChange={(event) => {
+                setMeetingTitle(event.target.value);
+                setFieldErrors((current) => ({ ...current, meetingTitle: undefined }));
+              }}
+              placeholder="Week 6 consultation"
+              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                fieldErrors.meetingTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+              }`}
+            />
+            {fieldErrors.meetingTitle ? (
+              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.meetingTitle}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="meeting-agenda">
+              Agenda
+            </label>
+            <textarea
+              id="meeting-agenda"
+              value={meetingAgenda}
+              onChange={(event) => setMeetingAgenda(event.target.value)}
+              rows={4}
+              placeholder="Add a short summary of what this session will cover."
+              className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+            />
+          </div>
+
+          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+            <p className="text-fluid-base font-semibold text-[#173b70]">After saving</p>
+            <p className="mt-1 text-fluid-xs leading-6 text-[#7088a1]">
+              The room will appear immediately in the Meetings tab. You can start it right away or open the dedicated conference page later.
+            </p>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         open={isAddLessonModalOpen}

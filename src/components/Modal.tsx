@@ -8,6 +8,7 @@ type ModalProps = {
   children: ReactNode;
   onClose: () => void;
   actions?: ReactNode;
+  outsideControls?: ReactNode;
   panelClassName?: string;
   bodyClassName?: string;
 };
@@ -19,12 +20,15 @@ function Modal({
   children,
   onClose,
   actions,
+  outsideControls,
   panelClassName,
   bodyClassName,
 }: ModalProps) {
   if (!open) {
     return null;
   }
+
+  const hasCustomMaxWidth = panelClassName?.includes('max-w') ?? false;
 
   return (
     <div
@@ -38,7 +42,13 @@ function Modal({
         aria-hidden="true"
       />
 
-      <div className={`modal-panel relative z-10 w-full max-w-xl overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
+      {outsideControls ? (
+        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 z-20 hidden items-center justify-between px-1 min-[520px]:flex sm:px-3 lg:px-5 xl:px-8">
+          {outsideControls}
+        </div>
+      ) : null}
+
+      <div className={`modal-panel relative z-10 w-full ${hasCustomMaxWidth ? '' : 'max-w-xl'} overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
         <div className="flex items-start justify-between gap-4 border-b border-[#bccbd8] px-5 py-5 sm:px-6">
           <div>
             <h3 className="text-fluid-xl font-semibold tracking-[-0.03em] text-[#173b70]">

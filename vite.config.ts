@@ -19,6 +19,15 @@ export default defineConfig({
         target: 'http://127.0.0.1:4000',
         changeOrigin: true,
       },
+      '/uploads': {
+        target: 'http://127.0.0.1:4000',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://127.0.0.1:4000',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

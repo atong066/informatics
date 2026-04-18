@@ -4,10 +4,17 @@ import { getStoredToken } from '../../lib/auth';
 
 export type AdminFacultyUser = {
   id: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
   fullName: string;
   username: string;
   email: string;
+  address: string;
+  contactNumber: string;
+  birthdate: string;
   section: string;
+  profileImage?: string | null;
 };
 
 export type AdminSubject = {
@@ -53,6 +60,7 @@ export type AdminSection = {
     teacherName: string;
     teacherSection: string;
     teacherUsername: string;
+    schedule: string;
   }>;
 };
 

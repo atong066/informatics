@@ -1,4 +1,4 @@
-﻿import { FiBookOpen, FiCode, FiCpu, FiDatabase, FiGrid, FiLogOut, FiUsers, FiX } from 'react-icons/fi';
+import { FiBookOpen, FiCode, FiCpu, FiDatabase, FiGrid, FiLogOut, FiUsers, FiVideo, FiX } from 'react-icons/fi';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFacultySubjects } from '../../hooks/useFacultySubjects';
 import { clearStoredUser } from '../../lib/auth';
@@ -11,7 +11,10 @@ type FacultySidebarProps = {
   onClose?: () => void;
 };
 
-const facultyTools = [{ label: 'Dashboard', icon: FiGrid, path: '/faculty/dashboard' }];
+const facultyTools = [
+  { label: 'Dashboard', icon: FiGrid, path: '/faculty/dashboard' },
+  { label: 'Classroom', icon: FiVideo, path: '/faculty/classroom' },
+];
 const studentManagementItems = [
   { label: 'Student List', icon: FiUsers, path: '/faculty/student-list' },
 ];
@@ -108,6 +111,8 @@ function FacultySidebar({
           <div className="mt-3 space-y-1.5">
             {facultyTools.map((item) => {
               const Icon = item.icon;
+              const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+
               return (
                 <button
                   key={item.label}
@@ -117,7 +122,7 @@ function FacultySidebar({
                     navigate(item.path);
                   }}
                   className={`flex w-full items-center gap-2.5 rounded-[1rem] border px-3 py-2.5 text-left transition ${
-                    location.pathname === item.path
+                    isActive
                       ? 'border-[#88aed0] bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.09)_100%)] text-white shadow-[inset_3px_0_0_#9dc0df,0_10px_18px_rgba(9,31,62,0.14)]'
                       : 'border-transparent text-[#e6eff9] hover:bg-white/7'
                   }`}
@@ -226,4 +231,3 @@ function FacultySidebar({
 }
 
 export default FacultySidebar;
-

@@ -17,6 +17,7 @@ type SectionTeacherDraft = {
   subjectTitle: string;
   subjectCode: string;
   teacherId: string;
+  schedule: string;
 };
 
 type SectionFormState = {
@@ -48,13 +49,14 @@ function emptySectionForm(): SectionFormState {
 
 function buildSubjectTeacherDrafts(
   curriculum?: AdminCurriculum,
-  teacherBySubjectId = new Map<string, string>(),
+  assignmentBySubjectId = new Map<string, { teacherId: string; schedule: string }>(),
 ) {
   return (curriculum?.subjects ?? []).map((subject) => ({
     subjectId: subject.subjectId,
     subjectTitle: subject.subjectTitle,
     subjectCode: subject.subjectCode,
-    teacherId: teacherBySubjectId.get(subject.subjectId) ?? '',
+    teacherId: assignmentBySubjectId.get(subject.subjectId)?.teacherId ?? '',
+    schedule: assignmentBySubjectId.get(subject.subjectId)?.schedule ?? '',
   }));
 }
 
@@ -116,6 +118,7 @@ function AdminSections() {
           subjectTeachers: payload.subjectTeachers.map((entry) => ({
             subjectId: entry.subjectId,
             teacherId: entry.teacherId,
+            schedule: entry.schedule,
           })),
         }),
       });
@@ -166,7 +169,10 @@ function AdminSections() {
     setFieldErrors({});
   }
 
-  function applyCurriculum(curriculumId: string, existingTeacherBySubjectId?: Map<string, string>) {
+  function applyCurriculum(
+    curriculumId: string,
+    existingTeacherBySubjectId?: Map<string, { teacherId: string; schedule: string }>,
+  ) {
     const curriculum = curriculumById.get(curriculumId);
     setSectionForm((current) => ({
       ...current,
@@ -174,17 +180,26 @@ function AdminSections() {
       subjectTeachers: buildSubjectTeacherDrafts(
         curriculum,
         existingTeacherBySubjectId
-          ?? new Map(current.subjectTeachers.map((entry) => [entry.subjectId, entry.teacherId])),
+          ?? new Map(current.subjectTeachers.map((entry) => [
+            entry.subjectId,
+            {
+              teacherId: entry.teacherId,
+              schedule: entry.schedule,
+            },
+          ])),
       ),
     }));
     setFieldErrors((current) => ({ ...current, curriculumId: '', subjectTeachers: '' }));
   }
 
   function startEditing(section: AdminSection) {
-    const teacherBySubjectId = new Map(
+    const assignmentBySubjectId = new Map(
       section.subjectAssignments.map((assignment) => [
         assignment.subjectId,
-        assignment.teacherId ?? '',
+        {
+          teacherId: assignment.teacherId ?? '',
+          schedule: assignment.schedule ?? '',
+        },
       ]),
     );
 
@@ -195,7 +210,7 @@ function AdminSections() {
       curriculumId: section.curriculumId ?? '',
       subjectTeachers: buildSubjectTeacherDrafts(
         curriculumById.get(section.curriculumId ?? ''),
-        teacherBySubjectId,
+        assignmentBySubjectId,
       ),
     });
     setFieldErrors({});
@@ -210,10 +225,6 @@ function AdminSections() {
 
     if (!sectionForm.curriculumId) {
       nextErrors.curriculumId = 'Curriculum is required';
-    }
-
-    if (!sectionForm.subjectTeachers.length) {
-      nextErrors.subjectTeachers = 'Choose a curriculum to load section subjects';
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -257,11 +268,11 @@ function AdminSections() {
             Section planning
           </p>
           <h1 className="mt-2 max-w-4xl text-fluid-2xl font-semibold tracking-[-0.05em] text-[#173b47]">
-            Connect each section to a curriculum, adviser, and subject teachers.
+            Connect each section to a curriculum and adviser.
           </h1>
           <p className="mt-2 max-w-3xl text-fluid-sm leading-6 text-[#607c88]">
-            The section decides what students see. Once you choose a curriculum, every subject from
-            that curriculum can be assigned to a teacher inside the section.
+            The section decides the curriculum students belong to. Assign faculty teaching loads,
+            subjects, and schedules from Faculty management.
           </p>
         </section>
 
@@ -273,8 +284,7 @@ function AdminSections() {
                   {editingSectionId ? 'Edit section' : 'Add section'}
                 </p>
                 <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                  Add the section name, choose its curriculum, optionally set an adviser, then assign
-                  teachers to the section subjects.
+                  Add the section name, choose its curriculum, and optionally set an adviser.
                 </p>
               </div>
               {editingSectionId ? (
@@ -325,64 +335,6 @@ function AdminSections() {
                 />
               </InputField>
 
-              <div className="rounded-[1.35rem] border border-[#d5e0e4] bg-[linear-gradient(180deg,#f8fbfb_0%,#eef4f6_100%)] p-4">
-                <div>
-                  <p className="text-fluid-base font-semibold text-[#173b47]">Subject teachers</p>
-                  <p className="mt-1 text-fluid-sm text-[#607c88]">
-                    These rows come from the selected curriculum. Teacher assignments can stay blank
-                    until faculty are ready.
-                  </p>
-                </div>
-
-                {fieldErrors.subjectTeachers ? (
-                  <p className="mt-3 text-fluid-xs font-medium text-rose-500">{fieldErrors.subjectTeachers}</p>
-                ) : null}
-
-                <div className="mt-4 space-y-3">
-                  {sectionForm.subjectTeachers.length ? (
-                    sectionForm.subjectTeachers.map((entry) => (
-                      <div
-                        key={entry.subjectId}
-                        className="grid gap-3 rounded-[1.1rem] border border-[#d8e3e6] bg-white px-4 py-4"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-fluid-md font-semibold text-[#173b47]">
-                            {entry.subjectTitle}
-                          </p>
-                          <p className="mt-1 text-fluid-sm text-[#67828f]">{entry.subjectCode}</p>
-                        </div>
-
-                        <InputField label="Teacher">
-                          <CustomSelect
-                            id={`section-teacher-${entry.subjectId}`}
-                            value={entry.teacherId}
-                            onChange={(value) => {
-                              setSectionForm((current) => ({
-                                ...current,
-                                subjectTeachers: current.subjectTeachers.map((item) => (
-                                  item.subjectId === entry.subjectId
-                                    ? { ...item, teacherId: value }
-                                    : item
-                                )),
-                              }));
-                            }}
-                            options={facultyOptions}
-                            placeholder="No teacher yet"
-                            tone="muted"
-                          />
-                        </InputField>
-                      </div>
-                    ))
-                  ) : (
-                    <EmptyState
-                      title="No section subjects yet"
-                      description="Choose a curriculum first so we can load the subjects that belong to this section."
-                      compact
-                    />
-                  )}
-                </div>
-              </div>
-
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
@@ -411,7 +363,8 @@ function AdminSections() {
                 <div>
                   <p className="text-fluid-xl font-semibold text-[#173b47]">Existing sections</p>
                   <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                    Each section inherits a curriculum, then decides its own adviser and teacher load.
+                    Each section inherits a curriculum. Faculty loads control which subjects become
+                    visible to students.
                   </p>
                 </div>
                 <div className="rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">

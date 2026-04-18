@@ -265,6 +265,30 @@ input {
   overflow-wrap: anywhere;
 }
 
+.admin-text-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #c9d7db;
+  background: #fff;
+  padding: 0.75rem 1rem;
+  color: #21485a;
+  font-size: clamp(0.88rem, 0.84rem + 0.22vw, 1rem);
+  line-height: 1.5;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.admin-text-input::placeholder {
+  color: #8aa0a8;
+}
+
+.admin-text-input:focus {
+  border-color: #6ea7a0;
+  box-shadow: 0 0 0 4px rgba(110, 167, 160, 0.14);
+}
+
 .scrollbar-super-thin {
   scrollbar-width: thin;
   scrollbar-color: rgba(104, 136, 164, 0.9) transparent;

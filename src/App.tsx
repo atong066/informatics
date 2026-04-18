@@ -10,8 +10,12 @@ import Dashboard from './pages/student/Dashboard';
 import Profile from './pages/student/Profile';
 import Settings from './pages/student/Settings';
 import StudentAssessmentAttempt from './pages/student/AssessmentAttempt';
+import StudentMeetingDetails from './pages/student/MeetingDetails';
 import SubjectDetails from './pages/student/SubjectDetails';
+import FacultyClassroom from './pages/faculty/Classroom';
+import FacultyMeetingClassroom from './pages/faculty/MeetingClassroom';
 import FacultyDashboard from './pages/faculty/Dashboard';
+import FacultyMeetingDetails from './pages/faculty/MeetingDetails';
 import FacultyStudentList from './pages/faculty/StudentList';
 import FacultyActivitySubmissions from './pages/faculty/ActivitySubmissions';
 import FacultyAssessmentBuilder from './pages/faculty/AssessmentBuilder';
@@ -21,6 +25,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminSubjects from './pages/admin/Subjects';
 import AdminCurriculums from './pages/admin/Curriculums';
 import AdminSections from './pages/admin/Sections';
+import AdminFaculty from './pages/admin/Faculty';
 
 function App() {
   return (
@@ -69,6 +74,14 @@ function App() {
           )}
         />
         <Route
+          path="/student/subjects/:subjectId/meetings/:meetingId"
+          element={(
+            <RoleProtectedRoute role="student">
+              <StudentMeetingDetails />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
           path="/admin/dashboard"
           element={(
             <RoleProtectedRoute role="admin">
@@ -101,10 +114,26 @@ function App() {
           )}
         />
         <Route
+          path="/admin/faculty"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminFaculty />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
           path="/faculty/dashboard"
           element={(
             <RoleProtectedRoute role="faculty">
               <FacultyDashboard />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/classroom"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyClassroom />
             </RoleProtectedRoute>
           )}
         />
@@ -125,7 +154,31 @@ function App() {
           )}
         />
         <Route
+          path="/faculty/subjects/:subjectId/meetings/:meetingId"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyMeetingDetails />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId/meetings/:meetingId/classroom"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyMeetingClassroom />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
           path="/faculty/subjects/:subjectId/activities/:activityId/submissions"
+          element={(
+            <RoleProtectedRoute role="faculty">
+              <FacultyActivitySubmissions />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/faculty/subjects/:subjectId/assignments/:assignmentId/submissions"
           element={(
             <RoleProtectedRoute role="faculty">
               <FacultyActivitySubmissions />
