@@ -5,14 +5,9 @@ import CustomDatePicker from '../components/CustomDatePicker';
 import CustomSelect from '../components/CustomSelect';
 import NotificationPopup from '../components/NotificationPopup';
 
-const sectionOptions = [
-  'DCS-B6',
-  'DCS-B7',
-  'DCS-B8',
-  'DCS-B9',
-  'DIT-B6',
-  'DIT-B7',
-  'DIT-B8',
+const courseOptions = [
+  { value: 'DCS', label: 'DCS | Diploma in Computer Studies' },
+  { value: 'DIT', label: 'DIT | Diploma in Information Technology' },
 ];
 
 type RegistrationForm = {
@@ -25,6 +20,9 @@ type RegistrationForm = {
   username: string;
   password: string;
   confirmPassword: string;
+  course: string;
+  batchNumber: string;
+  sectionNumber: string;
   section: string;
   birthdate: string;
 };
@@ -51,9 +49,28 @@ const initialForm: RegistrationForm = {
   username: '',
   password: '',
   confirmPassword: '',
+  course: '',
+  batchNumber: '',
+  sectionNumber: '',
   section: '',
   birthdate: '',
 };
+
+function buildSectionLabel(course: string, batchNumber: string, sectionNumber: string) {
+  const normalizedCourse = course.trim().toUpperCase();
+  const normalizedBatch = batchNumber.trim().replace(/^B/i, '');
+  const normalizedSection = sectionNumber.trim();
+
+  if (!normalizedCourse || !normalizedBatch || !normalizedSection) {
+    return '';
+  }
+
+  return [
+    normalizedCourse,
+    `B${normalizedBatch}`,
+    normalizedSection,
+  ].filter(Boolean).join(' - ');
+}
 
 function Register() {
   const [form, setForm] = useState<RegistrationForm>(initialForm);
@@ -155,6 +172,18 @@ function Register() {
       nextFieldErrors.confirmPassword = 'Passwords do not match';
     }
 
+    if (!form.course.trim()) {
+      nextFieldErrors.course = 'Course is required';
+    }
+
+    if (!form.batchNumber.trim()) {
+      nextFieldErrors.batchNumber = 'Batch number is required';
+    }
+
+    if (!form.sectionNumber.trim()) {
+      nextFieldErrors.sectionNumber = 'Section is required';
+    }
+
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors((current) => ({
         ...current,
@@ -171,7 +200,13 @@ function Register() {
 
     const { confirmPassword, ...payload } = form;
     void confirmPassword;
-    registerMutation.mutate(payload);
+    registerMutation.mutate({
+      ...payload,
+      course: form.course.trim().toUpperCase(),
+      batchNumber: form.batchNumber.trim().replace(/^B/i, ''),
+      sectionNumber: form.sectionNumber.trim(),
+      section: buildSectionLabel(form.course, form.batchNumber, form.sectionNumber),
+    });
   }
 
   return (
@@ -366,20 +401,89 @@ function Register() {
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
-                  Section
+                  Course
                 </span>
                 <CustomSelect
-                  id="section"
-                  value={form.section}
+                  id="course"
+                  value={form.course}
                   onChange={(value) => {
-                    setForm((current) => ({ ...current, section: value }));
-                    setFieldErrors((current) => ({ ...current, section: '' }));
+                    setForm((current) => ({
+                      ...current,
+                      course: value,
+                      section: buildSectionLabel(value, current.batchNumber, current.sectionNumber),
+                    }));
+                    setFieldErrors((current) => ({ ...current, course: '', section: '' }));
                     closeNotification();
                   }}
-                  error={fieldErrors.section}
-                  options={sectionOptions}
-                  placeholder="Select section"
+                  error={fieldErrors.course}
+                  options={courseOptions}
+                  placeholder="Select course"
                   menuPosition="top"
+                />
+              </label>
+
+              <label className="relative block">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
+                  Batch number
+                </span>
+                {fieldErrors.batchNumber ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.batchNumber}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="batchNumber"
+                  type="text"
+                  inputMode="numeric"
+                  value={form.batchNumber}
+                  onChange={(event) => {
+                    const batchNumber = event.target.value.replace(/^B/i, '');
+                    setForm((current) => ({
+                      ...current,
+                      batchNumber,
+                      section: buildSectionLabel(current.course, batchNumber, current.sectionNumber),
+                    }));
+                    setFieldErrors((current) => ({ ...current, batchNumber: '', section: '' }));
+                    closeNotification();
+                  }}
+                  placeholder="7"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.batchNumber
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                    }`}
+                />
+              </label>
+
+              <label className="relative block">
+                <span className="mb-2 block text-fluid-sm font-medium text-[#34495e]">
+                  Section
+                </span>
+                {fieldErrors.sectionNumber || fieldErrors.section ? (
+                  <div className="pointer-events-none absolute -top-11 left-0 z-20 rounded-xl border border-red-200 bg-white px-3 py-2 text-fluid-xs font-medium text-red-500 shadow-[0_10px_24px_rgba(239,68,68,0.12)]">
+                    {fieldErrors.sectionNumber || fieldErrors.section}
+                    <span className="absolute left-4 top-full h-2 w-2 -translate-y-1/2 rotate-45 border-b border-r border-red-200 bg-white" />
+                  </div>
+                ) : null}
+                <input
+                  name="sectionNumber"
+                  type="text"
+                  value={form.sectionNumber}
+                  onChange={(event) => {
+                    const sectionNumber = event.target.value;
+                    setForm((current) => ({
+                      ...current,
+                      sectionNumber,
+                      section: buildSectionLabel(current.course, current.batchNumber, sectionNumber),
+                    }));
+                    setFieldErrors((current) => ({ ...current, sectionNumber: '', section: '' }));
+                    closeNotification();
+                  }}
+                  placeholder="2"
+                  className={`w-full rounded-2xl border bg-white px-4 py-3 text-fluid-md text-[#2c3e50] outline-none transition duration-200 placeholder:text-[#95a5a6] ${fieldErrors.sectionNumber || fieldErrors.section
+                      ? 'border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100'
+                      : 'border-[#bdc3c7] focus:border-[#3498db] focus:ring-4 focus:ring-sky-100'
+                    }`}
                 />
               </label>
 
@@ -401,6 +505,10 @@ function Register() {
                 />
               </label>
             </div>
+
+            <p className="rounded-2xl border border-[#d6dde2] bg-white px-4 py-3 text-fluid-sm font-semibold text-[#34495e] sm:col-span-2">
+              Section label: {buildSectionLabel(form.course, form.batchNumber, form.sectionNumber) || 'Choose course, batch, and section'}
+            </p>
 
             <div className="pt-1">
               <p className="text-fluid-3xs font-semibold uppercase tracking-[0.22em] text-[#3498db]">

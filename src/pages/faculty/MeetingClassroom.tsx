@@ -20,6 +20,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;
@@ -335,7 +338,7 @@ function FacultyMeetingClassroom() {
                 <FiRefreshCw className="h-4 w-4" />
                 Refresh
               </button>
-              {meeting?.status === 'scheduled' ? (
+              {meeting && meeting.status !== 'live' ? (
                 <button
                   type="button"
                   onClick={() => startMeetingMutation.mutate()}

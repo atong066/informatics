@@ -15,6 +15,7 @@ const adminTools = [
   { label: 'Subjects', icon: FiBookOpen, path: '/admin/subjects' },
   { label: 'Curriculums', icon: FiLayers, path: '/admin/curriculums' },
   { label: 'Sections', icon: FiUsers, path: '/admin/sections' },
+  { label: 'Students', icon: FiUsers, path: '/admin/students' },
   { label: 'Faculty', icon: FiShield, path: '/admin/faculty' },
 ];
 

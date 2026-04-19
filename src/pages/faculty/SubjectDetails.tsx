@@ -48,6 +48,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;
@@ -351,7 +354,6 @@ function FacultySubjectDetails() {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
-  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<MeetingRecord | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
@@ -382,8 +384,6 @@ function FacultySubjectDetails() {
   const [assessmentSchedule, setAssessmentSchedule] = useState('');
   const [assessmentStartTime, setAssessmentStartTime] = useState('');
   const [assessmentEndTime, setAssessmentEndTime] = useState('');
-  const [meetingTitle, setMeetingTitle] = useState('');
-  const [meetingAgenda, setMeetingAgenda] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{
     lessonTitle?: string;
     lessonSummary?: string;
@@ -410,7 +410,6 @@ function FacultySubjectDetails() {
     assessmentSchedule?: string;
     assessmentStartTime?: string;
     assessmentEndTime?: string;
-    meetingTitle?: string;
   }>({});
   const [popupState, setPopupState] = useState<{
     open: boolean;
@@ -1026,58 +1025,6 @@ function FacultySubjectDetails() {
     },
   });
 
-  const createMeetingMutation = useMutation({
-    mutationFn: async ({ title, agenda }: { title: string; agenda: string }) => {
-      const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          agenda,
-        }),
-      });
-
-      const data = (await response.json()) as {
-        message?: string;
-        errors?: Record<string, string[]>;
-      };
-
-      if (!response.ok) {
-        throw {
-          message: data.message || 'Failed to create conference',
-          errors: data.errors,
-        };
-      }
-
-      return data;
-    },
-    onSuccess: async () => {
-      closeMeetingModal(true);
-      setPopupState({
-        open: true,
-        title: 'Conference scheduled',
-        message: 'The meeting is now ready from the Meetings tab.',
-        variant: 'success',
-      });
-      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
-    },
-    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
-      setFieldErrors((current) => ({
-        ...current,
-        meetingTitle: error.errors?.title?.[0],
-      }));
-      setPopupState({
-        open: true,
-        title: 'Unable to schedule conference',
-        message: error.message || 'Please review the conference details and try again.',
-        variant: 'error',
-      });
-    },
-  });
-
   const startMeetingMutation = useMutation({
     mutationFn: async (nextMeetingId: string) => {
       const response = await fetch(`/api/faculty/subjects/${subjectId}/meetings/${nextMeetingId}/start`, {
@@ -1250,24 +1197,6 @@ function FacultySubjectDetails() {
     resetAssessmentForm();
   }
 
-  function resetMeetingForm() {
-    setMeetingTitle('');
-    setMeetingAgenda('');
-    setFieldErrors((current) => ({
-      ...current,
-      meetingTitle: undefined,
-    }));
-  }
-
-  function closeMeetingModal(force = false) {
-    if (!force && createMeetingMutation.isPending) {
-      return;
-    }
-
-    setIsMeetingModalOpen(false);
-    resetMeetingForm();
-  }
-
   function resetModuleForm() {
     setEditingModuleId(null);
     setModuleTitle('');
@@ -1328,11 +1257,6 @@ function FacultySubjectDetails() {
   const openCreateAssessmentModal = () => {
     resetAssessmentForm();
     setIsAssessmentModalOpen(true);
-  };
-
-  const openCreateMeetingModal = () => {
-    resetMeetingForm();
-    setIsMeetingModalOpen(true);
   };
 
   const openEditAssessmentModal = (assessmentRecord: FacultySubjectDetailsResponse['assessments'][number]) => {
@@ -1737,26 +1661,6 @@ function FacultySubjectDetails() {
     deleteAssessmentMutation.mutate(assessmentId);
   };
 
-  const handleSubmitMeeting = () => {
-    const trimmedTitle = meetingTitle.trim();
-    const trimmedAgenda = meetingAgenda.trim();
-
-    if (!trimmedTitle) {
-      setFieldErrors((current) => ({
-        ...current,
-        meetingTitle: 'Meeting title is required',
-      }));
-      return;
-    }
-
-    setMeetingTitle(trimmedTitle);
-    setMeetingAgenda(trimmedAgenda);
-    createMeetingMutation.mutate({
-      title: trimmedTitle,
-      agenda: trimmedAgenda,
-    });
-  };
-
   return (
     <FacultyLayout
       firstName={activeUser.firstName}
@@ -1888,14 +1792,10 @@ function FacultySubjectDetails() {
               ) : null}
 
               {activeTab === 'meetings' ? (
-                <button
-                  type="button"
-                  onClick={openCreateMeetingModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-1.5 text-fluid-sm font-semibold text-white shadow-[0_8px_16px_rgba(41,124,198,0.14)] transition hover:brightness-105"
-                >
-                  <FiPlus className="h-4 w-4" />
-                  Schedule conference
-                </button>
+                <span className="inline-flex items-center justify-center gap-2 rounded-full border border-[#c9d8e6] bg-white px-3.5 py-1.5 text-fluid-sm font-semibold text-[#607790]">
+                  <FiClock className="h-4 w-4" />
+                  Fixed from schedule
+                </span>
               ) : null}
             </div>
 
@@ -2346,6 +2246,16 @@ function FacultySubjectDetails() {
                                 <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.aiStatusLabel)}`}>
                                   AI notes: {item.aiStatusLabel}
                                 </span>
+                                {item.sectionName ? (
+                                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                    {item.sectionName}
+                                  </span>
+                                ) : null}
+                                {item.schedule ? (
+                                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                    {item.schedule}
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                             <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
@@ -2412,7 +2322,7 @@ function FacultySubjectDetails() {
                               </button>
                             ) : null}
 
-                            {item.status === 'scheduled' ? (
+                            {item.status !== 'live' ? (
                               <button
                                 type="button"
                                 onClick={() => startMeetingMutation.mutate(item.id)}
@@ -2460,77 +2370,6 @@ function FacultySubjectDetails() {
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
         )}
-      </Modal>
-
-      <Modal
-        open={isMeetingModalOpen}
-        title="Schedule conference"
-        description="Create a subject meeting room now, then start it whenever your class session begins."
-        onClose={closeMeetingModal}
-        actions={
-          <>
-            <button
-              type="button"
-              onClick={() => closeMeetingModal()}
-              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmitMeeting}
-              disabled={createMeetingMutation.isPending}
-              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {createMeetingMutation.isPending ? 'Saving...' : 'Save conference'}
-            </button>
-          </>
-        }
-      >
-        <div className="space-y-5">
-          <div>
-            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="meeting-title">
-              Conference title
-            </label>
-            <input
-              id="meeting-title"
-              type="text"
-              value={meetingTitle}
-              onChange={(event) => {
-                setMeetingTitle(event.target.value);
-                setFieldErrors((current) => ({ ...current, meetingTitle: undefined }));
-              }}
-              placeholder="Week 6 consultation"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
-                fieldErrors.meetingTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
-              }`}
-            />
-            {fieldErrors.meetingTitle ? (
-              <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.meetingTitle}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="meeting-agenda">
-              Agenda
-            </label>
-            <textarea
-              id="meeting-agenda"
-              value={meetingAgenda}
-              onChange={(event) => setMeetingAgenda(event.target.value)}
-              rows={4}
-              placeholder="Add a short summary of what this session will cover."
-              className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
-            />
-          </div>
-
-          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
-            <p className="text-fluid-base font-semibold text-[#173b70]">After saving</p>
-            <p className="mt-1 text-fluid-xs leading-6 text-[#7088a1]">
-              The room will appear immediately in the Meetings tab. You can start it right away or open the dedicated conference page later.
-            </p>
-          </div>
-        </div>
       </Modal>
 
       <Modal

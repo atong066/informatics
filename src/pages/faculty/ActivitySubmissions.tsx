@@ -76,7 +76,7 @@ type ReviewRecord = {
   reviewedAt: string;
 };
 
-type SubmittedStudent = ReviewRecord & {
+type ReviewableStudent = ReviewRecord & {
   id: string;
   submissionId: string;
   fullName: string;
@@ -89,6 +89,21 @@ type SubmittedStudent = ReviewRecord & {
   attachments: AttachmentRecord[];
   attachmentCount: number;
   submittedAt: string;
+  submissionStatus: 'submitted' | 'not-submitted';
+  isManualReview?: boolean;
+};
+
+type SubmittedStudent = ReviewableStudent & {
+  submissionStatus: 'submitted';
+};
+
+type PendingStudent = ReviewableStudent & {
+  submissionStatus: 'not-submitted';
+};
+
+type ReviewSaveResponse = ReviewRecord & {
+  submissionId?: string;
+  isManualReview?: boolean;
 };
 
 type ActivitySubmissionsResponse = {
@@ -98,6 +113,7 @@ type ActivitySubmissionsResponse = {
     title: string;
     code: string;
   };
+  availableSections?: string[];
   activity: {
     id: string;
     title: string;
@@ -119,6 +135,7 @@ type ActivitySubmissionsResponse = {
     totalStudents: number;
   };
   submittedStudents: SubmittedStudent[];
+  pendingStudents?: PendingStudent[];
 };
 
 function createReviewId() {
@@ -365,7 +382,7 @@ function ActivitySubmissions() {
   const token = getStoredToken();
   const itemKind: 'activity' | 'assignment' = assignmentId ? 'assignment' : 'activity';
   const trackingItemId = assignmentId ?? activityId;
-  const [selectedStudent, setSelectedStudent] = useState<SubmittedStudent | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<ReviewableStudent | null>(null);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState('');
   const [reviewScore, setReviewScore] = useState('');
   const [reviewComment, setReviewComment] = useState('');
@@ -385,6 +402,8 @@ function ActivitySubmissions() {
   } | null>(null);
   const [draftImageNote, setDraftImageNote] = useState<{ x: number; y: number } | null>(null);
   const [draftImageText, setDraftImageText] = useState('');
+  const [selectedSection, setSelectedSection] = useState('All sections');
+  const [activeSubmissionTab, setActiveSubmissionTab] = useState<'submitted' | 'not-submitted'>('submitted');
   const [submissionPage, setSubmissionPage] = useState(1);
   const imageStageRef = useRef<HTMLDivElement>(null);
   const [popupState, setPopupState] = useState<{
@@ -443,7 +462,12 @@ function ActivitySubmissions() {
         throw new Error('Score must be a valid number from 0 to 1000');
       }
 
-      const response = await fetch(`/api/faculty/subjects/${subjectId}/submissions/${selectedStudent.submissionId}/review`, {
+      const reviewEndpoint = selectedStudent.submissionId
+        ? `/api/faculty/subjects/${subjectId}/submissions/${selectedStudent.submissionId}/review`
+        : itemKind === 'assignment'
+          ? `/api/faculty/subjects/${subjectId}/assignments/${trackingItemId}/students/${selectedStudent.id}/review`
+          : `/api/faculty/subjects/${subjectId}/activities/${trackingItemId}/students/${selectedStudent.id}/review`;
+      const response = await fetch(reviewEndpoint, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -459,7 +483,7 @@ function ActivitySubmissions() {
       });
       const data = (await response.json()) as {
         message?: string;
-        data?: ReviewRecord;
+        data?: ReviewSaveResponse;
       };
 
       if (!response.ok || !data.data) {
@@ -469,25 +493,44 @@ function ActivitySubmissions() {
       return data.data;
     },
     onSuccess: async (review) => {
-      const reviewedSubmissionId = selectedSubmissionId || selectedStudent?.submissionId;
+      const reviewedSubmissionId = review.submissionId || selectedSubmissionId || selectedStudent?.submissionId || '';
+      const reviewedStudentId = selectedStudent?.id ?? '';
       setPopupState({
         open: true,
         title: 'Review saved',
-        message: 'Score and notes were saved for this submission.',
+        message: selectedStudent?.submissionStatus === 'not-submitted'
+          ? 'Manual score was saved for this student.'
+          : 'Score and notes were saved for this submission.',
         variant: 'success',
       });
-      setSelectedStudent((current) => current ? { ...current, ...review } : current);
+      setSelectedSubmissionId(reviewedSubmissionId);
+      setSelectedStudent((current) => current ? {
+        ...current,
+        submissionId: reviewedSubmissionId || current.submissionId,
+        isManualReview: review.isManualReview ?? current.isManualReview,
+        ...review,
+      } : current);
       queryClient.setQueryData<ActivitySubmissionsResponse>(submissionsQueryKey, (current) => {
-        if (!current || !reviewedSubmissionId) {
+        if (!current) {
           return current;
         }
 
         return {
           ...current,
           submittedStudents: current.submittedStudents.map((student) =>
-            student.submissionId === reviewedSubmissionId
+            reviewedSubmissionId && student.submissionId === reviewedSubmissionId
               ? {
                 ...student,
+                submissionId: reviewedSubmissionId,
+                ...review,
+              }
+              : student),
+          pendingStudents: (current.pendingStudents ?? []).map((student) =>
+            student.id === reviewedStudentId
+              ? {
+                ...student,
+                submissionId: reviewedSubmissionId || student.submissionId,
+                isManualReview: review.isManualReview ?? student.isManualReview,
                 ...review,
               }
               : student),
@@ -533,29 +576,63 @@ function ActivitySubmissions() {
     ? imageDrawings.filter((drawing) => drawing.attachmentId === activeImage.id)
     : [];
   const submittedStudents = payload?.submittedStudents ?? [];
-  const totalSubmissionPages = Math.max(1, Math.ceil(submittedStudents.length / SUBMISSIONS_PER_PAGE));
+  const pendingStudents = payload?.pendingStudents ?? [];
+  const activeReviewStudents = activeSubmissionTab === 'submitted' ? submittedStudents : pendingStudents;
+  const sectionOptions = useMemo(() => {
+    const sections = new Set([
+      ...(payload?.availableSections ?? []),
+      ...submittedStudents.map((student) => student.section).filter(Boolean),
+      ...pendingStudents.map((student) => student.section).filter(Boolean),
+    ]);
+
+    return ['All sections', ...Array.from(sections).sort((left, right) => left.localeCompare(right))];
+  }, [payload?.availableSections, pendingStudents, submittedStudents]);
+  const filteredReviewStudents = useMemo(
+    () =>
+      selectedSection === 'All sections'
+        ? activeReviewStudents
+        : activeReviewStudents.filter((student) => student.section === selectedSection),
+    [activeReviewStudents, selectedSection],
+  );
+  const totalSubmissionPages = Math.max(1, Math.ceil(filteredReviewStudents.length / SUBMISSIONS_PER_PAGE));
   const activeSubmissionPage = Math.min(submissionPage, totalSubmissionPages);
-  const firstSubmissionIndex = submittedStudents.length === 0
+  const firstSubmissionIndex = filteredReviewStudents.length === 0
     ? 0
     : (activeSubmissionPage - 1) * SUBMISSIONS_PER_PAGE;
-  const visibleSubmittedStudents = submittedStudents.slice(
+  const visibleReviewStudents = filteredReviewStudents.slice(
     firstSubmissionIndex,
     firstSubmissionIndex + SUBMISSIONS_PER_PAGE,
   );
-  const lastSubmissionIndex = Math.min(firstSubmissionIndex + visibleSubmittedStudents.length, submittedStudents.length);
+  const lastSubmissionIndex = Math.min(firstSubmissionIndex + visibleReviewStudents.length, filteredReviewStudents.length);
+  const firstSubmissionDisplayIndex = filteredReviewStudents.length === 0
+    ? 0
+    : firstSubmissionIndex + 1;
   const activeSelectedSubmissionId = selectedSubmissionId || selectedStudent?.submissionId || '';
-  const selectedStudentIndex = activeSelectedSubmissionId
-    ? submittedStudents.findIndex((student) => student.submissionId === activeSelectedSubmissionId)
+  const selectedStudentIndex = selectedStudent
+    ? filteredReviewStudents.findIndex((student) =>
+      (activeSelectedSubmissionId && student.submissionId === activeSelectedSubmissionId) || student.id === selectedStudent.id)
     : -1;
   const previousStudent = selectedStudentIndex > 0
-    ? submittedStudents[selectedStudentIndex - 1]
+    ? filteredReviewStudents[selectedStudentIndex - 1]
     : null;
-  const nextStudent = selectedStudentIndex >= 0 && selectedStudentIndex < submittedStudents.length - 1
-    ? submittedStudents[selectedStudentIndex + 1]
+  const nextStudent = selectedStudentIndex >= 0 && selectedStudentIndex < filteredReviewStudents.length - 1
+    ? filteredReviewStudents[selectedStudentIndex + 1]
     : null;
   const selectedStudentPosition = selectedStudentIndex >= 0 ? selectedStudentIndex + 1 : 0;
 
-  function openReviewModal(student: SubmittedStudent) {
+  useEffect(() => {
+    setSubmissionPage(1);
+  }, [activeSubmissionTab, selectedSection]);
+
+  useEffect(() => {
+    if (sectionOptions.includes(selectedSection)) {
+      return;
+    }
+
+    setSelectedSection('All sections');
+  }, [sectionOptions, selectedSection]);
+
+  function openReviewModal(student: ReviewableStudent) {
     setSelectedStudent(student);
     setSelectedSubmissionId(student.submissionId);
     setReviewScore(student.reviewScore === null ? '' : String(student.reviewScore));
@@ -572,7 +649,7 @@ function ActivitySubmissions() {
     setDraggedImageNote(null);
   }
 
-  function showAdjacentSubmission(student: SubmittedStudent | null) {
+  function showAdjacentSubmission(student: ReviewableStudent | null) {
     if (!student || reviewMutation.isPending) {
       return;
     }
@@ -936,8 +1013,56 @@ function ActivitySubmissions() {
             </div>
 
             <div className="mt-5">
-              {payload.submittedStudents.length > 0 ? (
-                <div className="overflow-hidden rounded-[1.15rem] border border-[#b4c6d4] bg-[rgba(232,239,246,0.76)] shadow-[0_8px_18px_rgba(27,46,70,0.06)]">
+              {submittedStudents.length > 0 || pendingStudents.length > 0 ? (
+                <div>
+                  <div className="mb-3 rounded-[1.15rem] border border-[#b7c8d7] bg-[rgba(232,239,246,0.8)] px-4 py-3">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="inline-flex w-full rounded-full border border-[#b7c8d7] bg-white p-1 sm:w-auto">
+                        {[
+                          { id: 'submitted', label: 'Submitted', count: submittedStudents.length },
+                          { id: 'not-submitted', label: 'Not submitted', count: pendingStudents.length },
+                        ].map((tab) => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setActiveSubmissionTab(tab.id as 'submitted' | 'not-submitted')}
+                            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-fluid-sm font-semibold transition sm:flex-none ${
+                              activeSubmissionTab === tab.id
+                                ? 'bg-[#eaf5ff] text-[#2f78bc] shadow-[0_8px_18px_rgba(47,120,188,0.14)]'
+                                : 'text-[#607790] hover:bg-[#f4f8fb]'
+                            }`}
+                          >
+                            {tab.label}
+                            <span className="rounded-full border border-[#c7d6e2] bg-[rgba(255,255,255,0.82)] px-2 py-0.5 text-fluid-2xs">
+                              {tab.count}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <select
+                        id="submission-section-filter"
+                        value={selectedSection}
+                        onChange={(event) => setSelectedSection(event.target.value)}
+                        className="min-h-11 min-w-[14rem] rounded-full border border-[#b7c8d6] bg-white px-4 py-2 text-fluid-sm font-semibold text-[#173b70] outline-none transition focus:border-[#6eaad9] focus:ring-2 focus:ring-[#6eaad9]/25"
+                      >
+                        {sectionOptions.map((section) => (
+                          <option key={section} value={section}>
+                            {section}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="mt-3">
+                      <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Section filter</p>
+                      <p className="mt-1 text-fluid-sm text-[#607790]">
+                        Showing {filteredReviewStudents.length} of {activeReviewStudents.length} {activeSubmissionTab === 'submitted' ? 'submitted' : 'not submitted'} student{activeReviewStudents.length === 1 ? '' : 's'}.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="overflow-hidden rounded-[1.15rem] border border-[#b4c6d4] bg-[rgba(232,239,246,0.76)] shadow-[0_8px_18px_rgba(27,46,70,0.06)]">
                   <div className="overflow-x-auto">
                     <table className="min-w-[68rem] w-full border-collapse text-left">
                       <thead className="bg-[linear-gradient(180deg,#dce7f0_0%,#d1dde8_100%)]">
@@ -953,9 +1078,9 @@ function ActivitySubmissions() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#c3d0dc]">
-                        {visibleSubmittedStudents.map((student) => (
+                        {visibleReviewStudents.map((student) => (
                           <tr
-                            key={student.submissionId}
+                            key={student.submissionId || student.id}
                             className="bg-[rgba(220,230,240,0.72)] transition hover:bg-[rgba(232,239,246,0.96)]"
                           >
                             <td className="px-4 py-3 align-top">
@@ -970,7 +1095,7 @@ function ActivitySubmissions() {
                             </td>
                             <td className="px-4 py-3 align-top">
                               <span className="whitespace-nowrap rounded-full border border-[#b7c8d6] bg-[rgba(241,246,250,0.88)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
-                                {formatDateTime(student.submittedAt)}
+                                {student.submissionStatus === 'submitted' ? formatDateTime(student.submittedAt) : 'Not submitted'}
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top">
@@ -991,8 +1116,12 @@ function ActivitySubmissions() {
                               )}
                             </td>
                             <td className="px-4 py-3 align-top">
-                              <span className="whitespace-nowrap rounded-full border border-[#bce8cf] bg-[#effbf4] px-3 py-1 text-fluid-2xs font-semibold text-[#12815a]">
-                                Submitted
+                              <span className={`whitespace-nowrap rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${
+                                student.submissionStatus === 'submitted'
+                                  ? 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]'
+                                  : 'border-[#f2d9bc] bg-[#fff5e8] text-[#b06b15]'
+                              }`}>
+                                {student.submissionStatus === 'submitted' ? 'Submitted' : student.reviewScore !== null ? 'Manual score' : 'Not submitted'}
                               </span>
                             </td>
                             <td className="px-4 py-3 align-top text-right">
@@ -1002,18 +1131,30 @@ function ActivitySubmissions() {
                                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
                               >
                                 <FiEye className="h-4 w-4" />
-                                Review
+                                {student.submissionStatus === 'submitted' ? 'Review' : student.reviewScore !== null ? 'Edit score' : 'Score'}
                               </button>
                             </td>
                           </tr>
                         ))}
+                        {visibleReviewStudents.length === 0 ? (
+                          <tr>
+                            <td colSpan={8} className="px-4 py-10 text-center">
+                              <p className="text-fluid-md font-semibold text-[#173b70]">
+                                No {activeSubmissionTab === 'submitted' ? 'submitted' : 'not submitted'} students for this section
+                              </p>
+                              <p className="mt-2 text-fluid-sm text-[#7088a1]">
+                                Choose another section to review a different student list.
+                              </p>
+                            </td>
+                          </tr>
+                        ) : null}
                       </tbody>
                     </table>
                   </div>
 
                   <div className="flex flex-col gap-3 border-t border-[#b8c8d6] bg-[rgba(216,227,236,0.84)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-fluid-sm font-medium text-[#607790]">
-                      Showing {firstSubmissionIndex + 1}-{lastSubmissionIndex} of {submittedStudents.length}
+                      Showing {firstSubmissionDisplayIndex}-{lastSubmissionIndex} of {filteredReviewStudents.length}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
@@ -1040,6 +1181,7 @@ function ActivitySubmissions() {
                     </div>
                   </div>
                 </div>
+                </div>
               ) : (
                 <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
                   <p className="text-fluid-md font-semibold text-[#173b70]">No submissions yet</p>
@@ -1055,11 +1197,13 @@ function ActivitySubmissions() {
 
       <Modal
         open={Boolean(selectedStudent)}
-        title={selectedStudent ? `Review ${selectedStudent.fullName}` : 'Review submission'}
+        title={selectedStudent ? `${selectedStudent.submissionStatus === 'submitted' ? 'Review' : 'Score'} ${selectedStudent.fullName}` : 'Review submission'}
         description={
-          selectedStudent && submittedStudents.length > 1
-            ? `Submission ${selectedStudentPosition} of ${submittedStudents.length}. Preview the output, add comments or image notes, and save a score.`
-            : 'Preview the submitted output, add comments or image notes, and save a score.'
+          selectedStudent && filteredReviewStudents.length > 1
+            ? `${selectedStudent.submissionStatus === 'submitted' ? 'Submission' : 'Student'} ${selectedStudentPosition} of ${filteredReviewStudents.length}. ${selectedStudent.submissionStatus === 'submitted' ? 'Preview the output, add comments or image notes, and save a score.' : 'No LMS output is attached; save the manual score and optional comment.'}`
+            : selectedStudent?.submissionStatus === 'not-submitted'
+              ? 'No LMS output is attached; save the manual score and optional comment.'
+              : 'Preview the submitted output, add comments or image notes, and save a score.'
         }
         onClose={closeReviewModal}
         panelClassName="max-w-[min(90vw,96rem)]"
@@ -1113,6 +1257,15 @@ function ActivitySubmissions() {
         {selectedStudent ? (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1.75fr)_20rem]">
             <div className="space-y-4">
+              {selectedStudent.submissionStatus === 'not-submitted' ? (
+                <div className="rounded-[1.15rem] border border-[#f2d9bc] bg-[#fff5e8] p-4">
+                  <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#b06b15]">No LMS submission</p>
+                  <p className="mt-2 text-fluid-sm leading-6 text-[#6f5632]">
+                    Use this manual score when the student sent the work outside the LMS.
+                  </p>
+                </div>
+              ) : null}
+
               {selectedStudent.textContent ? (
                 <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">

@@ -20,6 +20,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;

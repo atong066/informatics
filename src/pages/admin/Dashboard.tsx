@@ -58,11 +58,16 @@ function AdminDashboard() {
                 description="Assign advisers, curriculums, and teachers."
                 onClick={() => navigate('/admin/sections')}
               />
+              <QuickAction
+                title="Open Students"
+                description="Set course, batch, and section."
+                onClick={() => navigate('/admin/students')}
+              />
             </div>
           </div>
         </section>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <MetricCard
             icon={<FiBookOpen className="h-5 w-5" />}
             value={String(overview?.metrics.subjectCount ?? 0)}
@@ -77,6 +82,11 @@ function AdminDashboard() {
             icon={<FiUsers className="h-5 w-5" />}
             value={String(overview?.metrics.sectionCount ?? 0)}
             label="Sections"
+          />
+          <MetricCard
+            icon={<FiUsers className="h-5 w-5" />}
+            value={String(overview?.metrics.studentCount ?? 0)}
+            label="Students"
           />
           <MetricCard
             icon={<FiShield className="h-5 w-5" />}

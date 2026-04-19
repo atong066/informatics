@@ -36,6 +36,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;
@@ -648,7 +651,7 @@ function FacultyMeetingDetails() {
                   <button
                     type="button"
                     onClick={() => startMeetingMutation.mutate()}
-                    disabled={meeting.status !== 'scheduled' || isBusy}
+                    disabled={meeting.status === 'live' || isBusy}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-3 text-fluid-sm font-semibold text-white shadow-[0_10px_18px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiPlay className="h-4 w-4" />
@@ -666,7 +669,7 @@ function FacultyMeetingDetails() {
                       <button
                         type="button"
                         onClick={() => recordingInputRef.current?.click()}
-                        disabled={meeting.status === 'ended' || isBusy}
+                        disabled={meeting.status !== 'live' || isBusy}
                         className="inline-flex items-center gap-2 rounded-full border border-[#d5e0ea] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <FiUploadCloud className="h-4 w-4" />
@@ -708,7 +711,7 @@ function FacultyMeetingDetails() {
                   <button
                     type="button"
                     onClick={() => endMeetingMutation.mutate()}
-                    disabled={meeting.status === 'ended' || isBusy}
+                    disabled={meeting.status !== 'live' || isBusy}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-[#d5e0ea] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiCheckCircle className="h-4 w-4" />

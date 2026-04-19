@@ -17,6 +17,24 @@ export type AdminFacultyUser = {
   profileImage?: string | null;
 };
 
+export type AdminStudentUser = {
+  id: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  fullName: string;
+  username: string;
+  email: string;
+  address: string;
+  contactNumber: string;
+  birthdate: string;
+  section: string;
+  course: string;
+  batchNumber: string;
+  sectionNumber: string;
+  profileImage?: string | null;
+};
+
 export type AdminSubject = {
   id: string;
   title: string;
@@ -44,6 +62,9 @@ export type AdminCurriculum = {
 export type AdminSection = {
   id: string;
   name: string;
+  course: string;
+  batchNumber: string;
+  sectionNumber: string;
   adviserId: string | null;
   adviserName: string;
   adviserUsername: string;
@@ -69,10 +90,12 @@ export type AdminOverviewResponse = {
     subjectCount: number;
     curriculumCount: number;
     facultyCount: number;
+    studentCount: number;
     sectionCount: number;
   };
   availableSections: string[];
   facultyUsers: AdminFacultyUser[];
+  studentUsers: AdminStudentUser[];
   subjects: AdminSubject[];
   curriculums: AdminCurriculum[];
   sections: AdminSection[];

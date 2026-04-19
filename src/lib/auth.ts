@@ -7,6 +7,9 @@ export type StoredUser = {
   username: string;
   role?: 'student' | 'faculty' | 'admin';
   section: string;
+  course?: string;
+  batchNumber?: string;
+  sectionNumber?: string;
   birthdate: string;
   address: string;
   contactNumber: string;

@@ -349,6 +349,9 @@ function AdminFaculty() {
         },
         body: JSON.stringify({
           name: payload.section.name,
+          course: payload.section.course,
+          batchNumber: payload.section.batchNumber,
+          sectionNumber: payload.section.sectionNumber,
           adviserId: payload.section.adviserId ?? '',
           curriculumId: payload.section.curriculumId ?? '',
           subjectTeachers: getSectionSubjectTeachers(

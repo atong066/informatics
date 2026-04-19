@@ -25,6 +25,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminSubjects from './pages/admin/Subjects';
 import AdminCurriculums from './pages/admin/Curriculums';
 import AdminSections from './pages/admin/Sections';
+import AdminStudents from './pages/admin/Students';
 import AdminFaculty from './pages/admin/Faculty';
 
 function App() {
@@ -110,6 +111,14 @@ function App() {
           element={(
             <RoleProtectedRoute role="admin">
               <AdminSections />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/students"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminStudents />
             </RoleProtectedRoute>
           )}
         />

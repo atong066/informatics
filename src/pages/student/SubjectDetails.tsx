@@ -40,6 +40,7 @@ type StudentSubmissionRecord = {
   textContent: string;
   attachments: AttachmentRecord[];
   submittedAt: string;
+  isManualReview: boolean;
   reviewScore: number | null;
   reviewComment: string;
   reviewedAt: string;
@@ -61,6 +62,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;
@@ -163,6 +167,9 @@ const subjectTabs = [
 ] as const;
 
 type SubmissionTargetKind = 'activity' | 'assignment';
+type StudentSubmittableItem =
+  | SubjectDetailsResponse['activities'][number]
+  | SubjectDetailsResponse['assignments'][number];
 
 const MAX_ATTACHMENT_BYTES = 2_000_000;
 const MAX_TOTAL_ATTACHMENT_BYTES = 5_000_000;
@@ -234,6 +241,68 @@ function formatCalendarDate(value: string) {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function isPastSubmissionDeadline(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  const [year, month, day] = value.split('-').map(Number);
+
+  if (!year || !month || !day) {
+    return false;
+  }
+
+  const deadline = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+  return Date.now() > deadline.getTime();
+}
+
+function getSubmissionLockState(item: StudentSubmittableItem | null | undefined) {
+  if (!item) {
+    return {
+      isLocked: false,
+      actionLabel: '',
+      message: '',
+    };
+  }
+
+  if (item.submission?.reviewScore !== null && item.submission?.reviewScore !== undefined) {
+    return {
+      isLocked: true,
+      actionLabel: 'Scored',
+      message: 'This submission has already been scored and can no longer be changed.',
+    };
+  }
+
+  if (isPastSubmissionDeadline(item.dueDate)) {
+    return {
+      isLocked: true,
+      actionLabel: 'Closed',
+      message: 'The deadline has passed. Submissions are closed.',
+    };
+  }
+
+  return {
+    isLocked: false,
+    actionLabel: '',
+    message: '',
+  };
+}
+
+function getSubmissionActionLabel(kind: SubmissionTargetKind, item: StudentSubmittableItem) {
+  const lockState = getSubmissionLockState(item);
+
+  if (lockState.isLocked) {
+    return lockState.actionLabel;
+  }
+
+  if (item.submission) {
+    return 'Update submission';
+  }
+
+  return kind === 'assignment' ? 'Submit assignment' : 'Submit activity';
 }
 
 function formatDateTime(value: string, fallback = 'Not submitted yet') {
@@ -493,6 +562,7 @@ function SubjectDetails() {
   const selectedSubmissionItem = selectedActivity ?? selectedAssignment;
   const selectedSubmissionLabel =
     selectedSubmissionTarget?.kind === 'assignment' ? 'assignment' : 'activity';
+  const selectedSubmissionLock = getSubmissionLockState(selectedSubmissionItem);
 
   const activeCount = useMemo(() => {
     if (!subject) {
@@ -612,6 +682,18 @@ function SubjectDetails() {
         return;
       }
 
+      const lockState = getSubmissionLockState(assignment);
+
+      if (lockState.isLocked) {
+        setPopupState({
+          open: true,
+          title: 'Submission locked',
+          message: lockState.message,
+          variant: 'error',
+        });
+        return;
+      }
+
       setSelectedSubmissionTarget({ id: itemId, kind });
       setSubmissionType(assignment.submission?.submissionType ?? assignment.assignmentType);
       setSubmissionText(assignment.submission?.textContent ?? '');
@@ -624,6 +706,18 @@ function SubjectDetails() {
     const activity = subject?.activities.find((entry) => entry.id === itemId);
 
     if (!activity) {
+      return;
+    }
+
+    const lockState = getSubmissionLockState(activity);
+
+    if (lockState.isLocked) {
+      setPopupState({
+        open: true,
+        title: 'Submission locked',
+        message: lockState.message,
+        variant: 'error',
+      });
       return;
     }
 
@@ -677,6 +771,13 @@ function SubjectDetails() {
 
   const handleSubmitActivity = () => {
     if (!selectedSubmissionItem) {
+      return;
+    }
+
+    const lockState = getSubmissionLockState(selectedSubmissionItem);
+
+    if (lockState.isLocked) {
+      setSubmissionError(lockState.message);
       return;
     }
 
@@ -929,7 +1030,10 @@ function SubjectDetails() {
               {activeTab === 'activities' ? (
                 subject.activities.length > 0 ? (
                   <div className="grid gap-4 lg:grid-cols-2">
-                    {subject.activities.map((item) => (
+                    {subject.activities.map((item) => {
+                      const lockState = getSubmissionLockState(item);
+
+                      return (
                       <article
                         key={item.id}
                         className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
@@ -965,19 +1069,32 @@ function SubjectDetails() {
                               </p>
                               <p className="mt-2 text-fluid-sm text-[#45627f]">
                                 {item.submission
-                                  ? `Submitted ${formatDateTime(item.submission.submittedAt)}`
+                                  ? item.submission.isManualReview
+                                    ? 'Scored manually by faculty.'
+                                    : `Submitted ${formatDateTime(item.submission.submittedAt)}`
                                   : 'You have not submitted this activity yet.'}
                               </p>
                             </div>
                             <button
                               type="button"
                               onClick={() => openSubmissionModal('activity', item.id)}
-                              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                              disabled={lockState.isLocked}
+                              title={lockState.message || undefined}
+                              className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                                lockState.isLocked
+                                  ? 'cursor-not-allowed border-[#cbd8e4] bg-[#e5edf4] text-[#6d86a0]'
+                                  : 'border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] text-white hover:brightness-105'
+                              }`}
                             >
                               <FiSend className="h-3.5 w-3.5" />
-                              {item.submission ? 'Update submission' : 'Submit activity'}
+                              {getSubmissionActionLabel('activity', item)}
                             </button>
                           </div>
+                          {lockState.isLocked ? (
+                            <p className="mt-3 text-fluid-xs font-medium text-[#6d86a0]">
+                              {lockState.message}
+                            </p>
+                          ) : null}
                         </div>
 
                         {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
@@ -1061,7 +1178,8 @@ function SubjectDetails() {
                           </div>
                         ) : null}
                       </article>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <EmptyTabState label="Activities" />
@@ -1071,7 +1189,10 @@ function SubjectDetails() {
               {activeTab === 'assignments' ? (
                 subject.assignments.length > 0 ? (
                   <div className="grid gap-4 lg:grid-cols-2">
-                    {subject.assignments.map((item) => (
+                    {subject.assignments.map((item) => {
+                      const lockState = getSubmissionLockState(item);
+
+                      return (
                       <article
                         key={item.id}
                         className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
@@ -1107,19 +1228,32 @@ function SubjectDetails() {
                               </p>
                               <p className="mt-2 text-fluid-sm text-[#45627f]">
                                 {item.submission
-                                  ? `Submitted ${formatDateTime(item.submission.submittedAt)}`
+                                  ? item.submission.isManualReview
+                                    ? 'Scored manually by faculty.'
+                                    : `Submitted ${formatDateTime(item.submission.submittedAt)}`
                                   : 'You have not submitted this assignment yet.'}
                               </p>
                             </div>
                             <button
                               type="button"
                               onClick={() => openSubmissionModal('assignment', item.id)}
-                              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-3.5 py-2 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                              disabled={lockState.isLocked}
+                              title={lockState.message || undefined}
+                              className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                                lockState.isLocked
+                                  ? 'cursor-not-allowed border-[#cbd8e4] bg-[#e5edf4] text-[#6d86a0]'
+                                  : 'border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] text-white hover:brightness-105'
+                              }`}
                             >
                               <FiSend className="h-3.5 w-3.5" />
-                              {item.submission ? 'Update submission' : 'Submit assignment'}
+                              {getSubmissionActionLabel('assignment', item)}
                             </button>
                           </div>
+                          {lockState.isLocked ? (
+                            <p className="mt-3 text-fluid-xs font-medium text-[#6d86a0]">
+                              {lockState.message}
+                            </p>
+                          ) : null}
                         </div>
 
                         {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
@@ -1203,7 +1337,8 @@ function SubjectDetails() {
                           </div>
                         ) : null}
                       </article>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <EmptyTabState label="Assignments" />
@@ -1347,6 +1482,16 @@ function SubjectDetails() {
                                 <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.aiStatusLabel)}`}>
                                   AI notes: {item.aiStatusLabel}
                                 </span>
+                                {item.sectionName ? (
+                                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                    {item.sectionName}
+                                  </span>
+                                ) : null}
+                                {item.schedule ? (
+                                  <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                    {item.schedule}
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                             <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
@@ -1458,9 +1603,17 @@ function SubjectDetails() {
 
       <Modal
         open={isSubmissionModalOpen && Boolean(selectedSubmissionItem)}
-        title={selectedSubmissionItem?.submission ? 'Update submission' : `Submit ${selectedSubmissionLabel}`}
+        title={
+          selectedSubmissionLock.isLocked
+            ? 'Submission locked'
+            : selectedSubmissionItem?.submission
+              ? 'Update submission'
+              : `Submit ${selectedSubmissionLabel}`
+        }
         description={
-          selectedSubmissionItem
+          selectedSubmissionLock.isLocked
+            ? selectedSubmissionLock.message
+            : selectedSubmissionItem
             ? `Choose whether to send text or files for ${selectedSubmissionItem.title}.`
             : undefined
         }
@@ -1479,16 +1632,28 @@ function SubjectDetails() {
             <button
               type="button"
               onClick={handleSubmitActivity}
-              disabled={submitActivityMutation.isPending || !selectedSubmissionItem}
+              disabled={submitActivityMutation.isPending || !selectedSubmissionItem || selectedSubmissionLock.isLocked}
               className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitActivityMutation.isPending ? 'Saving...' : selectedSubmissionItem?.submission ? 'Update submission' : 'Submit now'}
+              {submitActivityMutation.isPending
+                ? 'Saving...'
+                : selectedSubmissionLock.isLocked
+                  ? selectedSubmissionLock.actionLabel
+                  : selectedSubmissionItem?.submission
+                    ? 'Update submission'
+                    : 'Submit now'}
             </button>
           </>
         }
       >
         {selectedSubmissionItem ? (
           <div className="space-y-4 sm:space-y-5">
+            {selectedSubmissionLock.isLocked ? (
+              <div className="rounded-[1rem] border border-[#ecd0d0] bg-[#fff2f2] px-4 py-3 text-fluid-sm font-medium text-[#9f4848]">
+                {selectedSubmissionLock.message}
+              </div>
+            ) : null}
+
             <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-3.5 py-3 sm:px-4">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
@@ -1512,11 +1677,12 @@ function SubjectDetails() {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
+                  disabled={selectedSubmissionLock.isLocked}
                   onClick={() => {
                     setSubmissionType('text');
                     setSubmissionError(null);
                   }}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                     submissionType === 'text'
                       ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
                       : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
@@ -1526,11 +1692,12 @@ function SubjectDetails() {
                 </button>
                 <button
                   type="button"
+                  disabled={selectedSubmissionLock.isLocked}
                   onClick={() => {
                     setSubmissionType('file');
                     setSubmissionError(null);
                   }}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition ${
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-fluid-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                     submissionType === 'file'
                       ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
                       : 'border-[#d8e3ec] bg-white text-[#5d7690] hover:bg-[#f8fbfd]'
@@ -1549,6 +1716,7 @@ function SubjectDetails() {
                 <textarea
                   id="submission-text"
                   value={submissionText}
+                  disabled={selectedSubmissionLock.isLocked}
                   onChange={(event) => {
                     setSubmissionText(event.target.value);
                     setSubmissionError(null);
@@ -1571,8 +1739,9 @@ function SubjectDetails() {
                   </div>
                   <button
                     type="button"
+                    disabled={selectedSubmissionLock.isLocked}
                     onClick={() => submissionAttachmentInputRef.current?.click()}
-                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
+                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiUploadCloud className="h-4 w-4" />
                     Upload files
@@ -1581,6 +1750,7 @@ function SubjectDetails() {
                     ref={submissionAttachmentInputRef}
                     type="file"
                     multiple
+                    disabled={selectedSubmissionLock.isLocked}
                     className="hidden"
                     onChange={handleSubmissionFilesSelected}
                   />
@@ -1599,10 +1769,11 @@ function SubjectDetails() {
                         </div>
                         <button
                           type="button"
+                          disabled={selectedSubmissionLock.isLocked}
                           onClick={() => {
                             setSubmissionAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index));
                           }}
-                          className="rounded-full p-2 text-[#7f93a8] transition hover:bg-[#fff7f7] hover:text-[#b75353]"
+                          className="rounded-full p-2 text-[#7f93a8] transition hover:bg-[#fff7f7] hover:text-[#b75353] disabled:cursor-not-allowed disabled:opacity-60"
                           aria-label={`Remove ${attachment.name}`}
                         >
                           <FiTrash2 className="h-4 w-4" />

@@ -22,6 +22,9 @@ type MeetingRecord = {
   title: string;
   agenda: string;
   roomName: string;
+  sectionName: string;
+  schedule: string;
+  source: 'manual' | 'schedule';
   status: 'scheduled' | 'live' | 'ended';
   startedAt: string;
   endedAt: string;
@@ -222,8 +225,8 @@ function FacultyClassroom() {
                 The faculty video conference rooms are here.
               </h1>
               <p className="mt-3 max-w-3xl text-fluid-base leading-6 text-[#607b97]">
-                You can still manage them inside each subject&apos;s `Meetings` tab, but this
-                page gives you one place to spot live rooms, scheduled sessions, and AI note status.
+                Your section schedule creates the rooms automatically, while this page gives you one place
+                to spot live rooms, scheduled sessions, and AI note status.
               </p>
             </div>
 
@@ -233,7 +236,7 @@ function FacultyClassroom() {
                 Sidebar {'>'} Classroom
               </p>
               <p className="mt-2 text-fluid-sm text-[#d4e2ef]">
-                Open any room here, or jump back into a subject to schedule the next session.
+                Open any room here, or jump back into a subject to review its class rooms.
               </p>
             </div>
           </div>
@@ -329,6 +332,16 @@ function FacultyClassroom() {
                                   <span className={`rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(meeting.aiStatusLabel)}`}>
                                     {meeting.aiStatusLabel}
                                   </span>
+                                  {meeting.sectionName ? (
+                                    <span className="rounded-full border border-[#d6e2ec] bg-[#f4f8fb] px-3 py-1 text-fluid-2xs font-semibold text-[#607790]">
+                                      {meeting.sectionName}
+                                    </span>
+                                  ) : null}
+                                  {meeting.schedule ? (
+                                    <span className="rounded-full border border-[#d6e2ec] bg-[#f4f8fb] px-3 py-1 text-fluid-2xs font-semibold text-[#607790]">
+                                      {meeting.schedule}
+                                    </span>
+                                  ) : null}
                                 </div>
                               </div>
 
@@ -392,7 +405,7 @@ function FacultyClassroom() {
                       <div className="mt-4 rounded-[1.2rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-5 py-6">
                         <p className="text-fluid-base font-semibold text-[#173b70]">No conference rooms yet</p>
                         <p className="mt-2 text-fluid-sm text-[#6a839d]">
-                          Open this subject, then use the `Meetings` tab to schedule the first room.
+                          Assign this subject to a section schedule in admin to create its room.
                         </p>
                         <button
                           type="button"

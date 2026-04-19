@@ -22,6 +22,9 @@ type SectionTeacherDraft = {
 
 type SectionFormState = {
   name: string;
+  course: string;
+  batchNumber: string;
+  sectionNumber: string;
   adviserId: string;
   curriculumId: string;
   subjectTeachers: SectionTeacherDraft[];
@@ -38,12 +41,54 @@ type MutationError = Error & {
   fieldErrors?: Record<string, string>;
 };
 
+const courseOptions = [
+  { value: 'DCS', label: 'DCS | Diploma in Computer Studies' },
+  { value: 'DIT', label: 'DIT | Diploma in Information Technology' },
+];
+
 function emptySectionForm(): SectionFormState {
   return {
     name: '',
+    course: '',
+    batchNumber: '',
+    sectionNumber: '',
     adviserId: '',
     curriculumId: '',
     subjectTeachers: [],
+  };
+}
+
+function buildSectionLabel(course: string, batchNumber: string, sectionNumber: string) {
+  const normalizedCourse = course.trim().toUpperCase();
+  const normalizedBatch = batchNumber.trim().replace(/^B/i, '');
+  const normalizedSection = sectionNumber.trim();
+
+  if (!normalizedCourse || !normalizedBatch || !normalizedSection) {
+    return '';
+  }
+
+  return [normalizedCourse, `B${normalizedBatch}`, normalizedSection]
+    .filter(Boolean)
+    .join(' - ');
+}
+
+function parseSectionLabel(sectionName: string) {
+  const match = sectionName
+    .trim()
+    .match(/^([A-Za-z0-9]+)\s*-\s*B?(\d+)(?:\s*-\s*([A-Za-z0-9]+))?$/i);
+
+  if (!match) {
+    return {
+      course: '',
+      batchNumber: '',
+      sectionNumber: '',
+    };
+  }
+
+  return {
+    course: match[1]?.toUpperCase() ?? '',
+    batchNumber: match[2] ?? '',
+    sectionNumber: match[3] ?? '',
   };
 }
 
@@ -115,7 +160,10 @@ function AdminSections() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: payload.name,
+          name: payload.name || buildSectionLabel(payload.course, payload.batchNumber, payload.sectionNumber),
+          course: payload.course,
+          batchNumber: payload.batchNumber,
+          sectionNumber: payload.sectionNumber,
           adviserId: payload.adviserId,
           curriculumId: payload.curriculumId,
           subjectTeachers: payload.subjectTeachers.map((entry) => ({
@@ -196,6 +244,13 @@ function AdminSections() {
   }
 
   function startEditing(section: AdminSection) {
+    const parsedSection = section.course && section.batchNumber
+      ? {
+        course: section.course,
+        batchNumber: section.batchNumber,
+        sectionNumber: section.sectionNumber,
+      }
+      : parseSectionLabel(section.name);
     const assignmentBySubjectId = new Map(
       section.subjectAssignments.map((assignment) => [
         assignment.subjectId,
@@ -209,6 +264,9 @@ function AdminSections() {
     setEditingSectionId(section.id);
     setSectionForm({
       name: section.name,
+      course: parsedSection.course,
+      batchNumber: parsedSection.batchNumber,
+      sectionNumber: parsedSection.sectionNumber,
       adviserId: section.adviserId ?? '',
       curriculumId: section.curriculumId ?? '',
       subjectTeachers: buildSubjectTeacherDrafts(
@@ -221,9 +279,22 @@ function AdminSections() {
 
   function handleSubmit() {
     const nextErrors: Record<string, string> = {};
+    const sectionName = buildSectionLabel(
+      sectionForm.course,
+      sectionForm.batchNumber,
+      sectionForm.sectionNumber,
+    );
 
-    if (!sectionForm.name.trim()) {
-      nextErrors.name = 'Section name is required';
+    if (!sectionForm.course.trim()) {
+      nextErrors.course = 'Course is required';
+    }
+
+    if (!sectionForm.batchNumber.trim()) {
+      nextErrors.batchNumber = 'Batch number is required';
+    }
+
+    if (!sectionForm.sectionNumber.trim()) {
+      nextErrors.sectionNumber = 'Section is required';
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -232,7 +303,10 @@ function AdminSections() {
     }
 
     saveSectionMutation.mutate({
-      name: sectionForm.name.trim(),
+      name: sectionName,
+      course: sectionForm.course.trim().toUpperCase(),
+      batchNumber: sectionForm.batchNumber.trim().replace(/^B/i, ''),
+      sectionNumber: sectionForm.sectionNumber.trim(),
       adviserId: sectionForm.adviserId,
       curriculumId: sectionForm.curriculumId,
       subjectTeachers: sectionForm.subjectTeachers,
@@ -283,7 +357,7 @@ function AdminSections() {
                   {editingSectionId ? 'Edit section' : 'Add section'}
                 </p>
                 <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                  Add the section name, optionally choose a curriculum, and optionally set an adviser.
+                  Choose a course and batch, then add a section number when one batch has multiple sections.
                 </p>
               </div>
               {editingSectionId ? (
@@ -299,18 +373,72 @@ function AdminSections() {
             </div>
 
             <div className="mt-5 space-y-4">
-              <InputField label="Section name" error={fieldErrors.name}>
-                <input
-                  type="text"
-                  value={sectionForm.name}
-                  onChange={(event) => {
-                    setSectionForm((current) => ({ ...current, name: event.target.value }));
-                    setFieldErrors((current) => ({ ...current, name: '' }));
-                  }}
-                  placeholder="DCS-B7 - 2"
-                  className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                />
-              </InputField>
+              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                <InputField label="Course" error={fieldErrors.course}>
+                  <CustomSelect
+                    id="section-course"
+                    value={sectionForm.course}
+                    onChange={(value) => {
+                      setSectionForm((current) => ({
+                        ...current,
+                        course: value,
+                        name: buildSectionLabel(value, current.batchNumber, current.sectionNumber),
+                      }));
+                      setFieldErrors((current) => ({ ...current, course: '', name: '' }));
+                    }}
+                    options={courseOptions}
+                    placeholder="Choose course"
+                    tone="muted"
+                  />
+                </InputField>
+
+                <InputField label="Batch number" error={fieldErrors.batchNumber}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={sectionForm.batchNumber}
+                    onChange={(event) => {
+                      const batchNumber = event.target.value.replace(/^B/i, '');
+                      setSectionForm((current) => ({
+                        ...current,
+                        batchNumber,
+                        name: buildSectionLabel(current.course, batchNumber, current.sectionNumber),
+                      }));
+                      setFieldErrors((current) => ({ ...current, batchNumber: '', name: '' }));
+                    }}
+                    placeholder="7"
+                    className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
+                  />
+                </InputField>
+
+                <InputField label="Section" error={fieldErrors.sectionNumber}>
+                  <input
+                    type="text"
+                    value={sectionForm.sectionNumber}
+                    onChange={(event) => {
+                      const sectionNumber = event.target.value;
+                      setSectionForm((current) => ({
+                        ...current,
+                        sectionNumber,
+                        name: buildSectionLabel(current.course, current.batchNumber, sectionNumber),
+                      }));
+                      setFieldErrors((current) => ({ ...current, sectionNumber: '', name: '' }));
+                    }}
+                    placeholder="2"
+                    className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
+                  />
+                </InputField>
+              </div>
+
+              <div className="rounded-[1.1rem] border border-[#d1dde1] bg-white px-4 py-3">
+                <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#7b95a1]">
+                  Section label
+                </p>
+                <p className="mt-1 text-fluid-base font-semibold text-[#173b47]">
+                  {buildSectionLabel(sectionForm.course, sectionForm.batchNumber, sectionForm.sectionNumber)
+                    || 'Choose course, batch, and section'}
+                </p>
+              </div>
 
               <InputField label="Curriculum (optional)" error={fieldErrors.curriculumId}>
                 <CustomSelect
