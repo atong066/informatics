@@ -5,11 +5,34 @@ export type StoredUser = {
   middleName: string;
   email: string;
   username: string;
-  role?: 'student' | 'faculty' | 'admin';
+  role?: 'student' | 'faculty' | 'admin' | 'hr' | 'staff';
   section: string;
   course?: string;
   batchNumber?: string;
   sectionNumber?: string;
+  studentType?: 'new' | 'old';
+  completedSubjectIds?: string[];
+  studentEvaluation?: {
+    status: 'not-required' | 'pending' | 'eligible' | 'blocked';
+    evaluatedAt: string;
+    remarks: string;
+    subjectResults: Array<{
+      subjectId: string;
+      prerequisiteSubjectIds: string[];
+      metPrerequisiteSubjectIds: string[];
+      missingPrerequisiteSubjectIds: string[];
+      isEligible: boolean;
+    }>;
+  };
+  employeeNumber?: string;
+  department?: string;
+  position?: string;
+  employmentStatus?: string;
+  hireDate?: string;
+  salaryRate?: number;
+  paySchedule?: string;
+  emergencyContactName?: string;
+  emergencyContactNumber?: string;
   birthdate: string;
   address: string;
   contactNumber: string;
@@ -64,7 +87,15 @@ export function getNormalizedRole(user?: Pick<StoredUser, 'role'> | null) {
     return 'admin';
   }
 
-  return user?.role === 'faculty' ? 'faculty' : 'student';
+  if (user?.role === 'faculty') {
+    return 'faculty';
+  }
+
+  if (user?.role === 'hr') {
+    return 'hr';
+  }
+
+  return user?.role === 'staff' ? 'staff' : 'student';
 }
 
 export function getDefaultPortalRoute(user?: Pick<StoredUser, 'role'> | null) {
@@ -74,7 +105,13 @@ export function getDefaultPortalRoute(user?: Pick<StoredUser, 'role'> | null) {
     return '/admin/dashboard';
   }
 
-  return normalizedRole === 'faculty'
-    ? '/faculty/dashboard'
-    : '/student/dashboard';
+  if (normalizedRole === 'faculty') {
+    return '/faculty/dashboard';
+  }
+
+  if (normalizedRole === 'hr') {
+    return '/hr/dashboard';
+  }
+
+  return normalizedRole === 'staff' ? '/staff/dashboard' : '/student/dashboard';
 }

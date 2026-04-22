@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -22,7 +22,6 @@ import {
   FiTrash2,
   FiTrendingUp,
   FiUploadCloud,
-  FiUsers,
   FiVideo,
 } from 'react-icons/fi';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
@@ -104,7 +103,10 @@ type FacultySubjectDetailsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     activityType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     attachments: AttachmentRecord[];
     submittedCount: number;
     totalStudents: number;
@@ -115,7 +117,10 @@ type FacultySubjectDetailsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     assignmentType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     attachments: AttachmentRecord[];
     submittedCount: number;
     totalStudents: number;
@@ -149,6 +154,16 @@ const subjectTabs = [
 ] as const;
 
 type SubjectTabId = (typeof subjectTabs)[number]['id'];
+
+type AudienceEditTarget =
+  | {
+    kind: 'activity';
+    item: FacultySubjectDetailsResponse['activities'][number];
+  }
+  | {
+    kind: 'assignment';
+    item: FacultySubjectDetailsResponse['assignments'][number];
+  };
 
 function getSubjectIcon(iconKey: string) {
   switch (iconKey) {
@@ -188,7 +203,7 @@ function statusTone(status: string) {
 
 function EmptyTabState({ label }: { label: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+    <div className="rounded-[0.224rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
       <p className="text-fluid-md font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
       <p className="mt-2 text-fluid-sm text-[#6a839d]">
         This section will stay empty until records are added from the database.
@@ -262,6 +277,16 @@ function formatTimeLabel(value: string) {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function formatDeadlineLabel(date: string, time?: string) {
+  const dateLabel = formatCalendarDate(date);
+
+  if (!time) {
+    return dateLabel;
+  }
+
+  return `${dateLabel} at ${formatTimeLabel(time)}`;
 }
 
 function formatAssessmentWindow(startTime: string, endTime: string) {
@@ -354,6 +379,7 @@ function FacultySubjectDetails() {
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
+  const [editingAudienceTarget, setEditingAudienceTarget] = useState<AudienceEditTarget | null>(null);
   const [selectedRecording, setSelectedRecording] = useState<MeetingRecord | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
@@ -370,12 +396,16 @@ function FacultySubjectDetails() {
   const [activityTitle, setActivityTitle] = useState('');
   const [activityType, setActivityType] = useState<'text' | 'file'>('text');
   const [activityDetail, setActivityDetail] = useState('');
+  const [activityTargetSections, setActivityTargetSections] = useState<string[]>(['All sections']);
   const [activityDeadline, setActivityDeadline] = useState('');
+  const [activityDeadlineTime, setActivityDeadlineTime] = useState('');
   const [activityAttachments, setActivityAttachments] = useState<AttachmentRecord[]>([]);
   const [assignmentTitle, setAssignmentTitle] = useState('');
   const [assignmentType, setAssignmentType] = useState<'text' | 'file'>('text');
   const [assignmentDetail, setAssignmentDetail] = useState('');
+  const [assignmentTargetSections, setAssignmentTargetSections] = useState<string[]>(['All sections']);
   const [assignmentDeadline, setAssignmentDeadline] = useState('');
+  const [assignmentDeadlineTime, setAssignmentDeadlineTime] = useState('');
   const [assignmentAttachments, setAssignmentAttachments] = useState<AttachmentRecord[]>([]);
   const [assessmentTitle, setAssessmentTitle] = useState('');
   const [assessmentType, setAssessmentType] = useState<'quiz' | 'quarter-exam'>('quiz');
@@ -384,6 +414,7 @@ function FacultySubjectDetails() {
   const [assessmentSchedule, setAssessmentSchedule] = useState('');
   const [assessmentStartTime, setAssessmentStartTime] = useState('');
   const [assessmentEndTime, setAssessmentEndTime] = useState('');
+  const [audienceTargetSections, setAudienceTargetSections] = useState<string[]>(['All sections']);
   const [fieldErrors, setFieldErrors] = useState<{
     lessonTitle?: string;
     lessonSummary?: string;
@@ -396,12 +427,16 @@ function FacultySubjectDetails() {
     activityTitle?: string;
     activityType?: string;
     activityDetail?: string;
+    activityTargetSections?: string;
     activityDeadline?: string;
+    activityDeadlineTime?: string;
     activityAttachments?: string;
     assignmentTitle?: string;
     assignmentType?: string;
     assignmentDetail?: string;
+    assignmentTargetSections?: string;
     assignmentDeadline?: string;
+    assignmentDeadlineTime?: string;
     assignmentAttachments?: string;
     assessmentTitle?: string;
     assessmentType?: string;
@@ -410,6 +445,7 @@ function FacultySubjectDetails() {
     assessmentSchedule?: string;
     assessmentStartTime?: string;
     assessmentEndTime?: string;
+    audienceTargetSections?: string;
   }>({});
   const [popupState, setPopupState] = useState<{
     open: boolean;
@@ -663,8 +699,10 @@ function FacultySubjectDetails() {
         body: JSON.stringify({
           title: activityTitle,
           activityType,
+          targetSections: activityTargetSections,
           detail: activityDetail,
           dueDate: activityDeadline,
+          deadlineTime: activityDeadlineTime,
           attachments: activityAttachments,
         }),
       });
@@ -698,8 +736,10 @@ function FacultySubjectDetails() {
         ...current,
         activityTitle: error.errors?.title?.[0],
         activityType: error.errors?.activityType?.[0],
+        activityTargetSections: error.errors?.targetSections?.[0],
         activityDetail: error.errors?.detail?.[0],
         activityDeadline: error.errors?.dueDate?.[0],
+        activityDeadlineTime: error.errors?.deadlineTime?.[0],
         activityAttachments: error.errors?.attachments?.[0],
       }));
       setPopupState({
@@ -722,8 +762,10 @@ function FacultySubjectDetails() {
         body: JSON.stringify({
           title: assignmentTitle,
           assignmentType,
+          targetSections: assignmentTargetSections,
           detail: assignmentDetail,
           dueDate: assignmentDeadline,
+          deadlineTime: assignmentDeadlineTime,
           attachments: assignmentAttachments,
         }),
       });
@@ -757,14 +799,72 @@ function FacultySubjectDetails() {
         ...current,
         assignmentTitle: error.errors?.title?.[0],
         assignmentType: error.errors?.assignmentType?.[0],
+        assignmentTargetSections: error.errors?.targetSections?.[0],
         assignmentDetail: error.errors?.detail?.[0],
         assignmentDeadline: error.errors?.dueDate?.[0],
+        assignmentDeadlineTime: error.errors?.deadlineTime?.[0],
         assignmentAttachments: error.errors?.attachments?.[0],
       }));
       setPopupState({
         open: true,
         title: 'Unable to add assignment',
         message: error.message || 'Please review the assignment details and try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const updateAudienceMutation = useMutation({
+    mutationFn: async (payload: {
+      kind: 'activity' | 'assignment';
+      id: string;
+      targetSections: string[];
+    }) => {
+      const collection = payload.kind === 'assignment' ? 'assignments' : 'activities';
+      const response = await fetch(`/api/faculty/subjects/${subjectId}/${collection}/${payload.id}/audience`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          targetSections: payload.targetSections,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        message?: string;
+        errors?: Record<string, string[]>;
+      };
+
+      if (!response.ok) {
+        throw {
+          message: data.message || 'Failed to update audience',
+          errors: data.errors,
+        };
+      }
+
+      return data;
+    },
+    onSuccess: async () => {
+      closeAudienceModal(true);
+      setPopupState({
+        open: true,
+        title: 'Audience updated',
+        message: 'The selected sections were updated successfully.',
+        variant: 'success',
+      });
+      await queryClient.invalidateQueries({ queryKey: ['faculty-subject-detail', subjectId] });
+    },
+    onError: (error: { message?: string; errors?: Record<string, string[]> }) => {
+      setFieldErrors((current) => ({
+        ...current,
+        audienceTargetSections: error.errors?.targetSections?.[0],
+      }));
+      setPopupState({
+        open: true,
+        title: 'Unable to update audience',
+        message: error.message || 'Please review the selected sections and try again.',
         variant: 'error',
       });
     },
@@ -1067,27 +1167,11 @@ function FacultySubjectDetails() {
     },
   });
 
-  if (!activeUser || isError) {
-    return null;
-  }
-
-  const fullName = [activeUser.firstName, activeUser.middleName, activeUser.lastName]
-    .filter(Boolean)
-    .join(' ');
-
-  if (!subjectQuery.isLoading && subjectQuery.isError) {
-    return <Navigate to="/faculty/dashboard" replace />;
-  }
-
   const subject = subjectQuery.data;
-  const SubjectIcon = getSubjectIcon(subject?.iconKey ?? 'book');
-  const activeLesson = subject?.lessonProgress.find((item) => item.id === activeLessonId) ?? null;
-  const topicOptions =
-    subject?.lessonProgress.map((item) => ({
-      label: item.lesson,
-      value: item.id,
-    })) ?? [];
-
+  const sectionOptions = useMemo(
+    () => ['All sections', ...Array.from(new Set(subject?.availableSections ?? []))],
+    [subject?.availableSections],
+  );
   const activeCount = useMemo(() => {
     if (!subject) {
       return 0;
@@ -1111,18 +1195,42 @@ function FacultySubjectDetails() {
     }
   }, [activeTab, subject]);
 
+  if (!activeUser || isError) {
+    return null;
+  }
+
+  const fullName = [activeUser.firstName, activeUser.middleName, activeUser.lastName]
+    .filter(Boolean)
+    .join(' ');
+
+  if (!subjectQuery.isLoading && subjectQuery.isError) {
+    return <Navigate to="/faculty/dashboard" replace />;
+  }
+
+  const SubjectIcon = getSubjectIcon(subject?.iconKey ?? 'book');
+  const activeLesson = subject?.lessonProgress.find((item) => item.id === activeLessonId) ?? null;
+  const topicOptions =
+    subject?.lessonProgress.map((item) => ({
+      label: item.lesson,
+      value: item.id,
+    })) ?? [];
+
   function resetActivityForm() {
     setActivityTitle('');
     setActivityType('text');
     setActivityDetail('');
+    setActivityTargetSections(['All sections']);
     setActivityDeadline('');
+    setActivityDeadlineTime('');
     setActivityAttachments([]);
     setFieldErrors((current) => ({
       ...current,
       activityTitle: undefined,
       activityType: undefined,
       activityDetail: undefined,
+      activityTargetSections: undefined,
       activityDeadline: undefined,
+      activityDeadlineTime: undefined,
       activityAttachments: undefined,
     }));
     if (activityAttachmentInputRef.current) {
@@ -1134,14 +1242,18 @@ function FacultySubjectDetails() {
     setAssignmentTitle('');
     setAssignmentType('text');
     setAssignmentDetail('');
+    setAssignmentTargetSections(['All sections']);
     setAssignmentDeadline('');
+    setAssignmentDeadlineTime('');
     setAssignmentAttachments([]);
     setFieldErrors((current) => ({
       ...current,
       assignmentTitle: undefined,
       assignmentType: undefined,
       assignmentDetail: undefined,
+      assignmentTargetSections: undefined,
       assignmentDeadline: undefined,
+      assignmentDeadlineTime: undefined,
       assignmentAttachments: undefined,
     }));
     if (assignmentAttachmentInputRef.current) {
@@ -1195,6 +1307,23 @@ function FacultySubjectDetails() {
 
     setIsAssessmentModalOpen(false);
     resetAssessmentForm();
+  }
+
+  function resetAudienceForm() {
+    setEditingAudienceTarget(null);
+    setAudienceTargetSections(['All sections']);
+    setFieldErrors((current) => ({
+      ...current,
+      audienceTargetSections: undefined,
+    }));
+  }
+
+  function closeAudienceModal(force = false) {
+    if (!force && updateAudienceMutation.isPending) {
+      return;
+    }
+
+    resetAudienceForm();
   }
 
   function resetModuleForm() {
@@ -1252,6 +1381,15 @@ function FacultySubjectDetails() {
   const openCreateAssignmentModal = () => {
     resetAssignmentForm();
     setIsAssignmentModalOpen(true);
+  };
+
+  const openEditAudienceModal = (target: AudienceEditTarget) => {
+    setEditingAudienceTarget(target);
+    setAudienceTargetSections(target.item.targetSections);
+    setFieldErrors((current) => ({
+      ...current,
+      audienceTargetSections: undefined,
+    }));
   };
 
   const openCreateAssessmentModal = () => {
@@ -1482,7 +1620,9 @@ function FacultySubjectDetails() {
       activityTitle: undefined,
       activityType: undefined,
       activityDetail: undefined,
+      activityTargetSections: undefined,
       activityDeadline: undefined,
+      activityDeadlineTime: undefined,
       activityAttachments: undefined,
     };
 
@@ -1492,6 +1632,14 @@ function FacultySubjectDetails() {
 
     if (!activityDeadline) {
       nextErrors.activityDeadline = 'Deadline is required';
+    }
+
+    if (activityTargetSections.length === 0) {
+      nextErrors.activityTargetSections = 'Choose at least one section';
+    }
+
+    if (!activityDeadlineTime) {
+      nextErrors.activityDeadlineTime = 'Deadline time is required';
     }
 
     if (activityType === 'text' && !trimmedDetail) {
@@ -1507,7 +1655,9 @@ function FacultySubjectDetails() {
       activityTitle: nextErrors.activityTitle,
       activityType: nextErrors.activityType,
       activityDetail: nextErrors.activityDetail,
+      activityTargetSections: nextErrors.activityTargetSections,
       activityDeadline: nextErrors.activityDeadline,
+      activityDeadlineTime: nextErrors.activityDeadlineTime,
       activityAttachments: nextErrors.activityAttachments,
     }));
 
@@ -1515,7 +1665,9 @@ function FacultySubjectDetails() {
       nextErrors.activityTitle ||
       nextErrors.activityType ||
       nextErrors.activityDetail ||
+      nextErrors.activityTargetSections ||
       nextErrors.activityDeadline ||
+      nextErrors.activityDeadlineTime ||
       nextErrors.activityAttachments
     ) {
       return;
@@ -1533,7 +1685,9 @@ function FacultySubjectDetails() {
       assignmentTitle: undefined,
       assignmentType: undefined,
       assignmentDetail: undefined,
+      assignmentTargetSections: undefined,
       assignmentDeadline: undefined,
+      assignmentDeadlineTime: undefined,
       assignmentAttachments: undefined,
     };
 
@@ -1543,6 +1697,14 @@ function FacultySubjectDetails() {
 
     if (!assignmentDeadline) {
       nextErrors.assignmentDeadline = 'Deadline is required';
+    }
+
+    if (assignmentTargetSections.length === 0) {
+      nextErrors.assignmentTargetSections = 'Choose at least one section';
+    }
+
+    if (!assignmentDeadlineTime) {
+      nextErrors.assignmentDeadlineTime = 'Deadline time is required';
     }
 
     if (assignmentType === 'text' && !trimmedDetail) {
@@ -1558,7 +1720,9 @@ function FacultySubjectDetails() {
       assignmentTitle: nextErrors.assignmentTitle,
       assignmentType: nextErrors.assignmentType,
       assignmentDetail: nextErrors.assignmentDetail,
+      assignmentTargetSections: nextErrors.assignmentTargetSections,
       assignmentDeadline: nextErrors.assignmentDeadline,
+      assignmentDeadlineTime: nextErrors.assignmentDeadlineTime,
       assignmentAttachments: nextErrors.assignmentAttachments,
     }));
 
@@ -1566,7 +1730,9 @@ function FacultySubjectDetails() {
       nextErrors.assignmentTitle ||
       nextErrors.assignmentType ||
       nextErrors.assignmentDetail ||
+      nextErrors.assignmentTargetSections ||
       nextErrors.assignmentDeadline ||
+      nextErrors.assignmentDeadlineTime ||
       nextErrors.assignmentAttachments
     ) {
       return;
@@ -1575,6 +1741,35 @@ function FacultySubjectDetails() {
     setAssignmentTitle(trimmedTitle);
     setAssignmentDetail(trimmedDetail);
     createAssignmentMutation.mutate();
+  };
+
+  const handleSubmitAudience = () => {
+    if (!editingAudienceTarget) {
+      return;
+    }
+
+    const nextErrors: typeof fieldErrors = {
+      audienceTargetSections: undefined,
+    };
+
+    if (audienceTargetSections.length === 0) {
+      nextErrors.audienceTargetSections = 'Choose at least one section';
+    }
+
+    setFieldErrors((current) => ({
+      ...current,
+      audienceTargetSections: nextErrors.audienceTargetSections,
+    }));
+
+    if (nextErrors.audienceTargetSections) {
+      return;
+    }
+
+    updateAudienceMutation.mutate({
+      kind: editingAudienceTarget.kind,
+      id: editingAudienceTarget.item.id,
+      targetSections: audienceTargetSections,
+    });
   };
 
   const handleSubmitAssessment = () => {
@@ -1671,14 +1866,14 @@ function FacultySubjectDetails() {
       pageEyebrow="Faculty subjects"
       pageTitle={subject?.title ?? 'Subject'}
     >
-      <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(238,245,251,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+      <div className="mx-auto w-full max-w-[14.4rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.264rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(238,245,251,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
           {subjectQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading subject details...</p>
           ) : subject ? (
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-start gap-3.5">
-                <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-[0.168rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
                   <SubjectIcon className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
@@ -1694,7 +1889,7 @@ function FacultySubjectDetails() {
                 </div>
               </div>
 
-              <div className="grid min-w-[14rem] gap-2 self-start rounded-[1.2rem] bg-[linear-gradient(180deg,#2f4f76_0%,#223f5f_100%)] px-4 py-3 text-white shadow-[0_16px_28px_rgba(29,58,92,0.18)]">
+              <div className="grid min-w-[2.24rem] gap-2 self-start rounded-[0.192rem] bg-[linear-gradient(180deg,#2f4f76_0%,#223f5f_100%)] px-4 py-3 text-white shadow-[0_16px_28px_rgba(29,58,92,0.18)]">
                 <p className="text-fluid-2xs uppercase tracking-[0.2em] text-[#d5e2ef]">
                   Subject details
                 </p>
@@ -1710,7 +1905,7 @@ function FacultySubjectDetails() {
         </section>
 
         {subject ? (
-          <section className="mt-5 rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-4 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+          <section className="mt-5 rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-4 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-2">
                 {subjectTabs.map((tab) => {
@@ -1806,7 +2001,7 @@ function FacultySubjectDetails() {
                     {subject.lessonProgress.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#d8e3ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] px-5 py-5 shadow-[0_12px_24px_rgba(39,77,117,0.08)]"
+                        className="rounded-[0.208rem] border border-[#d8e3ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] px-5 py-5 shadow-[0_12px_24px_rgba(39,77,117,0.08)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -1825,7 +2020,7 @@ function FacultySubjectDetails() {
                             <p className="text-fluid-sm font-medium text-[#5f7892]">Completion</p>
                             <p className="text-fluid-sm font-semibold text-[#173b70]">{item.completion}%</p>
                           </div>
-                          <div className="h-[0.42rem] rounded-full bg-[#e3ebf3]">
+                          <div className="h-[0.0672rem] rounded-full bg-[#e3ebf3]">
                             <div
                               className="h-full rounded-full bg-[#3c7de0]"
                               style={{ width: `${item.completion}%` }}
@@ -1833,7 +2028,7 @@ function FacultySubjectDetails() {
                           </div>
                         </div>
 
-                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[1.1rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,#f7fbff_0%,#ebf3f9_100%)] p-4">
+                        <div className="mt-5 flex items-center justify-between gap-3 rounded-[0.176rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,#f7fbff_0%,#ebf3f9_100%)] p-4">
                           <div>
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Subtopics
@@ -1865,7 +2060,7 @@ function FacultySubjectDetails() {
                     {subject.modules.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
+                        className="rounded-[0.208rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -1883,7 +2078,7 @@ function FacultySubjectDetails() {
                         <p className="mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.summary}</p>
 
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div className="rounded-[0.16rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiLink2 className="h-4 w-4" />
                               <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1895,7 +2090,7 @@ function FacultySubjectDetails() {
                             </p>
                           </div>
 
-                          <div className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                          <div className="rounded-[0.16rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                             <div className="flex items-center gap-2 text-[#2f78bc]">
                               <FiPaperclip className="h-4 w-4" />
                               <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1937,89 +2132,105 @@ function FacultySubjectDetails() {
 
               {activeTab === 'activities' ? (
                 subject.activities.length > 0 ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {subject.activities.map((item) => (
-                      <article
-                        key={item.id}
-                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
-                                {formatCalendarDate(item.dueDate)}
-                              </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <div className="overflow-hidden rounded-[0.232rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d6e1eb_0%,#cbd8e3_100%)] shadow-[0_10px_24px_rgba(27,46,70,0.08)]">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-[12rem] w-full border-collapse text-left">
+                        <thead className="bg-[linear-gradient(180deg,#e3ecf4_0%,#d6e2ec_100%)]">
+                          <tr className="border-b border-[#b8c8d6] text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#607790]">
+                            <th className="px-4 py-3">Activity</th>
+                            <th className="px-4 py-3">Audience</th>
+                            <th className="px-4 py-3">Deadline</th>
+                            <th className="px-4 py-3">Type</th>
+                            <th className="px-4 py-3">Files</th>
+                            <th className="px-4 py-3">Status</th>
+                            <th className="px-4 py-3">Submissions</th>
+                            <th className="px-4 py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#b8c8d6]">
+                          {subject.activities.map((item) => (
+                            <tr key={item.id} className="align-top transition hover:bg-[rgba(255,255,255,0.28)]">
+                              <td className="px-4 py-4">
+                                <div className="max-w-[3.6rem]">
+                                  <p className="truncate text-fluid-base font-semibold text-[#173b70]" title={item.title}>
+                                    {item.title}
+                                  </p>
+                                  <p className="formatted-text mt-1 line-clamp-2 text-fluid-xs leading-5 text-[#617d98]">
+                                    {item.detail}
+                                  </p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="inline-flex max-w-[2.6rem] rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.82)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                  <span className="truncate">{item.targetSectionLabel}</span>
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-fluid-sm font-medium text-[#486582]">
+                                {formatDeadlineLabel(item.dueDate, item.deadlineTime)}
+                              </td>
+                              <td className="px-4 py-4 text-fluid-sm font-semibold text-[#2f78bc]">
                                 {item.activityType === 'file' ? 'File upload' : 'Text only'}
-                              </span>
-                            </div>
-                          </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
-                            {item.status}
-                          </span>
-                        </div>
-
-                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
-
-                        <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
-                          <div className="flex items-center gap-2 text-[#2f78bc]">
-                            <FiUsers className="h-4 w-4" />
-                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
-                              Student submissions
-                            </p>
-                          </div>
-                          <div className="mt-3 flex items-end justify-between gap-3">
-                            <div>
-                              <p className="text-fluid-xl font-semibold text-[#173b70]">
-                                {item.submittedCount} submitted
-                              </p>
-                              <p className="mt-1 text-fluid-sm text-[#617d98]">
-                                out of {item.totalStudents} student{item.totalStudents === 1 ? '' : 's'}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/faculty/subjects/${subjectId}/activities/${item.id}/submissions`)}
-                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
-                            >
-                              View list
-                              <FiArrowRight className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {item.attachments.length > 0 ? (
-                          <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
-                            <div className="flex items-center gap-2 text-[#2f78bc]">
-                              <FiPaperclip className="h-4 w-4" />
-                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
-                                Attached files
-                              </p>
-                            </div>
-                            <div className="mt-3 space-y-2">
-                              {item.attachments.map((attachment) => (
-                                <a
-                                  key={attachment.id ?? attachment.name}
-                                  href={attachment.dataUrl}
-                                  download={attachment.name}
-                                  onClick={(event) => event.stopPropagation()}
-                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
-                                >
-                                  <span className="flex min-w-0 items-center gap-2">
-                                    <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
-                                    <span className="truncate">{attachment.name}</span>
-                                  </span>
-                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
-                                    Download
-                                  </span>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
-                      </article>
-                    ))}
+                              </td>
+                              <td className="px-4 py-4">
+                                {item.attachments.length > 0 ? (
+                                  <div className="max-w-[2.4rem] space-y-1">
+                                    {item.attachments.slice(0, 2).map((attachment) => (
+                                      <a
+                                        key={attachment.id ?? attachment.name}
+                                        href={attachment.dataUrl}
+                                        download={attachment.name}
+                                        className="flex min-w-0 items-center gap-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:text-[#215f99]"
+                                      >
+                                        <FiPaperclip className="h-3 w-3 shrink-0" />
+                                        <span className="truncate">{attachment.name}</span>
+                                      </a>
+                                    ))}
+                                    {item.attachments.length > 2 ? (
+                                      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#617d98]">
+                                        +{item.attachments.length - 2} more
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                ) : (
+                                  <span className="text-fluid-sm text-[#617d98]">No files</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={`inline-flex rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="text-fluid-sm font-semibold text-[#173b70]">
+                                  {item.submittedCount} / {item.totalStudents}
+                                </p>
+                                <p className="mt-1 text-fluid-xs text-[#617d98]">submitted</p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditAudienceModal({ kind: 'activity', item })}
+                                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.88)] px-3 py-2 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-white"
+                                  >
+                                    <FiEdit2 className="h-3.5 w-3.5" />
+                                    Edit audience
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/faculty/subjects/${subjectId}/activities/${item.id}/submissions`)}
+                                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.88)] px-3 py-2 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-white"
+                                  >
+                                    View list
+                                    <FiArrowRight className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 ) : (
                   <EmptyTabState label="Activities" />
@@ -2027,88 +2238,105 @@ function FacultySubjectDetails() {
               ) : null}
               {activeTab === 'assignments' ? (
                 subject.assignments.length > 0 ? (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {subject.assignments.map((item) => (
-                      <article
-                        key={item.id}
-                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#5d7690]">
-                                {formatCalendarDate(item.dueDate)}
-                              </span>
-                              <span className="rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
+                  <div className="overflow-hidden rounded-[0.232rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d6e1eb_0%,#cbd8e3_100%)] shadow-[0_10px_24px_rgba(27,46,70,0.08)]">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-[12rem] w-full border-collapse text-left">
+                        <thead className="bg-[linear-gradient(180deg,#e3ecf4_0%,#d6e2ec_100%)]">
+                          <tr className="border-b border-[#b8c8d6] text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#607790]">
+                            <th className="px-4 py-3">Assignment</th>
+                            <th className="px-4 py-3">Audience</th>
+                            <th className="px-4 py-3">Deadline</th>
+                            <th className="px-4 py-3">Type</th>
+                            <th className="px-4 py-3">Files</th>
+                            <th className="px-4 py-3">Status</th>
+                            <th className="px-4 py-3">Submissions</th>
+                            <th className="px-4 py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#b8c8d6]">
+                          {subject.assignments.map((item) => (
+                            <tr key={item.id} className="align-top transition hover:bg-[rgba(255,255,255,0.28)]">
+                              <td className="px-4 py-4">
+                                <div className="max-w-[3.6rem]">
+                                  <p className="truncate text-fluid-base font-semibold text-[#173b70]" title={item.title}>
+                                    {item.title}
+                                  </p>
+                                  <p className="formatted-text mt-1 line-clamp-2 text-fluid-xs leading-5 text-[#617d98]">
+                                    {item.detail}
+                                  </p>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className="inline-flex max-w-[2.6rem] rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.82)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                  <span className="truncate">{item.targetSectionLabel}</span>
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-fluid-sm font-medium text-[#486582]">
+                                {formatDeadlineLabel(item.dueDate, item.deadlineTime)}
+                              </td>
+                              <td className="px-4 py-4 text-fluid-sm font-semibold text-[#2f78bc]">
                                 {item.assignmentType === 'file' ? 'File upload' : 'Text only'}
-                              </span>
-                            </div>
-                          </div>
-                          <span className={`shrink-0 rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
-                            {item.status}
-                          </span>
-                        </div>
-
-                        <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
-
-                        <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
-                          <div className="flex items-center gap-2 text-[#2f78bc]">
-                            <FiUsers className="h-4 w-4" />
-                            <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
-                              Student submissions
-                            </p>
-                          </div>
-                          <div className="mt-3 flex items-end justify-between gap-3">
-                            <div>
-                              <p className="text-fluid-xl font-semibold text-[#173b70]">
-                                {item.submittedCount} submitted
-                              </p>
-                              <p className="mt-1 text-fluid-sm text-[#617d98]">
-                                out of {item.totalStudents} student{item.totalStudents === 1 ? '' : 's'}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/faculty/subjects/${subjectId}/assignments/${item.id}/submissions`)}
-                              className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(210,220,231,0.96)] px-3 py-2 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[rgba(218,227,236,0.98)]"
-                            >
-                              View list
-                              <FiArrowRight className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {item.attachments.length > 0 ? (
-                          <div className="mt-5 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
-                            <div className="flex items-center gap-2 text-[#2f78bc]">
-                              <FiPaperclip className="h-4 w-4" />
-                              <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
-                                Attached files
-                              </p>
-                            </div>
-                            <div className="mt-3 space-y-2">
-                              {item.attachments.map((attachment) => (
-                                <a
-                                  key={attachment.id ?? attachment.name}
-                                  href={attachment.dataUrl}
-                                  download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
-                                >
-                                  <span className="flex min-w-0 items-center gap-2">
-                                    <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
-                                    <span className="truncate">{attachment.name}</span>
-                                  </span>
-                                  <span className="shrink-0 rounded-full border border-[#b7c8d6] bg-[rgba(228,235,242,0.98)] px-2.5 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
-                                    Download
-                                  </span>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
-                      </article>
-                    ))}
+                              </td>
+                              <td className="px-4 py-4">
+                                {item.attachments.length > 0 ? (
+                                  <div className="max-w-[2.4rem] space-y-1">
+                                    {item.attachments.slice(0, 2).map((attachment) => (
+                                      <a
+                                        key={attachment.id ?? attachment.name}
+                                        href={attachment.dataUrl}
+                                        download={attachment.name}
+                                        className="flex min-w-0 items-center gap-1.5 text-fluid-xs font-semibold text-[#2f78bc] transition hover:text-[#215f99]"
+                                      >
+                                        <FiPaperclip className="h-3 w-3 shrink-0" />
+                                        <span className="truncate">{attachment.name}</span>
+                                      </a>
+                                    ))}
+                                    {item.attachments.length > 2 ? (
+                                      <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#617d98]">
+                                        +{item.attachments.length - 2} more
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                ) : (
+                                  <span className="text-fluid-sm text-[#617d98]">No files</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={`inline-flex rounded-full border px-3 py-1 text-fluid-2xs font-semibold ${statusTone(item.status)}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="text-fluid-sm font-semibold text-[#173b70]">
+                                  {item.submittedCount} / {item.totalStudents}
+                                </p>
+                                <p className="mt-1 text-fluid-xs text-[#617d98]">submitted</p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditAudienceModal({ kind: 'assignment', item })}
+                                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.88)] px-3 py-2 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-white"
+                                  >
+                                    <FiEdit2 className="h-3.5 w-3.5" />
+                                    Edit audience
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/faculty/subjects/${subjectId}/assignments/${item.id}/submissions`)}
+                                    className="inline-flex items-center gap-2 rounded-full border border-[#b7c8d6] bg-[rgba(237,245,250,0.88)] px-3 py-2 text-fluid-xs font-semibold text-[#2f78bc] transition hover:bg-white"
+                                  >
+                                    View list
+                                    <FiArrowRight className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 ) : (
                   <EmptyTabState label="Assignments" />
@@ -2122,7 +2350,7 @@ function FacultySubjectDetails() {
                         key={item.id}
                         type="button"
                         onClick={() => navigate(`/faculty/subjects/${subjectId}/assessments/${item.id}`)}
-                        className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 text-left shadow-[0_8px_18px_rgba(27,46,70,0.07)] transition hover:border-[#9eb7cb] hover:shadow-[0_12px_24px_rgba(27,46,70,0.11)]"
+                        className="rounded-[0.208rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 text-left shadow-[0_8px_18px_rgba(27,46,70,0.07)] transition hover:border-[#9eb7cb] hover:shadow-[0_12px_24px_rgba(27,46,70,0.11)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -2149,7 +2377,7 @@ function FacultySubjectDetails() {
 
                         <p className="formatted-text mt-4 text-fluid-sm leading-[1.65] text-[#617d98]">{item.detail}</p>
 
-                        <div className="mt-5 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                        <div className="mt-5 flex items-end justify-between gap-3 rounded-[0.16rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div>
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Question bank
@@ -2167,7 +2395,7 @@ function FacultySubjectDetails() {
                           </span>
                         </div>
 
-                        <div className="mt-4 flex items-end justify-between gap-3 rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+                        <div className="mt-4 flex items-end justify-between gap-3 rounded-[0.16rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                           <div>
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Exam takers
@@ -2234,7 +2462,7 @@ function FacultySubjectDetails() {
                       return (
                         <article
                           key={item.id}
-                          className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                          className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
@@ -2258,11 +2486,11 @@ function FacultySubjectDetails() {
                                 ) : null}
                               </div>
                             </div>
-                            <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
+                            <div className="rounded-[0.152rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
                               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                                 Room
                               </p>
-                              <p className="mt-1 max-w-[12rem] break-all text-fluid-xs font-semibold text-[#173b70]">
+                              <p className="mt-1 max-w-[1.92rem] break-all text-fluid-xs font-semibold text-[#173b70]">
                                 {item.roomName}
                               </p>
                             </div>
@@ -2273,7 +2501,7 @@ function FacultySubjectDetails() {
                           </p>
 
                           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Timeline
                               </p>
@@ -2285,7 +2513,7 @@ function FacultySubjectDetails() {
                               </p>
                             </div>
 
-                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Recording
                               </p>
@@ -2365,7 +2593,7 @@ function FacultySubjectDetails() {
           selectedRecording.recordingMimeType.startsWith('audio/') ? (
             <audio src={selectedRecording.recordingUrl} controls className="w-full" />
           ) : (
-            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[0.16rem] bg-black" />
           )
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
@@ -2418,7 +2646,7 @@ function FacultySubjectDetails() {
                 setLessonTitle(event.target.value);
                 setFieldErrors((current) => ({ ...current, lessonTitle: undefined }));
               }}
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.lessonTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
               placeholder="Introduction and orientation"
@@ -2440,7 +2668,7 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, lessonSummary: undefined }));
               }}
               rows={4}
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.lessonSummary ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
               placeholder="Outline the lesson focus, expectations, and what students should learn."
@@ -2481,7 +2709,7 @@ function FacultySubjectDetails() {
       >
         {activeLesson ? (
           <div className="space-y-4">
-            <div className="rounded-[1rem] border border-[#bacbd9] bg-[rgba(255,255,255,0.82)] px-4 py-3">
+            <div className="rounded-[0.16rem] border border-[#bacbd9] bg-[rgba(255,255,255,0.82)] px-4 py-3">
               <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                 Progress summary
               </p>
@@ -2508,7 +2736,7 @@ function FacultySubjectDetails() {
                   setFieldErrors((current) => ({ ...current, subtopicTitle: undefined }));
                 }}
                 placeholder="Add a subtopic"
-                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                   fieldErrors.subtopicTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                 }`}
               />
@@ -2522,7 +2750,7 @@ function FacultySubjectDetails() {
                 activeLesson.subtopics.map((subtopic) => (
                   <label
                     key={subtopic.id}
-                    className="flex items-center gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3 text-fluid-base text-[#37506c]"
+                    className="flex items-center gap-3 rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3 text-fluid-base text-[#37506c]"
                   >
                     <input
                       type="checkbox"
@@ -2542,7 +2770,7 @@ function FacultySubjectDetails() {
                   </label>
                 ))
               ) : (
-                <div className="rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                <div className="rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                   <p className="text-fluid-base font-semibold text-[#173b70]">No subtopics yet</p>
                   <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add your first subtopic here to start building lesson progress.
@@ -2555,10 +2783,79 @@ function FacultySubjectDetails() {
       </Modal>
 
       <Modal
+        open={Boolean(editingAudienceTarget)}
+        title="Edit audience"
+        description={
+          editingAudienceTarget
+            ? `Choose which sections should receive this ${editingAudienceTarget.kind}.`
+            : undefined
+        }
+        onClose={() => closeAudienceModal()}
+        panelClassName="max-w-lg overflow-visible"
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => closeAudienceModal()}
+              className="rounded-2xl border border-[#ccd9e5] bg-white px-4 py-2.5 text-fluid-base font-semibold text-[#48617d] transition hover:bg-[#f8fbfd]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitAudience}
+              disabled={updateAudienceMutation.isPending}
+              className="rounded-2xl border border-[#2f78bc] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-2.5 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {updateAudienceMutation.isPending ? 'Saving...' : 'Save audience'}
+            </button>
+          </>
+        }
+      >
+        {editingAudienceTarget ? (
+          <div className="space-y-5">
+            <div className="rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.72)] px-4 py-3">
+              <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
+                {editingAudienceTarget.kind === 'assignment' ? 'Assignment' : 'Activity'}
+              </p>
+              <p className="mt-2 text-fluid-lg font-semibold text-[#173b70]">
+                {editingAudienceTarget.item.title}
+              </p>
+              <p className="mt-1 text-fluid-sm text-[#607790]">
+                Current audience: {editingAudienceTarget.item.targetSectionLabel}
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="audience-target-section">
+                Audience sections
+              </label>
+              <CustomMultiSelect
+                id="audience-target-section"
+                options={sectionOptions}
+                placeholder="Select section"
+                values={audienceTargetSections}
+                onChange={(values) => {
+                  setAudienceTargetSections(values);
+                  setFieldErrors((current) => ({ ...current, audienceTargetSections: undefined }));
+                }}
+                error={fieldErrors.audienceTargetSections}
+                tone="muted"
+              />
+              <p className="mt-2 text-fluid-xs text-[#7088a1]">
+                Students outside this audience will no longer see this item in their subject tab.
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal
         open={isActivityModalOpen}
         title="Add activity"
-        description="Create a classroom activity with either written instructions or downloadable files, then set the deadline students should follow."
+        description="Create a classroom activity, choose the sections that should receive it, and set the exact deadline students should follow."
         onClose={closeActivityModal}
+        panelClassName="max-w-2xl overflow-visible"
         actions={
           <>
             <button
@@ -2593,7 +2890,7 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, activityTitle: undefined }));
               }}
               placeholder="Week 1 reflection"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.activityTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -2602,7 +2899,7 @@ function FacultySubjectDetails() {
             ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <div>
               <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-type">
                 Activity type
@@ -2627,8 +2924,28 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-target-section">
+                Sections taking this activity
+              </label>
+              <CustomMultiSelect
+                id="activity-target-section"
+                options={sectionOptions}
+                placeholder="Select section"
+                values={activityTargetSections}
+                onChange={(values) => {
+                  setActivityTargetSections(values);
+                  setFieldErrors((current) => ({ ...current, activityTargetSections: undefined }));
+                }}
+                error={fieldErrors.activityTargetSections}
+                tone="muted"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
               <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-deadline">
-                Deadline
+                Deadline date
               </label>
               <CustomDatePicker
                 id="activity-deadline"
@@ -2640,6 +2957,27 @@ function FacultySubjectDetails() {
                 }}
                 error={fieldErrors.activityDeadline}
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="activity-deadline-time">
+                Deadline time
+              </label>
+              <input
+                id="activity-deadline-time"
+                type="time"
+                value={activityDeadlineTime}
+                onChange={(event) => {
+                  setActivityDeadlineTime(event.target.value);
+                  setFieldErrors((current) => ({ ...current, activityDeadlineTime: undefined }));
+                }}
+                className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                  fieldErrors.activityDeadlineTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+                }`}
+              />
+              {fieldErrors.activityDeadlineTime ? (
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.activityDeadlineTime}</p>
+              ) : null}
             </div>
           </div>
 
@@ -2660,7 +2998,7 @@ function FacultySubjectDetails() {
                   ? 'Add optional guidance for students before they open the files.'
                   : 'Describe what students should read, write, or submit.'
               }
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.activityDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -2670,7 +3008,7 @@ function FacultySubjectDetails() {
           </div>
 
           {activityType === 'file' ? (
-            <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+            <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-fluid-base font-semibold text-[#173b70]">Activity files</p>
@@ -2681,7 +3019,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={() => activityAttachmentInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                 >
                   <FiUploadCloud className="h-4 w-4" />
                   Upload files
@@ -2704,7 +3042,7 @@ function FacultySubjectDetails() {
                   {activityAttachments.map((attachment, index) => (
                     <div
                       key={`${attachment.name}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
@@ -2724,7 +3062,7 @@ function FacultySubjectDetails() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                <div className="mt-4 rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                   <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
                   <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add worksheets, PDFs, or activity reference files here.
@@ -2739,8 +3077,9 @@ function FacultySubjectDetails() {
       <Modal
         open={isAssignmentModalOpen}
         title="Add assignment"
-        description="Create an assignment with either written instructions or downloadable files, then set the deadline students should follow."
+        description="Create an assignment, choose the sections that should receive it, and set the exact deadline students should follow."
         onClose={closeAssignmentModal}
+        panelClassName="max-w-2xl overflow-visible"
         actions={
           <>
             <button
@@ -2775,7 +3114,7 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, assignmentTitle: undefined }));
               }}
               placeholder="Midterm reflection"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.assignmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -2784,7 +3123,7 @@ function FacultySubjectDetails() {
             ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <div>
               <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-type">
                 Assignment type
@@ -2809,8 +3148,28 @@ function FacultySubjectDetails() {
             </div>
 
             <div>
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-target-section">
+                Sections taking this assignment
+              </label>
+              <CustomMultiSelect
+                id="assignment-target-section"
+                options={sectionOptions}
+                placeholder="Select section"
+                values={assignmentTargetSections}
+                onChange={(values) => {
+                  setAssignmentTargetSections(values);
+                  setFieldErrors((current) => ({ ...current, assignmentTargetSections: undefined }));
+                }}
+                error={fieldErrors.assignmentTargetSections}
+                tone="muted"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
               <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-deadline">
-                Deadline
+                Deadline date
               </label>
               <CustomDatePicker
                 id="assignment-deadline"
@@ -2822,6 +3181,27 @@ function FacultySubjectDetails() {
                 }}
                 error={fieldErrors.assignmentDeadline}
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="assignment-deadline-time">
+                Deadline time
+              </label>
+              <input
+                id="assignment-deadline-time"
+                type="time"
+                value={assignmentDeadlineTime}
+                onChange={(event) => {
+                  setAssignmentDeadlineTime(event.target.value);
+                  setFieldErrors((current) => ({ ...current, assignmentDeadlineTime: undefined }));
+                }}
+                className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                  fieldErrors.assignmentDeadlineTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
+                }`}
+              />
+              {fieldErrors.assignmentDeadlineTime ? (
+                <p className="mt-2 text-fluid-xs font-medium text-rose-500">{fieldErrors.assignmentDeadlineTime}</p>
+              ) : null}
             </div>
           </div>
 
@@ -2842,7 +3222,7 @@ function FacultySubjectDetails() {
                   ? 'Add optional guidance for students before they open the files.'
                   : 'Describe what students need to complete and submit.'
               }
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.assignmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -2852,7 +3232,7 @@ function FacultySubjectDetails() {
           </div>
 
           {assignmentType === 'file' ? (
-            <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+            <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-fluid-base font-semibold text-[#173b70]">Assignment files</p>
@@ -2863,7 +3243,7 @@ function FacultySubjectDetails() {
                 <button
                   type="button"
                   onClick={() => assignmentAttachmentInputRef.current?.click()}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
+                  className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
                 >
                   <FiUploadCloud className="h-4 w-4" />
                   Upload files
@@ -2886,7 +3266,7 @@ function FacultySubjectDetails() {
                   {assignmentAttachments.map((attachment, index) => (
                     <div
                       key={`${attachment.name}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                     >
                       <div className="min-w-0">
                         <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
@@ -2906,7 +3286,7 @@ function FacultySubjectDetails() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                <div className="mt-4 rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                   <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
                   <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     Add worksheets, templates, or assignment reference files here.
@@ -2927,6 +3307,7 @@ function FacultySubjectDetails() {
             : 'Choose whether this is a quiz or a quarter exam, then set the section and schedule before you start building questions.'
         }
         onClose={closeAssessmentModal}
+        panelClassName="max-w-2xl overflow-visible"
         actions={
           <>
             <button
@@ -2965,7 +3346,7 @@ function FacultySubjectDetails() {
                 setFieldErrors((current) => ({ ...current, assessmentTitle: undefined }));
               }}
               placeholder="Quiz 1: Platform concepts"
-              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+              className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                 fieldErrors.assessmentTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -3017,7 +3398,7 @@ function FacultySubjectDetails() {
               </label>
               <CustomMultiSelect
                 id="assessment-target-section"
-                options={['All sections', ...Array.from(new Set(subject?.availableSections ?? []))]}
+                options={sectionOptions}
                 placeholder="Select section"
                 values={assessmentTargetSections}
                 onChange={(values) => {
@@ -3046,7 +3427,7 @@ function FacultySubjectDetails() {
                       setAssessmentStartTime(event.target.value);
                       setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
                     }}
-                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                    className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                       fieldErrors.assessmentStartTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                     }`}
                   />
@@ -3067,7 +3448,7 @@ function FacultySubjectDetails() {
                       setAssessmentEndTime(event.target.value);
                       setFieldErrors((current) => ({ ...current, assessmentStartTime: undefined, assessmentEndTime: undefined }));
                     }}
-                    className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                    className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                       fieldErrors.assessmentEndTime ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                     }`}
                   />
@@ -3092,7 +3473,7 @@ function FacultySubjectDetails() {
               }}
               rows={4}
               placeholder="Add optional notes for students before you begin writing the questions."
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.assessmentDetail ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -3101,7 +3482,7 @@ function FacultySubjectDetails() {
             ) : null}
           </div>
 
-          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+          <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
             <p className="text-fluid-base font-semibold text-[#173b70]">Next step after saving</p>
             <p className="mt-1 text-fluid-xs leading-6 text-[#7088a1]">
               The new assessment card will keep the chosen section and time window, then open a
@@ -3155,7 +3536,7 @@ function FacultySubjectDetails() {
                   setFieldErrors((current) => ({ ...current, moduleTitle: undefined }));
                 }}
                 placeholder="Module 1 handout"
-                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                   fieldErrors.moduleTitle ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                 }`}
               />
@@ -3195,7 +3576,7 @@ function FacultySubjectDetails() {
               }}
               rows={4}
               placeholder="Describe what the file set or references cover."
-              className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+              className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                 fieldErrors.moduleSummary ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
               }`}
             />
@@ -3204,7 +3585,7 @@ function FacultySubjectDetails() {
             ) : null}
           </div>
 
-          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+          <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
               <div className="flex-1">
                 <label className="mb-2 block text-fluid-base font-semibold text-[#173b70]" htmlFor="module-link-input">
@@ -3219,7 +3600,7 @@ function FacultySubjectDetails() {
                     setFieldErrors((current) => ({ ...current, moduleLinkInput: undefined }));
                   }}
                   placeholder="https://example.com/reference"
-                  className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                  className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                     fieldErrors.moduleLinkInput ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                   }`}
                 />
@@ -3227,7 +3608,7 @@ function FacultySubjectDetails() {
               <button
                 type="button"
                 onClick={handleAddReferenceLink}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
               >
                 <FiLink2 className="h-4 w-4" />
                 Add link
@@ -3263,7 +3644,7 @@ function FacultySubjectDetails() {
             ) : null}
           </div>
 
-          <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+          <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-fluid-base font-semibold text-[#173b70]">Attachments</p>
@@ -3274,7 +3655,7 @@ function FacultySubjectDetails() {
               <button
                 type="button"
                 onClick={() => attachmentInputRef.current?.click()}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white"
               >
                 <FiUploadCloud className="h-4 w-4" />
                 Upload files
@@ -3297,7 +3678,7 @@ function FacultySubjectDetails() {
                 {moduleAttachments.map((attachment, index) => (
                   <div
                     key={`${attachment.name}-${index}`}
-                    className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                    className="flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
@@ -3317,7 +3698,7 @@ function FacultySubjectDetails() {
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+              <div className="mt-4 rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                 <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
                 <p className="mt-2 text-fluid-sm text-[#7088a1]">
                   Add handouts, PDFs, or other module references here.

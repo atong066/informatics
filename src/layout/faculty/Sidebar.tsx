@@ -60,7 +60,7 @@ function FacultySidebar({
       <div className="flex min-h-full flex-col">
         <div className="flex items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[linear-gradient(180deg,#66a8de_0%,#3478b4_100%)] shadow-[0_12px_22px_rgba(14,46,90,0.2)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-[0.16rem] bg-[linear-gradient(180deg,#66a8de_0%,#3478b4_100%)] shadow-[0_12px_22px_rgba(14,46,90,0.2)]">
               <img
                 src="/images/logo.png"
                 alt="Informatics Philippines logo"
@@ -77,7 +77,7 @@ function FacultySidebar({
           <button
             type="button"
             onClick={() => onClose?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-[1rem] border border-white/10 bg-white/8 text-[#d8e7f6] lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-[0.16rem] border border-white/10 bg-white/8 text-[#d8e7f6] lg:hidden"
             aria-label="Close faculty sidebar"
           >
             <FiX className="h-5 w-5" />
@@ -85,7 +85,7 @@ function FacultySidebar({
         </div>
 
         <div className="mt-5 border-t border-white/10 pt-3.5">
-          <div className="rounded-[1.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.07)_100%)] px-3.5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="rounded-[0.192rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.07)_100%)] px-3.5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="flex items-center gap-3">
               {profileImage ? (
                 <img
@@ -121,7 +121,7 @@ function FacultySidebar({
                     onClose?.();
                     navigate(item.path);
                   }}
-                  className={`flex w-full items-center gap-2.5 rounded-[1rem] border px-3 py-2.5 text-left transition ${
+                  className={`flex w-full items-center gap-2.5 rounded-[0.16rem] border px-3 py-2.5 text-left transition ${
                     isActive
                       ? 'border-[#88aed0] bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.09)_100%)] text-white shadow-[inset_3px_0_0_#9dc0df,0_10px_18px_rgba(9,31,62,0.14)]'
                       : 'border-transparent text-[#e6eff9] hover:bg-white/7'
@@ -150,7 +150,7 @@ function FacultySidebar({
                     onClose?.();
                     navigate(item.path);
                   }}
-                  className={`flex w-full items-center gap-2.5 rounded-[1rem] border px-3 py-2.5 text-left transition ${
+                  className={`flex w-full items-center gap-2.5 rounded-[0.16rem] border px-3 py-2.5 text-left transition ${
                     location.pathname === item.path
                       ? 'border-[#88aed0] bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.09)_100%)] text-white shadow-[inset_3px_0_0_#9dc0df,0_10px_18px_rgba(9,31,62,0.14)]'
                       : 'border-transparent text-[#e6eff9] hover:bg-white/7'
@@ -186,7 +186,7 @@ function FacultySidebar({
                       onClose?.();
                       navigate(subjectPath);
                     }}
-                    className={`flex w-full items-center gap-2.5 rounded-[1rem] border px-3 py-2.5 text-left transition ${
+                    className={`flex w-full items-center gap-2.5 rounded-[0.16rem] border px-3 py-2.5 text-left transition ${
                       isSubjectActive
                         ? 'border-[#88aed0] bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.09)_100%)] text-white shadow-[inset_3px_0_0_#9dc0df,0_10px_18px_rgba(9,31,62,0.14)]'
                         : 'border-transparent text-[#e6eff9] hover:bg-white/7'
@@ -216,7 +216,7 @@ function FacultySidebar({
               clearStoredUser();
               navigate('/login', { replace: true });
             }}
-            className="flex w-full items-center justify-between rounded-[1rem] border border-white/10 bg-white/8 px-3.5 py-2.5 text-left text-white transition hover:bg-white/12"
+            className="flex w-full items-center justify-between rounded-[0.16rem] border border-white/10 bg-white/8 px-3.5 py-2.5 text-left text-white transition hover:bg-white/12"
           >
             <span className="flex items-center gap-3">
               <FiLogOut className="h-4 w-4" />

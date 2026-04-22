@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 type CustomDatePickerProps = {
@@ -87,8 +87,8 @@ function CustomDatePicker({
   const yearRangeLabel = `${yearGridStart} - ${yearGridStart + 11}`;
   const menuPositionClasses =
     menuPosition === 'top'
-      ? 'bottom-[calc(100%+0.5rem)] right-0'
-      : 'top-[calc(100%+0.5rem)] right-0';
+      ? 'bottom-[calc(100%+0.08rem)] right-0'
+      : 'top-[calc(100%+0.08rem)] right-0';
 
   return (
     <div ref={containerRef} className="relative">
@@ -125,7 +125,7 @@ function CustomDatePicker({
       {isOpen ? (
         <div
           id={`${id}-calendar`}
-          className={`picker-popover absolute z-20 w-[18rem] rounded-2xl border border-[#bdc3c7] bg-white p-4 shadow-[0_18px_36px_rgba(15,23,42,0.12)] ${menuPositionClasses}`}
+          className={`picker-popover absolute z-20 w-[2.88rem] rounded-2xl border border-[#bdc3c7] bg-white p-4 shadow-[0_18px_36px_rgba(15,23,42,0.12)] ${menuPositionClasses}`}
         >
           <div className="mb-4 flex items-center justify-between">
             <button

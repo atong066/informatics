@@ -4,6 +4,7 @@ import {
   RoleProtectedRoute,
   SessionHomeRedirect,
 } from './components/RouteGuards';
+import PtGaming from './pages/PtGaming';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/student/Dashboard';
@@ -27,11 +28,18 @@ import AdminCurriculums from './pages/admin/Curriculums';
 import AdminSections from './pages/admin/Sections';
 import AdminStudents from './pages/admin/Students';
 import AdminFaculty from './pages/admin/Faculty';
+import AdminHR from './pages/admin/HR';
+import HrDashboard from './pages/hr/Dashboard';
+import HrWorkforce from './pages/hr/Workforce';
+import HrOnboarding from './pages/hr/Onboarding';
+import HrPayroll from './pages/hr/Payroll';
+import StaffDashboard from './pages/staff/Dashboard';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/pt-gaming" element={<PtGaming />} />
         <Route path="/" element={<SessionHomeRedirect />} />
         <Route path="/dashboard" element={<SessionHomeRedirect />} />
         <Route
@@ -127,6 +135,54 @@ function App() {
           element={(
             <RoleProtectedRoute role="admin">
               <AdminFaculty />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/admin/hr"
+          element={(
+            <RoleProtectedRoute role="admin">
+              <AdminHR />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/hr/dashboard"
+          element={(
+            <RoleProtectedRoute role="hr">
+              <HrDashboard />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/hr/workforce"
+          element={(
+            <RoleProtectedRoute role="hr">
+              <HrWorkforce />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/hr/onboarding"
+          element={(
+            <RoleProtectedRoute role="hr">
+              <HrOnboarding />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/hr/payroll"
+          element={(
+            <RoleProtectedRoute role="hr">
+              <HrPayroll />
+            </RoleProtectedRoute>
+          )}
+        />
+        <Route
+          path="/staff/dashboard"
+          element={(
+            <RoleProtectedRoute role="staff">
+              <StaffDashboard />
             </RoleProtectedRoute>
           )}
         />

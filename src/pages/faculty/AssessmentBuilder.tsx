@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { jsPDF } from 'jspdf';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
@@ -362,16 +362,16 @@ function PdfPreviewContent({ data }: { data: Uint8Array | null }) {
 
   return (
     <div className="h-full overflow-y-auto bg-[linear-gradient(180deg,#dbe4ed_0%,#cfd9e3_100%)] px-6 py-6">
-      <div className="mx-auto flex max-w-[54rem] flex-col gap-6">
+      <div className="mx-auto flex max-w-[8.64rem] flex-col gap-6">
         {pageImages.map((pageImage, index) => (
           <figure
             key={`pdf-page-${index + 1}`}
-            className="overflow-hidden rounded-[1.2rem] border border-[#bccbd8] bg-white p-4 shadow-[0_16px_36px_rgba(27,46,70,0.14)]"
+            className="overflow-hidden rounded-[0.192rem] border border-[#bccbd8] bg-white p-4 shadow-[0_16px_36px_rgba(27,46,70,0.14)]"
           >
             <img
               src={pageImage}
               alt={`Assessment PDF page ${index + 1}`}
-              className="w-full rounded-[0.7rem] border border-[#e0e7ef] bg-white"
+              className="w-full rounded-[0.112rem] border border-[#e0e7ef] bg-white"
             />
             <figcaption className="mt-3 text-center text-fluid-xs font-semibold uppercase tracking-[0.12em] text-[#6b8198]">
               Page {index + 1}
@@ -956,8 +956,8 @@ function AssessmentBuilder() {
       pageEyebrow="Assessment builder"
       pageTitle={payload?.assessment.title ?? 'Assessment builder'}
     >
-      <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+      <div className="mx-auto w-full max-w-[14.4rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.264rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {assessmentQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading assessment builder...</p>
           ) : payload ? (
@@ -1003,7 +1003,7 @@ function AssessmentBuilder() {
                 </p>
               </div>
 
-              <div className="grid min-w-[15rem] gap-3 rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
+              <div className="grid min-w-[2.4rem] gap-3 rounded-[0.192rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
                 <div className="flex items-center gap-2 text-[#d5e2ef]">
                   <FiClipboard className="h-4 w-4" />
                   <p className="text-fluid-xs uppercase tracking-[0.16em]">Assessment summary</p>
@@ -1026,9 +1026,9 @@ function AssessmentBuilder() {
         </section>
 
         {payload ? (
-          <section className="mt-5 rounded-[1.55rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+          <section className="mt-5 rounded-[0.248rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiCheckCircle className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1040,7 +1040,7 @@ function AssessmentBuilder() {
                 </span>
               </div>
 
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiHelpCircle className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1052,7 +1052,7 @@ function AssessmentBuilder() {
                 </p>
               </div>
 
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiClock className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1066,7 +1066,7 @@ function AssessmentBuilder() {
             </div>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-              <div className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
+              <div className="rounded-[0.208rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1125,7 +1125,7 @@ function AssessmentBuilder() {
                       }}
                       rows={4}
                       placeholder="What should students answer?"
-                      className={`w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
+                      className={`w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition ${
                         fieldErrors.prompt ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                       }`}
                     />
@@ -1165,7 +1165,7 @@ function AssessmentBuilder() {
                                   }));
                                 }}
                                 placeholder={`Write ${label.toLowerCase()}`}
-                                className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                                className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                   fieldErrors.options
                                     ? 'border-rose-300'
                                     : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1202,7 +1202,7 @@ function AssessmentBuilder() {
 
                   {questionType === 'true-false' ? (
                     <>
-                      <div className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(216,226,235,0.8)] px-4 py-4">
+                      <div className="rounded-[0.16rem] border border-[#b8c8d7] bg-[rgba(216,226,235,0.8)] px-4 py-4">
                         <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                           Options
                         </p>
@@ -1261,7 +1261,7 @@ function AssessmentBuilder() {
                         {matchingPairs.map((pair, index) => (
                           <div
                             key={pair.id}
-                            className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
+                            className="rounded-[0.16rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
                           >
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
@@ -1300,7 +1300,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, matchingPairs: undefined }));
                                   }}
                                   placeholder="Example: CPU"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[0.16rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.matchingPairs
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1323,7 +1323,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, matchingPairs: undefined }));
                                   }}
                                   placeholder="Example: Processes instructions"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[0.16rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.matchingPairs
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1377,7 +1377,7 @@ function AssessmentBuilder() {
                                 setFieldErrors((current) => ({ ...current, fillAnswers: undefined }));
                               }}
                               placeholder={`Accepted answer ${index + 1}`}
-                              className={`w-full rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                              className={`w-full rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                 fieldErrors.fillAnswers
                                   ? 'border-rose-300'
                                   : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1432,7 +1432,7 @@ function AssessmentBuilder() {
                         {rubricCriteria.map((criterion, index) => (
                           <div
                             key={criterion.id}
-                            className="rounded-[1rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
+                            className="rounded-[0.16rem] border border-[#b8c8d7] bg-[rgba(214,224,234,0.76)] p-4"
                           >
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <p className="text-fluid-sm font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
@@ -1454,7 +1454,7 @@ function AssessmentBuilder() {
                               </button>
                             </div>
 
-                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
+                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_1.44rem]">
                               <div>
                                 <label className="mb-2 block text-fluid-sm font-semibold text-[#173b70]">
                                   Criterion
@@ -1473,7 +1473,7 @@ function AssessmentBuilder() {
                                     setFieldErrors((current) => ({ ...current, rubricCriteria: undefined }));
                                   }}
                                   placeholder="Example: Clarity of explanation"
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[0.16rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.rubricCriteria
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1499,7 +1499,7 @@ function AssessmentBuilder() {
                                     );
                                     setFieldErrors((current) => ({ ...current, rubricCriteria: undefined }));
                                   }}
-                                  className={`w-full rounded-[1rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
+                                  className={`w-full rounded-[0.16rem] border bg-white/95 px-4 py-3 text-fluid-base text-[#25456d] outline-none transition ${
                                     fieldErrors.rubricCriteria
                                       ? 'border-rose-300'
                                       : 'border-[#b8c8d7] focus:border-[#6eaad9]'
@@ -1525,7 +1525,7 @@ function AssessmentBuilder() {
                                 }}
                                 rows={3}
                                 placeholder="Optional notes on how this criterion should be checked"
-                                className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-white/95 px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                                className="w-full resize-none rounded-[0.16rem] border border-[#b8c8d7] bg-white/95 px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                               />
                             </div>
                           </div>
@@ -1550,7 +1550,7 @@ function AssessmentBuilder() {
                 </div>
               </div>
 
-              <div className="rounded-[1.3rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
+              <div className="rounded-[0.208rem] border border-[#b3c4d2] bg-[linear-gradient(180deg,#d3dee8_0%,#c9d5e0_100%)] px-5 py-5 shadow-[0_8px_18px_rgba(27,46,70,0.07)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1568,7 +1568,7 @@ function AssessmentBuilder() {
                     payload.questions.map((question, index) => (
                       <article
                         key={question.id}
-                        className="rounded-[1rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4"
+                        className="rounded-[0.16rem] border border-[#bccbd7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <p className="text-fluid-md font-semibold text-[#173b70]">
@@ -1590,7 +1590,7 @@ function AssessmentBuilder() {
                               return (
                                 <div
                                   key={`${question.id}-${optionLabel}`}
-                                  className={`flex items-center justify-between gap-3 rounded-[0.95rem] border px-3 py-3 text-fluid-sm ${
+                                  className={`flex items-center justify-between gap-3 rounded-[0.152rem] border px-3 py-3 text-fluid-sm ${
                                     isAnswer
                                       ? 'border-[#bce8cf] bg-[#effbf4] text-[#12815a]'
                                       : 'border-[#c3d2de] bg-[rgba(214,224,234,0.94)] text-[#37506c]'
@@ -1617,7 +1617,7 @@ function AssessmentBuilder() {
                             {question.matchingPairs.map((pair, pairIndex) => (
                               <div
                                 key={pair.id}
-                                className="grid gap-3 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3 text-fluid-sm text-[#37506c] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                                className="grid gap-3 rounded-[0.152rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3 text-fluid-sm text-[#37506c] sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
                               >
                                 <div>
                                   <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
@@ -1637,7 +1637,7 @@ function AssessmentBuilder() {
                         ) : null}
 
                         {question.questionType === 'fill-in-the-blanks' ? (
-                          <div className="mt-4 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
+                          <div className="mt-4 rounded-[0.152rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
                             <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                               Accepted answers
                             </p>
@@ -1655,7 +1655,7 @@ function AssessmentBuilder() {
                         ) : null}
 
                         {question.questionType === 'essay' ? (
-                          <div className="mt-4 rounded-[0.95rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
+                          <div className="mt-4 rounded-[0.152rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-3 py-3">
                             <div className="flex items-center justify-between gap-3">
                               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#6d86a0]">
                                 Rubric criteria
@@ -1668,7 +1668,7 @@ function AssessmentBuilder() {
                               {question.rubricCriteria.map((criterion) => (
                                 <div
                                   key={criterion.id}
-                                  className="rounded-[0.9rem] border border-[#d5dfea] bg-white/55 px-3 py-3"
+                                  className="rounded-[0.144rem] border border-[#d5dfea] bg-white/55 px-3 py-3"
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <p className="font-medium text-[#173b70]">{criterion.criterion}</p>
@@ -1689,7 +1689,7 @@ function AssessmentBuilder() {
                       </article>
                     ))
                   ) : (
-                    <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
+                    <div className="rounded-[0.224rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
                       <p className="text-fluid-md font-semibold text-[#173b70]">No questions yet</p>
                       <p className="mt-2 text-fluid-sm text-[#7088a1]">
                         Start with the form on the left to build the assessment question bank.
@@ -1708,7 +1708,7 @@ function AssessmentBuilder() {
         title="PDF Preview"
         description="Preview the assessment paper before downloading it."
         onClose={closePdfPreviewModal}
-        panelClassName="max-w-[min(96vw,76rem)]"
+        panelClassName="max-w-[min(96vw,12.16rem)]"
         bodyClassName="h-[78vh] overflow-hidden bg-white p-0"
         actions={
           <button

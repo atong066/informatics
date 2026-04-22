@@ -17,6 +17,30 @@ export type AdminFacultyUser = {
   profileImage?: string | null;
 };
 
+export type AdminHrUser = {
+  id: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  fullName: string;
+  username: string;
+  email: string;
+  address: string;
+  contactNumber: string;
+  birthdate: string;
+  section: string;
+  department: string;
+  employeeNumber: string;
+  position: string;
+  employmentStatus: 'onboarding' | 'active' | 'on-leave' | 'inactive';
+  hireDate: string;
+  salaryRate: number;
+  paySchedule: 'monthly' | 'semi-monthly' | 'hourly';
+  emergencyContactName: string;
+  emergencyContactNumber: string;
+  profileImage?: string | null;
+};
+
 export type AdminStudentUser = {
   id: string;
   firstName: string;
@@ -32,6 +56,20 @@ export type AdminStudentUser = {
   course: string;
   batchNumber: string;
   sectionNumber: string;
+  studentType: 'new' | 'old';
+  completedSubjectIds: string[];
+  studentEvaluation: {
+    status: 'not-required' | 'pending' | 'eligible' | 'blocked';
+    evaluatedAt: string;
+    remarks: string;
+    subjectResults: Array<{
+      subjectId: string;
+      prerequisiteSubjectIds: string[];
+      metPrerequisiteSubjectIds: string[];
+      missingPrerequisiteSubjectIds: string[];
+      isEligible: boolean;
+    }>;
+  };
   profileImage?: string | null;
 };
 
@@ -42,6 +80,24 @@ export type AdminSubject = {
   slug: string;
   iconKey: string;
   description: string;
+  yearLevel: string;
+  semester: string;
+  units: {
+    lec: number;
+    lab: number;
+  };
+  hours: {
+    lec: number;
+    lab: number;
+  };
+  prerequisiteSubjectIds: string[];
+  prerequisites: Array<{
+    subjectId: string;
+    subjectTitle: string;
+    subjectCode: string;
+  }>;
+  resultantQualification: string;
+  jobRoles: string[];
   curriculumCount: number;
   teacherCount: number;
 };
@@ -90,11 +146,13 @@ export type AdminOverviewResponse = {
     subjectCount: number;
     curriculumCount: number;
     facultyCount: number;
+    hrCount: number;
     studentCount: number;
     sectionCount: number;
   };
   availableSections: string[];
   facultyUsers: AdminFacultyUser[];
+  hrUsers: AdminHrUser[];
   studentUsers: AdminStudentUser[];
   subjects: AdminSubject[];
   curriculums: AdminCurriculum[];

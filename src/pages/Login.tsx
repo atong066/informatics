@@ -1,4 +1,4 @@
-﻿import { useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import NotificationPopup from '../components/NotificationPopup';
@@ -170,11 +170,11 @@ function Login() {
       />
 
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:84px_84px] opacity-30" />
-      <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
-      <div className="absolute bottom-[-8rem] right-[-3rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
+      <div className="absolute left-[-1.28rem] top-[-0.96rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
+      <div className="absolute bottom-[-1.28rem] right-[-0.48rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl items-center justify-center">
-        <section className="grid w-full max-w-5xl gap-0 overflow-hidden rounded-[1.9rem] border border-white/45 bg-[#ecf0f1] shadow-[0_30px_80px_rgba(16,33,53,0.28)] lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="relative mx-auto flex min-h-[calc(100vh-0.64rem)] max-w-5xl items-center justify-center">
+        <section className="grid w-full max-w-5xl gap-0 overflow-hidden rounded-[0.304rem] border border-white/45 bg-[#ecf0f1] shadow-[0_30px_80px_rgba(16,33,53,0.28)] lg:grid-cols-[0.95fr_1.05fr]">
           <div className="relative hidden overflow-hidden border-r border-[#d6dde2] bg-[linear-gradient(180deg,_rgba(255,255,255,0.72)_0%,_rgba(237,243,248,0.82)_100%)] p-8 lg:flex lg:flex-col lg:justify-between">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(52,152,219,0.16),transparent_38%)]" />
 
@@ -218,7 +218,7 @@ function Login() {
                   Informatics
                 </p>
                 <p className="mt-1 text-fluid-3xs uppercase tracking-[0.2em] text-[#3498db]">
-                  Student portal login
+                  Campus portal login
                 </p>
               </div>
             </div>
@@ -232,7 +232,7 @@ function Login() {
               </h2>
               <p className="mt-2 text-fluid-sm leading-5 text-[#5d6d7e]">
                 Use your username or school email together with your password to
-                continue to the portal.
+                continue to the right portal.
               </p>
             </div>
 

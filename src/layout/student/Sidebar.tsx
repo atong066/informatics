@@ -1,4 +1,4 @@
-﻿import {
+import {
   FiBookOpen,
   FiCode,
   FiCpu,
@@ -91,7 +91,7 @@ function Sidebar({
         </div>
 
         <div className="mt-6 border-t border-white/10 pt-4">
-          <div className="rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.07)_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="rounded-[0.256rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.07)_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
             <div className="flex items-center gap-3">
               {profileImage ? (
                 <img

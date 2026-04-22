@@ -479,15 +479,15 @@ function VideoTile({
         ? 'flex h-screen w-screen flex-col bg-[#07111f]'
         : `border border-[#d6e2ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] ${
           isFeature
-            ? 'rounded-[1.6rem] shadow-[0_22px_46px_rgba(39,77,117,0.12)]'
-            : 'rounded-[1.25rem] shadow-[0_12px_24px_rgba(39,77,117,0.08)]'
+            ? 'rounded-[0.256rem] shadow-[0_22px_46px_rgba(39,77,117,0.12)]'
+            : 'rounded-[0.2rem] shadow-[0_12px_24px_rgba(39,77,117,0.08)]'
         }`
     }`}>
       <div className={`relative bg-[radial-gradient(circle_at_top,rgba(73,127,184,0.18),transparent_55%),linear-gradient(180deg,#233a56_0%,#192d45_100%)] ${
         fullscreenActive
           ? 'min-h-0 flex-1'
           : isFeature
-          ? 'aspect-[16/8.8] min-h-[20rem] md:min-h-[26rem] xl:min-h-[32rem]'
+          ? 'aspect-[16/8.8] min-h-[3.2rem] md:min-h-[4.16rem] xl:min-h-[5.12rem]'
           : 'aspect-video'
       }`}>
         {badgeLabel ? (
@@ -2826,7 +2826,7 @@ function MeetingRoomStage({
                 aria-label="Choose who can draw"
                 value={drawingPermission.mode}
                 onChange={(event) => handleDrawingModeChange(event.target.value as DrawingPermission['mode'])}
-                className="max-w-[10rem] bg-transparent text-white outline-none"
+                className="max-w-[1.6rem] bg-transparent text-white outline-none"
               >
                 <option className="text-slate-900" value="none">No students</option>
                 <option className="text-slate-900" value="everyone">All students</option>
@@ -2895,11 +2895,11 @@ function MeetingRoomStage({
 
   const textEditorOverlay = hasSharedScreenStage && drawingAllowed && drawingTool === 'text' && textEditor ? (
     <div
-      className="pointer-events-auto absolute z-30 rounded-[1rem] border border-white/20 bg-[#111827]/92 p-2 shadow-[0_18px_36px_rgba(0,0,0,0.32)] backdrop-blur-xl"
+      className="pointer-events-auto absolute z-30 rounded-[0.16rem] border border-white/20 bg-[#111827]/92 p-2 shadow-[0_18px_36px_rgba(0,0,0,0.32)] backdrop-blur-xl"
       style={{
-        left: `clamp(0.75rem, ${textEditor.x * 100}%, calc(100% - 19rem))`,
-        top: `clamp(0.75rem, ${textEditor.y * 100}%, calc(100% - 14rem))`,
-        width: 'min(18rem, calc(100% - 1.5rem))',
+        left: `clamp(0.12rem, ${textEditor.x * 100}%, calc(100% - 3.04rem))`,
+        top: `clamp(0.12rem, ${textEditor.y * 100}%, calc(100% - 2.24rem))`,
+        width: 'min(2.88rem, calc(100% - 0.24rem))',
       }}
       onPointerDown={(event) => event.stopPropagation()}
       onPointerMove={(event) => event.stopPropagation()}
@@ -2922,7 +2922,7 @@ function MeetingRoomStage({
           }
         }}
         placeholder="Text"
-        className="w-full rounded-[0.75rem] border border-white/12 bg-white px-3 py-2 font-semibold leading-tight text-[#111827] outline-none placeholder:text-[#64748b]"
+        className="w-full rounded-[0.12rem] border border-white/12 bg-white px-3 py-2 font-semibold leading-tight text-[#111827] outline-none placeholder:text-[#64748b]"
         style={{
           color: drawingColor,
           fontSize: `${textEditor.fontSize}px`,
@@ -2969,7 +2969,7 @@ function MeetingRoomStage({
   ) : null;
 
   const liveDocumentsPanel = (
-    <section className="mt-5 rounded-[1.35rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.76)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.62)]">
+    <section className="mt-5 rounded-[0.216rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.76)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.62)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
@@ -3016,14 +3016,14 @@ function MeetingRoomStage({
       </div>
 
       {documentError ? (
-        <div className="mt-3 flex items-start gap-2 rounded-[1rem] border border-[#ecd0d0] bg-[#fff2f2] px-3 py-2 text-[#9f4a4a]">
+        <div className="mt-3 flex items-start gap-2 rounded-[0.16rem] border border-[#ecd0d0] bg-[#fff2f2] px-3 py-2 text-[#9f4a4a]">
           <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="text-fluid-sm leading-6">{documentError}</p>
         </div>
       ) : null}
 
       {liveDocuments.length > 0 ? (
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(12rem,18rem)_minmax(0,1fr)]">
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(1.92rem,2.88rem)_minmax(0,1fr)]">
           <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
             {liveDocuments.map((document) => {
               const isActive = document.id === activeDocument?.id;
@@ -3033,7 +3033,7 @@ function MeetingRoomStage({
                   key={document.id}
                   type="button"
                   onClick={() => handleActiveDocumentChange(document.id)}
-                  className={`min-w-[13rem] rounded-[1rem] border px-3 py-3 text-left transition lg:min-w-0 ${
+                  className={`min-w-[2.08rem] rounded-[0.16rem] border px-3 py-3 text-left transition lg:min-w-0 ${
                     isActive
                       ? 'border-[#8bbce3] bg-[#eef7ff] shadow-[0_10px_20px_rgba(39,77,117,0.10)]'
                       : 'border-[#d6e2ec] bg-white hover:border-[#b9d6ec] hover:bg-[#f7fbff]'
@@ -3051,7 +3051,7 @@ function MeetingRoomStage({
             })}
           </div>
 
-          <div className="rounded-[1.15rem] border border-[#d6e2ec] bg-white p-3">
+          <div className="rounded-[0.184rem] border border-[#d6e2ec] bg-white p-3">
             {activeDocument ? (
               <>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -3113,14 +3113,14 @@ function MeetingRoomStage({
                   onChange={(event) => updateLiveDocumentContent(activeDocument.id, event.target.value)}
                   readOnly={!documentCanEdit}
                   spellCheck={false}
-                  className="mt-3 min-h-[20rem] w-full resize-y rounded-[1rem] border border-[#c7d8e7] bg-[#fbfdff] px-4 py-3 font-mono text-fluid-sm leading-6 text-[#17324d] outline-none transition placeholder:text-[#8aa0b5] focus:border-[#8bbce3] focus:ring-2 focus:ring-[#8bbce3]/35 read-only:bg-[#f4f8fb] read-only:text-[#607790]"
+                  className="mt-3 min-h-[3.2rem] w-full resize-y rounded-[0.16rem] border border-[#c7d8e7] bg-[#fbfdff] px-4 py-3 font-mono text-fluid-sm leading-6 text-[#17324d] outline-none transition placeholder:text-[#8aa0b5] focus:border-[#8bbce3] focus:ring-2 focus:ring-[#8bbce3]/35 read-only:bg-[#f4f8fb] read-only:text-[#607790]"
                 />
               </>
             ) : null}
           </div>
         </div>
       ) : (
-        <div className="mt-4 flex items-center justify-center rounded-[1.15rem] border border-dashed border-[#cfdeea] bg-[#f7fbff] px-5 py-8 text-center">
+        <div className="mt-4 flex items-center justify-center rounded-[0.184rem] border border-dashed border-[#cfdeea] bg-[#f7fbff] px-5 py-8 text-center">
           <div>
             <FiFileText className="mx-auto h-7 w-7 text-[#6d86a0]" />
             <p className="mt-2 text-fluid-sm font-semibold text-[#173b70]">
@@ -3133,7 +3133,7 @@ function MeetingRoomStage({
   );
 
   return (
-    <article className="rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+    <article className="rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6d86a0]">
@@ -3171,7 +3171,7 @@ function MeetingRoomStage({
       </div>
 
       {roomError ? (
-        <div className="mt-4 flex items-start gap-3 rounded-[1rem] border border-[#ecd0d0] bg-[#fff2f2] px-4 py-3 text-[#9f4a4a]">
+        <div className="mt-4 flex items-start gap-3 rounded-[0.16rem] border border-[#ecd0d0] bg-[#fff2f2] px-4 py-3 text-[#9f4a4a]">
           <FiAlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="text-fluid-sm leading-6">{roomError}</p>
         </div>
@@ -3199,7 +3199,7 @@ function MeetingRoomStage({
                   onPointerUp={handleCanvasPointerUp}
                   onPointerLeave={handleCanvasPointerUp}
                   onPointerCancel={handleCanvasPointerUp}
-                  className={`absolute inset-0 h-full w-full ${isStageFullscreen ? '' : 'rounded-[1.6rem]'} bg-transparent ${
+                  className={`absolute inset-0 h-full w-full ${isStageFullscreen ? '' : 'rounded-[0.256rem]'} bg-transparent ${
                     drawingAllowed
                       ? `pointer-events-auto ${drawingTool === 'text' ? 'cursor-text' : drawingTool === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'}`
                       : 'pointer-events-none'
@@ -3211,7 +3211,7 @@ function MeetingRoomStage({
             </VideoTile>
           </div>
 
-          <div className="rounded-[1.35rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.72)] p-4">
+          <div className="rounded-[0.216rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.72)] p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
@@ -3239,7 +3239,7 @@ function MeetingRoomStage({
                 ))}
               </div>
             ) : (
-              <div className="mt-4 flex items-center justify-center rounded-[1.25rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+              <div className="mt-4 flex items-center justify-center rounded-[0.2rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
                 <div>
                   <p className="text-fluid-md font-semibold text-[#173b70]">{emptyParticipantTitle}</p>
                   <p className="mt-2 text-fluid-sm text-[#6a839d]">
@@ -3271,7 +3271,7 @@ function MeetingRoomStage({
                     onPointerUp={handleCanvasPointerUp}
                     onPointerLeave={handleCanvasPointerUp}
                     onPointerCancel={handleCanvasPointerUp}
-                    className={`absolute inset-0 h-full w-full ${isStageFullscreen ? '' : 'rounded-[1.25rem]'} bg-transparent ${
+                    className={`absolute inset-0 h-full w-full ${isStageFullscreen ? '' : 'rounded-[0.2rem]'} bg-transparent ${
                       drawingAllowed
                         ? `pointer-events-auto ${drawingTool === 'text' ? 'cursor-text' : drawingTool === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'}`
                         : 'pointer-events-none'
@@ -3296,7 +3296,7 @@ function MeetingRoomStage({
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center rounded-[1.25rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+            <div className="flex items-center justify-center rounded-[0.2rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
               <div>
                 <p className="text-fluid-md font-semibold text-[#173b70]">No one else is on camera yet</p>
                 <p className="mt-2 text-fluid-sm text-[#6a839d]">

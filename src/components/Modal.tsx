@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { FiX } from 'react-icons/fi';
 
 type ModalProps = {
@@ -29,6 +29,7 @@ function Modal({
   }
 
   const hasCustomMaxWidth = panelClassName?.includes('max-w') ?? false;
+  const hasCustomOverflow = panelClassName?.includes('overflow-') ?? false;
 
   return (
     <div
@@ -48,14 +49,14 @@ function Modal({
         </div>
       ) : null}
 
-      <div className={`modal-panel relative z-10 w-full ${hasCustomMaxWidth ? '' : 'max-w-xl'} overflow-hidden rounded-[2rem] border border-[#aebfd0] bg-[linear-gradient(180deg,#e6eef5_0%,#d8e3ec_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
-        <div className="flex items-start justify-between gap-4 border-b border-[#bccbd8] px-5 py-5 sm:px-6">
+      <div className={`modal-panel relative z-10 w-full ${hasCustomMaxWidth ? '' : 'max-w-xl'} ${hasCustomOverflow ? '' : 'overflow-hidden'} rounded-[0.32rem] border border-[#abc2c9] bg-[linear-gradient(180deg,#f4faf8_0%,#e5eef0_100%)] shadow-[0_28px_70px_rgba(15,23,42,0.28)] ${panelClassName ?? ''}`}>
+        <div className="flex items-start justify-between gap-4 border-b border-[#c6d6d8] px-5 py-5 sm:px-6">
           <div>
-            <h3 className="text-fluid-xl font-semibold tracking-[-0.03em] text-[#173b70]">
+            <h3 className="text-fluid-xl font-semibold tracking-[-0.03em] text-[#123c47]">
               {title}
             </h3>
             {description ? (
-              <p className="mt-2 max-w-lg text-fluid-base leading-6 text-[#627d98]">
+              <p className="mt-2 max-w-lg text-fluid-base leading-6 text-[#5f7785]">
                 {description}
               </p>
             ) : null}
@@ -63,7 +64,7 @@ function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#b7c7d6] bg-[rgba(255,255,255,0.88)] text-[#48617d] transition hover:bg-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#b8cbd0] bg-[rgba(255,255,255,0.92)] text-[#3f5968] transition hover:border-[#98b8bb] hover:bg-white hover:text-[#173b47]"
             aria-label="Close modal"
           >
             <FiX className="h-4 w-4" />
@@ -73,7 +74,7 @@ function Modal({
         <div className={bodyClassName ?? 'px-5 py-5 sm:px-6'}>{children}</div>
 
         {actions ? (
-          <div className="flex flex-col-reverse gap-3 border-t border-[#bccbd8] bg-[rgba(230,238,245,0.82)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-[#c6d6d8] bg-[rgba(237,245,243,0.86)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
             {actions}
           </div>
         ) : null}

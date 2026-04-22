@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowLeft,
@@ -482,8 +482,8 @@ function AssessmentAttempt() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="mx-auto w-full max-w-[94rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b8cad8]">
+      <div className="mx-auto w-full max-w-[15.04rem] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="rounded-[0.304rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b8cad8]">
           {assessmentQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading assessment...</p>
           ) : payload ? (
@@ -524,7 +524,7 @@ function AssessmentAttempt() {
                 </div>
               </div>
 
-              <div className="min-w-[16rem] rounded-[1.5rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
+              <div className="min-w-[2.56rem] rounded-[0.24rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_0.16rem_0.32rem_rgba(27,46,70,0.18)]">
                 <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#d5e2ef]">
                   Assessment status
                 </p>
@@ -549,9 +549,9 @@ function AssessmentAttempt() {
 
         {payload ? (
           payload.assessment.attempt ? (
-            <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(16rem,0.9fr)]">
-                <div className="rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)]">
+            <section className="mt-6 rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(2.56rem,0.9fr)]">
+                <div className="rounded-[0.216rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_0.12rem_0.288rem_rgba(40,68,99,0.08)]">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
@@ -572,7 +572,7 @@ function AssessmentAttempt() {
                   </div>
 
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Score
                       </p>
@@ -580,7 +580,7 @@ function AssessmentAttempt() {
                         {scoreSummary?.value}
                       </p>
                     </div>
-                    <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Submitted
                       </p>
@@ -588,7 +588,7 @@ function AssessmentAttempt() {
                         {formatDateTime(payload.assessment.attempt.submittedAt)}
                       </p>
                     </div>
-                    <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Coverage
                       </p>
@@ -599,18 +599,18 @@ function AssessmentAttempt() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)]">
+                <div className="rounded-[0.216rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_0.12rem_0.288rem_rgba(40,68,99,0.08)]">
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                     Review notes
                   </p>
                   <div className="mt-4 space-y-3 text-fluid-base leading-[1.65] text-[#6b8198]">
-                    <p className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <p className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       Objective items are checked immediately after you submit.
                     </p>
-                    <p className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <p className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       Essay questions stay pending until your instructor reviews them manually.
                     </p>
-                    <p className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                    <p className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                       Your score card in the subject page updates from the same saved attempt.
                     </p>
                   </div>
@@ -629,7 +629,7 @@ function AssessmentAttempt() {
                   return (
                     <article
                       key={question.id}
-                      className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                      className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -664,7 +664,7 @@ function AssessmentAttempt() {
                             return (
                               <div
                                 key={option}
-                                className={`rounded-[1rem] border px-4 py-3 text-fluid-base ${
+                                className={`rounded-[0.16rem] border px-4 py-3 text-fluid-base ${
                                   isSelected
                                     ? attemptResponse?.requiresManualReview
                                       ? 'border-[#c8d9ec] bg-[#eef4fa] text-[#2f78bc]'
@@ -686,7 +686,7 @@ function AssessmentAttempt() {
                           {question.matchingPairs.map((pair, pairIndex) => (
                             <div
                               key={pair.id}
-                              className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3"
+                              className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3"
                             >
                               <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                                 Prompt
@@ -706,7 +706,7 @@ function AssessmentAttempt() {
                       ) : null}
 
                       {question.questionType === 'fill-in-the-blanks' ? (
-                        <div className="mt-4 rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                        <div className="mt-4 rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                           <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                             Your answer
                           </p>
@@ -718,7 +718,7 @@ function AssessmentAttempt() {
 
                       {question.questionType === 'essay' ? (
                         <div className="mt-4 space-y-3">
-                          <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                          <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                               Your response
                             </p>
@@ -726,7 +726,7 @@ function AssessmentAttempt() {
                               {draft.answer || 'No answer submitted'}
                             </p>
                           </div>
-                          <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                          <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
                               Rubric points
                             </p>
@@ -742,8 +742,8 @@ function AssessmentAttempt() {
               </div>
             </section>
           ) : payload.assessment.canTake ? (
-            <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
-              <div className="flex flex-col gap-4 rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-start lg:justify-between">
+            <section className="mt-6 rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
+              <div className="flex flex-col gap-4 rounded-[0.216rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_0.12rem_0.288rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                     Assessment in progress
@@ -758,8 +758,8 @@ function AssessmentAttempt() {
                   </p>
                 </div>
 
-                <div className="grid gap-3 sm:min-w-[17rem] sm:grid-cols-2 lg:grid-cols-1">
-                  <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                <div className="grid gap-3 sm:min-w-[2.72rem] sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                     <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Answered
                     </p>
@@ -767,7 +767,7 @@ function AssessmentAttempt() {
                       {answeredCount} / {payload.questions.length}
                     </p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3">
                     <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Submission
                     </p>
@@ -789,7 +789,7 @@ function AssessmentAttempt() {
                   return (
                     <article
                       key={question.id}
-                      className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                      className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
@@ -815,7 +815,7 @@ function AssessmentAttempt() {
                                 key={option}
                                 type="button"
                                 onClick={() => updateAnswer(question.id, option)}
-                                className={`rounded-[1rem] border px-4 py-3 text-left text-fluid-base font-medium transition ${
+                                className={`rounded-[0.16rem] border px-4 py-3 text-left text-fluid-base font-medium transition ${
                                   isSelected
                                     ? 'border-[#6eaad9] bg-[linear-gradient(180deg,#edf6ff_0%,#e1effd_100%)] text-[#215f99] shadow-[0_10px_20px_rgba(43,121,186,0.12)]'
                                     : 'border-[#cad8e3] bg-[rgba(255,255,255,0.9)] text-[#5d7690] hover:bg-white'
@@ -833,7 +833,7 @@ function AssessmentAttempt() {
                           {question.matchingPairs.map((pair, pairIndex) => (
                             <div
                               key={pair.id}
-                              className="grid gap-3 rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-center"
+                              className="grid gap-3 rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-4 py-3 lg:grid-cols-[minmax(0,1fr)_2.72rem] lg:items-center"
                             >
                               <div>
                                 <p className="text-fluid-sm font-semibold uppercase tracking-[0.14em] text-[#6d86a0]">
@@ -878,7 +878,7 @@ function AssessmentAttempt() {
                             value={draft.answer}
                             onChange={(event) => updateAnswer(question.id, event.target.value)}
                             placeholder="Type the missing answer"
-                            className="w-full rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                            className="w-full rounded-[0.16rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                           />
                         </div>
                       ) : null}
@@ -902,7 +902,7 @@ function AssessmentAttempt() {
                             onChange={(event) => updateAnswer(question.id, event.target.value)}
                             rows={7}
                             placeholder="Write your essay response here."
-                            className="w-full resize-none rounded-[1rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
+                            className="w-full resize-none rounded-[0.16rem] border border-[#b8c8d7] bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition focus:border-[#6eaad9]"
                           />
                         </div>
                       ) : null}
@@ -911,7 +911,7 @@ function AssessmentAttempt() {
                 })}
               </div>
 
-              <div className="mt-6 flex flex-col gap-4 rounded-[1.35rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-center lg:justify-between">
+              <div className="mt-6 flex flex-col gap-4 rounded-[0.216rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_0.12rem_0.288rem_rgba(40,68,99,0.08)] lg:flex-row lg:items-center lg:justify-between">
                 <div className="max-w-2xl">
                   <p className="text-fluid-sm font-semibold text-[#173b70]">
                     Finish and check exam
@@ -933,8 +933,8 @@ function AssessmentAttempt() {
               </div>
             </section>
           ) : (
-            <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
-              <div className="rounded-[1.4rem] border border-dashed border-[#c2d2df] bg-[linear-gradient(180deg,#fbfdff_0%,#f4f8fb_100%)] px-6 py-12 text-center">
+            <section className="mt-6 rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
+              <div className="rounded-[0.224rem] border border-dashed border-[#c2d2df] bg-[linear-gradient(180deg,#fbfdff_0%,#f4f8fb_100%)] px-6 py-12 text-center">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
                   <FiClock className="h-6 w-6" />
                 </div>

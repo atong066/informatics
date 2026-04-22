@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -235,8 +235,8 @@ function AssessmentTakers() {
       pageEyebrow="Assessment takers"
       pageTitle={payload?.assessment.title ?? 'Assessment takers'}
     >
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+      <div className="mx-auto w-full max-w-[15.68rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.264rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {takersQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading assessment takers...</p>
           ) : payload ? (
@@ -270,7 +270,7 @@ function AssessmentTakers() {
                 </div>
               </div>
 
-              <div className="grid min-w-[15rem] gap-3 rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
+              <div className="grid min-w-[2.4rem] gap-3 rounded-[0.192rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
                 <div className="flex items-center gap-2 text-[#d5e2ef]">
                   <FiCheckCircle className="h-4 w-4" />
                   <p className="text-fluid-xs uppercase tracking-[0.16em]">Taker summary</p>
@@ -287,7 +287,7 @@ function AssessmentTakers() {
         </section>
 
         {payload ? (
-          <section className="mt-5 overflow-hidden rounded-[1.9rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(197,209,223,0.93)_100%)] shadow-[0_14px_32px_rgba(27,46,70,0.09)]">
+          <section className="mt-5 overflow-hidden rounded-[0.304rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(197,209,223,0.93)_100%)] shadow-[0_14px_32px_rgba(27,46,70,0.09)]">
             <div className="border-b border-[#bfcedb] px-5 py-5 sm:px-6">
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -327,14 +327,14 @@ function AssessmentTakers() {
                     />
                   </FilterShell>
 
-                  <div className="rounded-[1.4rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
+                  <div className="rounded-[0.224rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
                     <label
                       htmlFor="faculty-assessment-search"
                       className="mb-2 block text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]"
                     >
                       Search
                     </label>
-                    <div className="flex items-center gap-3 rounded-[1.15rem] border border-[#b6c7d6] bg-[rgba(214,224,234,0.94)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+                    <div className="flex items-center gap-3 rounded-[0.184rem] border border-[#b6c7d6] bg-[rgba(214,224,234,0.94)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
                       <FiSearch className="h-4 w-4 text-[#6f89a4]" />
                       <input
                         id="faculty-assessment-search"
@@ -357,7 +357,7 @@ function AssessmentTakers() {
                 <StatCard icon={<FiTrendingUp className="h-4 w-4" />} label="Schedule" value={formatCalendarDate(payload.assessment.schedule)} />
               </div>
 
-              <div className="mt-5 overflow-hidden rounded-[1.4rem] border border-[#b8c8d6] bg-[linear-gradient(180deg,#d8e2eb_0%,#ced9e4_100%)] shadow-[0_10px_24px_rgba(27,46,70,0.07)]">
+              <div className="mt-5 overflow-hidden rounded-[0.224rem] border border-[#b8c8d6] bg-[linear-gradient(180deg,#d8e2eb_0%,#ced9e4_100%)] shadow-[0_10px_24px_rgba(27,46,70,0.07)]">
                 {filteredStudents.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full border-separate border-spacing-0">
@@ -430,7 +430,7 @@ function AssessmentTakers() {
 
 function ToolbarMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-[8.2rem] rounded-[1.15rem] border border-[#b8c7d4] bg-[linear-gradient(180deg,#dbe5ed_0%,#d2dde8_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.34)]">
+    <div className="min-w-[1.312rem] rounded-[0.184rem] border border-[#b8c7d4] bg-[linear-gradient(180deg,#dbe5ed_0%,#d2dde8_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.34)]">
       <p className="text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#6f89a4]">
         {label}
       </p>
@@ -447,7 +447,7 @@ function FilterShell({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
+    <div className="rounded-[0.224rem] border border-[#b7c8d6] bg-[rgba(209,220,231,0.92)] px-4 py-3.5">
       <p className="mb-2 text-fluid-2xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
         {label}
       </p>
@@ -466,7 +466,7 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+    <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
       <div className="flex items-center gap-2 text-[#2f78bc]">
         {icon}
         <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">

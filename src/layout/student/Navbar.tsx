@@ -1,4 +1,4 @@
-﻿import { FiBell, FiMenu, FiMessageCircle, FiSearch } from 'react-icons/fi';
+import { FiBell, FiMenu, FiMessageCircle, FiSearch } from 'react-icons/fi';
 
 type NavbarProps = {
   firstName: string;
@@ -57,7 +57,7 @@ function Navbar({ firstName, section, profileImage, onOpenSidebar }: NavbarProps
           <h1 className="mt-4 hidden max-w-[9ch] text-fluid-2xl font-semibold leading-[0.98] tracking-[-0.05em] text-[#163b73] sm:max-w-none sm:text-fluid-3xl lg:mt-3 lg:block lg:text-fluid-3xl">
             Student Dashboard
           </h1>
-          <p className="mt-2 hidden max-w-[22rem] text-fluid-base leading-7 text-[#58728f] lg:block">
+          <p className="mt-2 hidden max-w-[3.52rem] text-fluid-base leading-7 text-[#58728f] lg:block">
             Check what needs attention, what is due next, and how your term is moving.
           </p>
         </div>

@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -123,7 +123,10 @@ type SubjectDetailsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     activityType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     attachments: AttachmentRecord[];
     submission: StudentSubmissionRecord | null;
     status: string;
@@ -133,7 +136,10 @@ type SubjectDetailsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     assignmentType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     attachments: AttachmentRecord[];
     submission: StudentSubmissionRecord | null;
     status: string;
@@ -216,7 +222,7 @@ function statusTone(status: string) {
 
 function EmptyTabState({ label }: { label: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-[#d8e3ec] bg-[linear-gradient(180deg,#fbfdff_0%,#f4f8fb_100%)] px-6 py-10 text-center">
+    <div className="rounded-[0.224rem] border border-dashed border-[#d8e3ec] bg-[linear-gradient(180deg,#fbfdff_0%,#f4f8fb_100%)] px-6 py-10 text-center">
       <p className="text-fluid-md font-semibold text-[#173b70]">No {label.toLowerCase()} yet</p>
       <p className="mt-2 text-fluid-sm text-[#7088a1]">
         This section will stay empty until records are added from the database.
@@ -243,7 +249,7 @@ function formatCalendarDate(value: string) {
   });
 }
 
-function isPastSubmissionDeadline(value: string) {
+function isPastSubmissionDeadline(value: string, deadlineTime = '') {
   if (!value) {
     return false;
   }
@@ -254,7 +260,10 @@ function isPastSubmissionDeadline(value: string) {
     return false;
   }
 
-  const deadline = new Date(year, month - 1, day, 23, 59, 59, 999);
+  const [hours, minutes] = /^([01]\d|2[0-3]):([0-5]\d)$/.test(deadlineTime)
+    ? deadlineTime.split(':').map(Number)
+    : [23, 59];
+  const deadline = new Date(year, month - 1, day, hours, minutes, 59, 999);
 
   return Date.now() > deadline.getTime();
 }
@@ -276,7 +285,7 @@ function getSubmissionLockState(item: StudentSubmittableItem | null | undefined)
     };
   }
 
-  if (isPastSubmissionDeadline(item.dueDate)) {
+  if (isPastSubmissionDeadline(item.dueDate, item.deadlineTime)) {
     return {
       isLocked: true,
       actionLabel: 'Closed',
@@ -394,6 +403,16 @@ function formatTimeLabel(value: string) {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function formatDeadlineLabel(date: string, time?: string) {
+  const dateLabel = formatCalendarDate(date);
+
+  if (!time) {
+    return dateLabel;
+  }
+
+  return `${dateLabel} at ${formatTimeLabel(time)}`;
 }
 
 function formatAssessmentWindow(startTime: string, endTime: string) {
@@ -537,18 +556,6 @@ function SubjectDetails() {
         : false,
   });
 
-  if (!activeUser || isError) {
-    return null;
-  }
-
-  const fullName = [activeUser.firstName, activeUser.middleName, activeUser.lastName]
-    .filter(Boolean)
-    .join(' ');
-
-  if (!subjectQuery.isLoading && subjectQuery.isError) {
-    return <Navigate to="/student/dashboard" replace />;
-  }
-
   const subject = subjectQuery.data;
   const SubjectIcon = getSubjectIcon(subject?.iconKey ?? 'book');
   const selectedActivity =
@@ -653,6 +660,18 @@ function SubjectDetails() {
       });
     },
   });
+
+  if (!activeUser || isError) {
+    return null;
+  }
+
+  const fullName = [activeUser.firstName, activeUser.middleName, activeUser.lastName]
+    .filter(Boolean)
+    .join(' ');
+
+  if (!subjectQuery.isLoading && subjectQuery.isError) {
+    return <Navigate to="/student/dashboard" replace />;
+  }
 
   function resetSubmissionForm() {
     setSubmissionType('text');
@@ -813,14 +832,14 @@ function SubjectDetails() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b8cad8]">
+      <div className="mx-auto w-full max-w-[14.72rem] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="rounded-[0.304rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b8cad8]">
           {subjectQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading subject details...</p>
           ) : subject ? (
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[0.208rem] bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
                   <SubjectIcon className="h-7 w-7" />
                 </div>
                 <div>
@@ -836,7 +855,7 @@ function SubjectDetails() {
                 </div>
               </div>
 
-              <div className="min-w-[15rem] rounded-[1.5rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_1rem_2rem_rgba(27,46,70,0.18)]">
+              <div className="min-w-[2.4rem] rounded-[0.24rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-4 text-white shadow-[0_0.16rem_0.32rem_rgba(27,46,70,0.18)]">
                 <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#d5e2ef]">
                   Course details
                 </p>
@@ -848,7 +867,7 @@ function SubjectDetails() {
         </section>
 
         {subject ? (
-          <section className="mt-6 rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
+          <section className="mt-6 rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
             <div className="flex flex-wrap gap-3">
               {subjectTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -879,7 +898,7 @@ function SubjectDetails() {
                     {subject.lessonProgress.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_.75rem_1.8rem_rgba(40,68,99,0.08)]"
+                        className="rounded-[0.208rem] border border-[#c2d2df] bg-[linear-gradient(180deg,#fefefe_0%,#f4f8fb_100%)] px-5 py-5 shadow-[0_0.12rem_0.288rem_rgba(40,68,99,0.08)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -897,7 +916,7 @@ function SubjectDetails() {
                             <p className="text-fluid-sm font-medium text-[#5f7892]">Completion</p>
                             <p className="text-fluid-sm font-semibold text-[#173b70]">{item.completion}%</p>
                           </div>
-                          <div className="h-[0.42rem] rounded-full bg-[#dde8f1]">
+                          <div className="h-[0.0672rem] rounded-full bg-[#dde8f1]">
                             <div
                               className="h-full rounded-full bg-[#3c7de0]"
                               style={{ width: `${item.completion}%` }}
@@ -905,7 +924,7 @@ function SubjectDetails() {
                           </div>
                         </div>
                         {item.subtopics.length > 0 ? (
-                          <div className="mt-5 rounded-[1.1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] p-4">
+                          <div className="mt-5 rounded-[0.176rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] p-4">
                             <p className="text-fluid-sm font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Subtopics
                             </p>
@@ -913,7 +932,7 @@ function SubjectDetails() {
                               {item.subtopics.map((subtopic) => (
                                 <div
                                   key={subtopic.id}
-                                  className="flex items-center gap-3 rounded-[0.95rem] border border-[#c8d7e2] bg-[rgba(255,255,255,0.96)] px-3 py-3 text-fluid-sm text-[#37506c]"
+                                  className="flex items-center gap-3 rounded-[0.152rem] border border-[#c8d7e2] bg-[rgba(255,255,255,0.96)] px-3 py-3 text-fluid-sm text-[#37506c]"
                                 >
                                   <span
                                     className={`inline-flex h-5 w-5 items-center justify-center rounded-full border text-fluid-2xs font-semibold ${
@@ -946,7 +965,7 @@ function SubjectDetails() {
                     {subject.modules.map((item) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                        className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -966,7 +985,7 @@ function SubjectDetails() {
                         {item.referenceLinks.length > 0 || item.attachments.length > 0 ? (
                           <div className="mt-4 space-y-3">
                             {item.referenceLinks.length > 0 ? (
-                              <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   References
                                 </p>
@@ -977,7 +996,7 @@ function SubjectDetails() {
                                       href={link}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                      className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                     >
                                       <span className="flex min-w-0 items-center gap-2">
                                         <FiExternalLink className="h-3.5 w-3.5 shrink-0" />
@@ -993,7 +1012,7 @@ function SubjectDetails() {
                             ) : null}
 
                             {item.attachments.length > 0 ? (
-                              <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                              <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                   Files
                                 </p>
@@ -1003,7 +1022,7 @@ function SubjectDetails() {
                                       key={attachment.id}
                                       href={attachment.dataUrl}
                                       download={attachment.name}
-                                      className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                      className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                     >
                                       <span className="flex min-w-0 items-center gap-2">
                                         <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1036,17 +1055,20 @@ function SubjectDetails() {
                       return (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                        className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
                               <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
-                                {formatCalendarDate(item.dueDate)}
+                                {formatDeadlineLabel(item.dueDate, item.deadlineTime)}
                               </span>
                               <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 Text or file submission
+                              </span>
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                {item.targetSectionLabel}
                               </span>
                             </div>
                           </div>
@@ -1061,7 +1083,7 @@ function SubjectDetails() {
                           </p>
                         </div>
 
-                        <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                        <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1098,7 +1120,7 @@ function SubjectDetails() {
                         </div>
 
                         {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#12815a]">
                               Faculty review
                             </p>
@@ -1116,7 +1138,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.submission?.textContent ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted response
                             </p>
@@ -1129,7 +1151,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.attachments.length > 0 ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Files
                             </p>
@@ -1139,7 +1161,7 @@ function SubjectDetails() {
                                   key={attachment.id}
                                   href={attachment.dataUrl}
                                   download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1155,7 +1177,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.submission?.attachments.length ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted files
                             </p>
@@ -1163,7 +1185,7 @@ function SubjectDetails() {
                               {item.submission.attachments.map((attachment, index) => (
                                 <div
                                   key={`${attachment.name}-${attachment.id ?? index}`}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1195,17 +1217,20 @@ function SubjectDetails() {
                       return (
                       <article
                         key={item.id}
-                        className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                        className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <h2 className="truncate text-fluid-lg font-semibold text-[#173b70]">{item.title}</h2>
                             <div className="mt-3 flex flex-wrap gap-2">
                               <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
-                                {formatCalendarDate(item.dueDate)}
+                                {formatDeadlineLabel(item.dueDate, item.deadlineTime)}
                               </span>
                               <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                                 Text or file submission
+                              </span>
+                              <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                                {item.targetSectionLabel}
                               </span>
                             </div>
                           </div>
@@ -1220,7 +1245,7 @@ function SubjectDetails() {
                           </p>
                         </div>
 
-                        <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                        <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                           <div className="flex items-center justify-between gap-3">
                             <div>
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1257,7 +1282,7 @@ function SubjectDetails() {
                         </div>
 
                         {item.submission && (item.submission.reviewScore !== null || item.submission.reviewComment) ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#bce8cf] bg-[#effbf4] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#12815a]">
                               Faculty review
                             </p>
@@ -1275,7 +1300,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.submission?.textContent ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted response
                             </p>
@@ -1288,7 +1313,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.attachments.length > 0 ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Files
                             </p>
@@ -1298,7 +1323,7 @@ function SubjectDetails() {
                                   key={attachment.id ?? attachment.name}
                                   href={attachment.dataUrl}
                                   download={attachment.name}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:border-[#a9c3d7] hover:bg-white hover:text-[#215f99]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1314,7 +1339,7 @@ function SubjectDetails() {
                         ) : null}
 
                         {item.submission?.attachments.length ? (
-                          <div className="mt-4 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Submitted files
                             </p>
@@ -1322,7 +1347,7 @@ function SubjectDetails() {
                               {item.submission.attachments.map((attachment, index) => (
                                 <div
                                   key={`${attachment.name}-${attachment.id ?? index}`}
-                                  className="flex items-center justify-between gap-3 rounded-[0.9rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
+                                  className="flex items-center justify-between gap-3 rounded-[0.144rem] border border-[#bfd0dd] bg-[rgba(255,255,255,0.92)] px-3 py-3 text-fluid-sm text-[#2f78bc]"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1356,7 +1381,7 @@ function SubjectDetails() {
                       return (
                         <article
                           key={item.id}
-                          className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                          className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                         >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -1386,7 +1411,7 @@ function SubjectDetails() {
                         </p>
 
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Question count
                             </p>
@@ -1395,7 +1420,7 @@ function SubjectDetails() {
                             </p>
                           </div>
 
-                          <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             {item.attempt ? (
                               <>
                                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
@@ -1426,7 +1451,7 @@ function SubjectDetails() {
                           </div>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                           <div>
                             <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                               Assessment action
@@ -1470,7 +1495,7 @@ function SubjectDetails() {
                       return (
                         <article
                           key={item.id}
-                          className="rounded-[1.3rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_.8rem_1.9rem_rgba(40,68,99,0.1)]"
+                          className="rounded-[0.208rem] border border-[#bccdda] bg-[linear-gradient(180deg,#f5f9fc_0%,#eaf1f7_100%)] px-5 py-5 shadow-[0_0.128rem_0.304rem_rgba(40,68,99,0.1)]"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
@@ -1494,11 +1519,11 @@ function SubjectDetails() {
                                 ) : null}
                               </div>
                             </div>
-                            <div className="rounded-[0.95rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
+                            <div className="rounded-[0.152rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.88)] px-3 py-2 text-right">
                               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.12em] text-[#6d86a0]">
                                 Room
                               </p>
-                              <p className="mt-1 max-w-[12rem] break-all text-fluid-xs font-semibold text-[#173b70]">
+                              <p className="mt-1 max-w-[1.92rem] break-all text-fluid-xs font-semibold text-[#173b70]">
                                 {item.roomName}
                               </p>
                             </div>
@@ -1509,7 +1534,7 @@ function SubjectDetails() {
                           </p>
 
                           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Session timing
                               </p>
@@ -1521,7 +1546,7 @@ function SubjectDetails() {
                               </p>
                             </div>
 
-                            <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                            <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Notes status
                               </p>
@@ -1538,7 +1563,7 @@ function SubjectDetails() {
                             </div>
                           </div>
 
-                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                             <div>
                               <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                                 Conference action
@@ -1594,7 +1619,7 @@ function SubjectDetails() {
           selectedRecording.recordingMimeType.startsWith('audio/') ? (
             <audio src={selectedRecording.recordingUrl} controls className="w-full" />
           ) : (
-            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[0.16rem] bg-black" />
           )
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
@@ -1618,7 +1643,7 @@ function SubjectDetails() {
             : undefined
         }
         onClose={() => closeSubmissionModal()}
-        panelClassName="max-h-[calc(100dvh-0.75rem)] sm:max-h-[calc(100dvh-2rem)] flex flex-col"
+        panelClassName="max-h-[calc(100dvh-0.12rem)] sm:max-h-[calc(100dvh-0.32rem)] flex flex-col"
         bodyClassName="scrollbar-super-thin min-h-0 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5"
         actions={
           <>
@@ -1649,18 +1674,21 @@ function SubjectDetails() {
         {selectedSubmissionItem ? (
           <div className="space-y-4 sm:space-y-5">
             {selectedSubmissionLock.isLocked ? (
-              <div className="rounded-[1rem] border border-[#ecd0d0] bg-[#fff2f2] px-4 py-3 text-fluid-sm font-medium text-[#9f4848]">
+              <div className="rounded-[0.16rem] border border-[#ecd0d0] bg-[#fff2f2] px-4 py-3 text-fluid-sm font-medium text-[#9f4848]">
                 {selectedSubmissionLock.message}
               </div>
             ) : null}
 
-            <div className="rounded-[1rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-3.5 py-3 sm:px-4">
+            <div className="rounded-[0.16rem] border border-[#cad8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e5edf4_100%)] px-3.5 py-3 sm:px-4">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
-                  {formatCalendarDate(selectedSubmissionItem.dueDate)}
+                  {formatDeadlineLabel(selectedSubmissionItem.dueDate, selectedSubmissionItem.deadlineTime)}
                 </span>
                 <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#2f78bc]">
                   Text or file submission
+                </span>
+                <span className="rounded-full border border-[#c6d6e2] bg-[rgba(255,255,255,0.9)] px-3 py-1 text-fluid-2xs font-semibold uppercase tracking-[0.08em] text-[#607790]">
+                  {selectedSubmissionItem.targetSectionLabel}
                 </span>
               </div>
               <div className="scrollbar-super-thin mt-3 max-h-44 overflow-y-auto pr-1 sm:max-h-52">
@@ -1723,13 +1751,13 @@ function SubjectDetails() {
                   }}
                   rows={5}
                   placeholder="Write your response here."
-                  className={`min-h-[8.5rem] w-full resize-none rounded-[1rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition sm:min-h-[10rem] ${
+                  className={`min-h-[1.36rem] w-full resize-none rounded-[0.16rem] border bg-[rgba(255,255,255,0.96)] px-4 py-3 text-fluid-base leading-6 text-[#25456d] outline-none transition sm:min-h-[1.6rem] ${
                     submissionError ? 'border-rose-300' : 'border-[#b8c8d7] focus:border-[#6eaad9]'
                   }`}
                 />
               </div>
             ) : (
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#edf4f9_0%,#e0e9f1_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-fluid-base font-semibold text-[#173b70]">Submission files</p>
@@ -1741,7 +1769,7 @@ function SubjectDetails() {
                     type="button"
                     disabled={selectedSubmissionLock.isLocked}
                     onClick={() => submissionAttachmentInputRef.current?.click()}
-                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b8c9d8] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiUploadCloud className="h-4 w-4" />
                     Upload files
@@ -1761,7 +1789,7 @@ function SubjectDetails() {
                     {submissionAttachments.map((attachment, index) => (
                       <div
                         key={`${attachment.name}-${attachment.id ?? index}`}
-                        className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
+                        className="flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#c7d5e0] bg-[rgba(255,255,255,0.94)] px-4 py-3"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{attachment.name}</p>
@@ -1782,7 +1810,7 @@ function SubjectDetails() {
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-4 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                  <div className="mt-4 rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                     <p className="text-fluid-base font-semibold text-[#173b70]">No files uploaded yet</p>
                     <p className="mt-2 text-fluid-sm text-[#7088a1]">
                       Add the file set you want to submit.

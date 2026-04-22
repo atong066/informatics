@@ -1,4 +1,4 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { FiLock } from 'react-icons/fi';
 import NotificationPopup from '../../components/NotificationPopup';
@@ -144,7 +144,7 @@ function Settings() {
       />
 
       <div className="grid gap-5 px-4 py-5 sm:px-7 lg:px-8">
-        <section className="rounded-[2rem] border border-[#b8cddd] bg-[linear-gradient(120deg,#eef4f9_0%,#e4edf5_38%,#dde7f0_100%)] px-5 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.1)] sm:px-6">
+        <section className="rounded-[0.32rem] border border-[#b8cddd] bg-[linear-gradient(120deg,#eef4f9_0%,#e4edf5_38%,#dde7f0_100%)] px-5 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.1)] sm:px-6">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
             <div>
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2b79ba]">
@@ -159,7 +159,7 @@ function Settings() {
               </p>
             </div>
 
-            <div className="rounded-[1.7rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-5 text-white shadow-[0_20px_32px_rgba(27,46,70,0.2)]">
+            <div className="rounded-[0.272rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-5 text-white shadow-[0_20px_32px_rgba(27,46,70,0.2)]">
               <p className="text-fluid-xs text-[#d2dfec]">Account security</p>
               <p className="mt-3 text-fluid-xl font-semibold leading-tight">{activeUser.email}</p>
               <p className="mt-2 text-fluid-base text-[#e8eff6]">@{activeUser.username}</p>
@@ -168,7 +168,7 @@ function Settings() {
           </div>
         </section>
 
-        <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
+        <section className="rounded-[0.304rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#d7e4f2_0%,#c7d9ea_100%)] text-[#2b79ba]">
               <FiLock className="h-5 w-5" />
@@ -252,7 +252,7 @@ function Field({
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="rounded-[1.2rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
+        className="rounded-[0.192rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
       />
       {error ? <span className="text-fluid-xs font-medium text-rose-600">{error}</span> : null}
     </label>

@@ -162,11 +162,11 @@ function StudentMeetingDetails() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-[1.9rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b8cad8]">
+      <div className="mx-auto w-full max-w-[14.72rem] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="rounded-[0.304rem] bg-[linear-gradient(180deg,#d9e4ee_0%,#ccd8e4_100%)] px-6 py-6 shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b8cad8]">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[0.208rem] bg-[linear-gradient(180deg,#dbe8f6_0%,#c8d9ec_100%)] text-[#255a91]">
                 <FiVideo className="h-7 w-7" />
               </div>
               <div>
@@ -216,9 +216,9 @@ function StudentMeetingDetails() {
                 }}
               />
 
-              <article className="rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
+              <article className="rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Room name
                     </p>
@@ -227,7 +227,7 @@ function StudentMeetingDetails() {
                     </p>
                   </div>
 
-                  <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Started
                     </p>
@@ -236,7 +236,7 @@ function StudentMeetingDetails() {
                     </p>
                   </div>
 
-                  <div className="rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Ended
                     </p>
@@ -246,7 +246,7 @@ function StudentMeetingDetails() {
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-[1rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-4">
+                <div className="mt-5 rounded-[0.16rem] border border-[#c9d8e3] bg-[linear-gradient(180deg,#eef4f8_0%,#e3ebf3_100%)] px-4 py-4">
                   <div className="flex items-center gap-3">
                     <FiClock className="h-5 w-5 text-[#2f78bc]" />
                     <div>
@@ -263,7 +263,7 @@ function StudentMeetingDetails() {
                 </div>
               </article>
 
-              <article className="rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
+              <article className="rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <FiFileText className="h-5 w-5 text-[#2f78bc]" />
@@ -291,11 +291,11 @@ function StudentMeetingDetails() {
                 </div>
 
                 {meeting.aiNotes ? (
-                  <div className="formatted-text mt-5 rounded-[1rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
+                  <div className="formatted-text mt-5 rounded-[0.16rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
                     {meeting.aiNotes}
                   </div>
                 ) : (
-                  <div className="mt-5 rounded-[1rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
+                  <div className="mt-5 rounded-[0.16rem] border border-dashed border-[#bfceda] bg-[linear-gradient(180deg,#f5f9fc_0%,#e8eff5_100%)] px-5 py-6 text-center">
                     <p className="text-fluid-base font-semibold text-[#173b70]">Notes are not available yet</p>
                     <p className="mt-2 text-fluid-sm text-[#7088a1]">
                       {meeting.aiStatus === 'processing'
@@ -308,7 +308,7 @@ function StudentMeetingDetails() {
                 )}
 
                 {meeting.transcriptText ? (
-                  <div className="mt-5 rounded-[1rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-4">
+                  <div className="mt-5 rounded-[0.16rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-4">
                     <div className="flex items-center gap-3">
                       <FiMic className="h-4 w-4 text-[#2f78bc]" />
                       <p className="text-fluid-sm font-semibold text-[#173b70]">Transcript</p>
@@ -322,9 +322,9 @@ function StudentMeetingDetails() {
             </section>
 
             <section className="space-y-5">
-              <article className="rounded-[1.8rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[1.35rem] shadow-[0_.95rem_2.2rem_rgba(40,68,99,0.12)] ring-[0.01rem] ring-[#b9ccda]">
+              <article className="rounded-[0.288rem] bg-[linear-gradient(180deg,#e4edf5_0%,#d6e1eb_100%)] p-[0.216rem] shadow-[0_0.152rem_0.352rem_rgba(40,68,99,0.12)] ring-[0.0016rem] ring-[#b9ccda]">
                 <div className="space-y-3">
-                  <div className="rounded-[1rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Subject
                     </p>
@@ -333,7 +333,7 @@ function StudentMeetingDetails() {
                     </p>
                   </div>
 
-                  <div className="rounded-[1rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                       Last updated
                     </p>
@@ -343,7 +343,7 @@ function StudentMeetingDetails() {
                   </div>
 
                   {meeting.recordingName ? (
-                    <div className="rounded-[1rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
+                    <div className="rounded-[0.16rem] border border-[#c9d8e3] bg-[rgba(255,255,255,0.92)] px-4 py-3">
                       <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">
                         Recording
                       </p>
@@ -381,11 +381,11 @@ function StudentMeetingDetails() {
         bodyClassName="max-h-[72vh] overflow-y-auto px-5 py-5 sm:px-6"
       >
         {meeting?.aiNotes ? (
-          <div className="formatted-text rounded-[1.15rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
+          <div className="formatted-text rounded-[0.184rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
             {meeting.aiNotes}
           </div>
         ) : (
-          <div className="rounded-[1.15rem] border border-dashed border-[#bfceda] bg-[rgba(255,255,255,0.66)] px-5 py-6 text-center">
+          <div className="rounded-[0.184rem] border border-dashed border-[#bfceda] bg-[rgba(255,255,255,0.66)] px-5 py-6 text-center">
             <p className="text-fluid-base font-semibold text-[#173b70]">Notes are not ready yet</p>
             <p className="mt-2 text-fluid-sm text-[#607b95]">
               {meeting?.aiStatus === 'processing'
@@ -398,7 +398,7 @@ function StudentMeetingDetails() {
         )}
 
         {meeting?.transcriptText ? (
-          <div className="mt-4 rounded-[1.15rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4">
+          <div className="mt-4 rounded-[0.184rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4">
             <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Transcript</p>
             <div className="formatted-text mt-3 text-fluid-sm leading-[1.7] text-[#45627f]">
               {meeting.transcriptText}
@@ -418,7 +418,7 @@ function StudentMeetingDetails() {
           meeting.recordingMimeType.startsWith('audio/') ? (
             <audio src={meeting.recordingUrl} controls className="w-full" />
           ) : (
-            <video src={meeting.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+            <video src={meeting.recordingUrl} controls className="max-h-[68vh] w-full rounded-[0.16rem] bg-black" />
           )
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>

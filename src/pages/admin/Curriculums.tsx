@@ -1,7 +1,8 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type Dispatch, type ReactNode, type SetStateAction, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiEdit3, FiLayers, FiPlus, FiRefreshCcw, FiTrash2 } from 'react-icons/fi';
+import { FiEdit3, FiLayers, FiPlus, FiTrash2 } from 'react-icons/fi';
 import CustomSelect from '../../components/CustomSelect';
+import Modal from '../../components/Modal';
 import NotificationPopup from '../../components/NotificationPopup';
 import AdminLayout from '../../layout/admin/AdminLayout';
 import { getFullName, type AdminCurriculum, type AdminOverviewResponse, useAdminOverview } from './adminData';
@@ -53,6 +54,7 @@ function AdminCurriculums() {
   const queryClient = useQueryClient();
   const { activeUser, isError, token, adminOverviewQuery } = useAdminOverview();
   const [editingCurriculumId, setEditingCurriculumId] = useState<string | null>(null);
+  const [isCurriculumModalOpen, setIsCurriculumModalOpen] = useState(false);
   const [curriculumForm, setCurriculumForm] = useState<CurriculumFormState>(emptyCurriculumForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [notification, setNotification] = useState<NotificationState>({
@@ -63,14 +65,17 @@ function AdminCurriculums() {
   });
 
   const fullName = getFullName(activeUser);
-  const subjects = adminOverviewQuery.data?.subjects ?? [];
+  const subjects = adminOverviewQuery.data?.subjects;
   const curriculums = adminOverviewQuery.data?.curriculums ?? [];
   const subjectOptions = useMemo(
-    () =>
-      subjects.map((subject) => ({
+    () => {
+      const availableSubjects = subjects ?? [];
+
+      return availableSubjects.map((subject) => ({
         value: subject.id,
         label: `${subject.title} | ${subject.code}`,
-      })),
+      }));
+    },
     [subjects],
   );
 
@@ -122,7 +127,7 @@ function AdminCurriculums() {
         message: result.message,
         variant: 'success',
       });
-      resetForm();
+      resetModal();
     },
     onError: (error: MutationError) => {
       setFieldErrors(error.fieldErrors ?? {});
@@ -135,10 +140,18 @@ function AdminCurriculums() {
     },
   });
 
-  function resetForm() {
+  function resetModal() {
+    setIsCurriculumModalOpen(false);
     setEditingCurriculumId(null);
     setCurriculumForm(emptyCurriculumForm());
     setFieldErrors({});
+  }
+
+  function openCreateModal() {
+    setEditingCurriculumId(null);
+    setCurriculumForm(emptyCurriculumForm());
+    setFieldErrors({});
+    setIsCurriculumModalOpen(true);
   }
 
   function startEditing(curriculum: AdminCurriculum) {
@@ -152,6 +165,7 @@ function AdminCurriculums() {
         : [createSubjectDraft()],
     });
     setFieldErrors({});
+    setIsCurriculumModalOpen(true);
   }
 
   function handleSubmit() {
@@ -211,192 +225,66 @@ function AdminCurriculums() {
         onClose={() => setNotification((current) => ({ ...current, open: false }))}
       />
 
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[1.8rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-4 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6 sm:py-5">
-          <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f8d99]">
-            Curriculum planning
-          </p>
-          <h1 className="mt-2 max-w-4xl text-fluid-2xl font-semibold tracking-[-0.05em] text-[#173b47]">
-            Build each curriculum from the subject catalog.
-          </h1>
-          <p className="mt-2 max-w-2xl text-fluid-sm leading-6 text-[#607c88]">
-            Curriculums define which subjects belong together. Sections will later inherit one
-            curriculum, then assign teachers subject by subject.
-          </p>
-        </section>
+      <Modal
+        open={isCurriculumModalOpen}
+        title={editingCurriculumId ? 'Edit curriculum' : 'Add curriculum'}
+        description="Set the curriculum code, description, and subject list."
+        onClose={resetModal}
+        panelClassName="max-w-5xl"
+        bodyClassName="scrollbar-super-thin max-h-[70vh] overflow-auto px-5 py-5 sm:px-6"
+        actions={(
+          <>
+            <button
+              type="button"
+              onClick={resetModal}
+              className="inline-flex items-center justify-center rounded-[0.16rem] border border-[#b7c7d6] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#48617d] transition hover:bg-[#f8fbfb]"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saveCurriculumMutation.isPending}
+              className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {editingCurriculumId ? <FiEdit3 className="h-4 w-4" /> : <FiPlus className="h-4 w-4" />}
+              {saveCurriculumMutation.isPending ? 'Saving...' : editingCurriculumId ? 'Save changes' : 'Create curriculum'}
+            </button>
+          </>
+        )}
+      >
+        <CurriculumFormFields
+          curriculumForm={curriculumForm}
+          fieldErrors={fieldErrors}
+          subjectOptions={subjectOptions}
+          setCurriculumForm={setCurriculumForm}
+          setFieldErrors={setFieldErrors}
+        />
+      </Modal>
 
-        <div className="mt-5 grid gap-4 xl:grid-cols-[420px_minmax(0,1fr)] xl:items-start">
-          <section className="rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-fluid-xl font-semibold text-[#173b47]">
-                  {editingCurriculumId ? 'Edit curriculum' : 'Add curriculum'}
-                </p>
-                <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                  Add a title, code, description, and the subjects this curriculum should contain.
-                </p>
-              </div>
-              {editingCurriculumId ? (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="inline-flex items-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
-                >
-                  <FiRefreshCcw className="h-4 w-4" />
-                  Clear
-                </button>
-              ) : null}
-            </div>
-
-            <div className="mt-5 space-y-4">
-              <InputField label="Curriculum title" error={fieldErrors.title}>
-                <input
-                  type="text"
-                  value={curriculumForm.title}
-                  onChange={(event) => {
-                    setCurriculumForm((current) => ({ ...current, title: event.target.value }));
-                    setFieldErrors((current) => ({ ...current, title: '' }));
-                  }}
-                  placeholder="BSIT Second Year"
-                  className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                />
-              </InputField>
-
-              <InputField label="Curriculum code" error={fieldErrors.code}>
-                <input
-                  type="text"
-                  value={curriculumForm.code}
-                  onChange={(event) => {
-                    setCurriculumForm((current) => ({ ...current, code: event.target.value }));
-                    setFieldErrors((current) => ({ ...current, code: '' }));
-                  }}
-                  placeholder="BSIT-2"
-                  className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                />
-              </InputField>
-
-              <InputField label="Description">
-                <textarea
-                  rows={4}
-                  value={curriculumForm.description}
-                  onChange={(event) => {
-                    setCurriculumForm((current) => ({ ...current, description: event.target.value }));
-                  }}
-                  placeholder="Add any notes for this curriculum grouping."
-                  className="w-full rounded-[1.2rem] border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                />
-              </InputField>
-
-              <div className="rounded-[1.35rem] border border-[#d5e0e4] bg-[linear-gradient(180deg,#f8fbfb_0%,#eef4f6_100%)] p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-fluid-base font-semibold text-[#173b47]">Subjects</p>
-                    <p className="mt-1 text-fluid-sm text-[#607c88]">
-                      Pick the subjects that should belong to this curriculum.
-                    </p>
+      <div className="mx-auto flex min-h-[calc(100dvh-0.88rem)] w-full max-w-none flex-col px-4 py-5 sm:px-6 lg:min-h-[calc(100dvh-1.04rem)] lg:px-8">
+        <div className="flex min-h-0 flex-1">
+          <section className="flex min-h-0 flex-1 overflow-hidden rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-4 shadow-[0_14px_28px_rgba(54,79,92,0.06)] sm:p-5">
+            <div className="flex h-full min-h-0 w-full flex-col">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-fluid-xl font-semibold text-[#173b47]">Existing curriculums</p>
+                  <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
+                    Review every curriculum and open one to edit its subject list.
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">
+                    {curriculums.length} curriculums
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setCurriculumForm((current) => ({
-                        ...current,
-                        subjects: [...current.subjects, createSubjectDraft()],
-                      }));
-                      setFieldErrors((current) => ({ ...current, subjects: '' }));
-                    }}
-                    className="inline-flex items-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
+                    onClick={openCreateModal}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105"
                   >
                     <FiPlus className="h-4 w-4" />
-                    Add subject
+                    Add curriculum
                   </button>
-                </div>
-
-                {fieldErrors.subjects ? (
-                  <p className="mt-3 text-fluid-xs font-medium text-rose-500">{fieldErrors.subjects}</p>
-                ) : null}
-
-                <div className="mt-4 space-y-3">
-                  {curriculumForm.subjects.map((entry, index) => (
-                    <div
-                      key={entry.id}
-                      className="grid gap-3 rounded-[1.1rem] border border-[#d8e3e6] bg-white px-4 py-4 xl:grid-cols-[minmax(0,1fr)_auto]"
-                    >
-                      <InputField label={`Subject ${index + 1}`}>
-                        <CustomSelect
-                          id={`curriculum-subject-${entry.id}`}
-                          value={entry.subjectId}
-                          onChange={(value) => {
-                            setCurriculumForm((current) => ({
-                              ...current,
-                              subjects: current.subjects.map((item) => (
-                                item.id === entry.id
-                                  ? { ...item, subjectId: value }
-                                  : item
-                              )),
-                            }));
-                            setFieldErrors((current) => ({ ...current, subjects: '' }));
-                          }}
-                          options={subjectOptions}
-                          placeholder={subjectOptions.length ? 'Choose subject' : 'Create a subject first'}
-                          tone="muted"
-                        />
-                      </InputField>
-
-                      <div className="flex items-end">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCurriculumForm((current) => ({
-                              ...current,
-                              subjects: current.subjects.length > 1
-                                ? current.subjects.filter((item) => item.id !== entry.id)
-                                : [createSubjectDraft()],
-                            }));
-                          }}
-                          className="inline-flex h-[3.15rem] items-center justify-center rounded-[1rem] border border-[#ecd6d6] bg-[#fff7f7] px-4 text-[#a95f5f] transition hover:bg-[#fff1f1]"
-                          aria-label={`Remove subject row ${index + 1}`}
-                        >
-                          <FiTrash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={saveCurriculumMutation.isPending}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-[1rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-3 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <FiLayers className="h-4 w-4" />
-                  {saveCurriculumMutation.isPending ? 'Saving...' : editingCurriculumId ? 'Update curriculum' : 'Create curriculum'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-4 py-3 text-fluid-base font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
-                >
-                  <FiRefreshCcw className="h-4 w-4" />
-                  Reset
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="overflow-hidden rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)] xl:max-h-[calc(100vh-11.5rem)]">
-            <div className="flex h-full min-h-0 flex-col">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-fluid-xl font-semibold text-[#173b47]">Existing curriculums</p>
-                  <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                    Review every curriculum and the subjects it currently includes.
-                  </p>
-                </div>
-                <div className="rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">
-                  {curriculums.length} curriculums
                 </div>
               </div>
 
@@ -406,26 +294,26 @@ function AdminCurriculums() {
                 ) : adminOverviewQuery.isError ? (
                   <EmptyState title="Unable to load curriculums" description="Refresh the page or try again in a moment." />
                 ) : curriculums.length ? (
-                  <div className="scrollbar-super-thin h-full min-h-[20rem] max-h-[28rem] overflow-auto rounded-[1.45rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)] sm:max-h-[32rem] xl:max-h-[calc(100vh-18rem)]">
-                    <table className="w-full min-w-[760px] table-fixed border-separate border-spacing-0">
+                  <div className="scrollbar-super-thin h-full min-h-[3.2rem] overflow-auto rounded-[0.232rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)]">
+                    <table className="w-full min-w-[860px] table-fixed border-separate border-spacing-0">
                       <thead className="sticky top-0 z-10">
                         <tr>
-                          <TableHeadCell className="w-[28%] rounded-tl-[1.45rem]">Curriculum</TableHeadCell>
-                          <TableHeadCell className="w-[16%]">Code</TableHeadCell>
-                          <TableHeadCell className="w-[30%]">Subjects</TableHeadCell>
+                          <TableHeadCell className="w-[28%] rounded-tl-[0.232rem]">Curriculum</TableHeadCell>
+                          <TableHeadCell className="w-[14%]">Code</TableHeadCell>
+                          <TableHeadCell className="w-[34%]">Subjects</TableHeadCell>
                           <TableHeadCell className="w-[14%]">Sections</TableHeadCell>
-                          <TableHeadCell className="w-[12%] rounded-tr-[1.45rem] text-right">Edit</TableHeadCell>
+                          <TableHeadCell className="sticky right-0 w-[10%] rounded-tr-[0.232rem] text-center shadow-[-10px_0_18px_rgba(82,112,125,0.08)]">Edit</TableHeadCell>
                         </tr>
                       </thead>
                       <tbody>
                         {curriculums.map((curriculum, index) => (
                           <tr
                             key={curriculum.id}
-                            className={index % 2 === 0 ? 'bg-white/70' : 'bg-[#f7fbfc]/92'}
+                            className={`group transition-colors ${index % 2 === 0 ? 'bg-white/70 hover:bg-[#f3faf9]' : 'bg-[#f7fbfc]/92 hover:bg-[#f0f7f8]'}`}
                           >
                             <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
                               <div className="flex items-start gap-3">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-[linear-gradient(180deg,#d8ece9_0%,#c9dfdd_100%)] text-[#1d7e71]">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.16rem] bg-[linear-gradient(180deg,#d8ece9_0%,#c9dfdd_100%)] text-[#1d7e71]">
                                   <FiLayers className="h-4.5 w-4.5" />
                                 </div>
                                 <div className="min-w-0">
@@ -438,31 +326,37 @@ function AdminCurriculums() {
                                 </div>
                               </div>
                             </td>
-                            <td className="border-b border-[#dce6e9] px-4 py-4 align-top text-fluid-sm font-semibold text-[#4d6a77]">
-                              {curriculum.code}
+                            <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
+                              <span className="inline-flex whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
+                                {curriculum.code}
+                              </span>
                             </td>
                             <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
                               <div className="flex flex-wrap gap-2">
-                                {curriculum.subjects.map((subject) => (
-                                  <span
-                                    key={`${curriculum.id}-${subject.subjectId}`}
-                                    className="rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]"
-                                  >
-                                    {subject.subjectCode}
-                                  </span>
-                                ))}
+                                {curriculum.subjects.length ? (
+                                  curriculum.subjects.map((subject) => (
+                                    <span
+                                      key={`${curriculum.id}-${subject.subjectId}`}
+                                      className="rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]"
+                                    >
+                                      {subject.subjectCode}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-fluid-sm text-[#7b95a1]">No subjects</span>
+                                )}
                               </div>
                             </td>
                             <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
-                              <span className="inline-flex rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
-                                {curriculum.linkedSectionCount}
+                              <span className="inline-flex whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
+                                {curriculum.linkedSectionCount} sections
                               </span>
                             </td>
-                            <td className="border-b border-[#dce6e9] px-4 py-4 align-top text-right">
+                            <td className="sticky right-0 z-[1] border-b border-[#dce6e9] bg-[#fbfefe] px-3 py-4 align-top text-center shadow-[-10px_0_18px_rgba(82,112,125,0.08)] transition-colors group-hover:bg-[#f2faf8]">
                               <button
                                 type="button"
                                 onClick={() => startEditing(curriculum)}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-[0.95rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-[0.152rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
                                 aria-label={`Edit ${curriculum.title}`}
                               >
                                 <FiEdit3 className="h-4 w-4" />
@@ -474,7 +368,7 @@ function AdminCurriculums() {
                     </table>
                   </div>
                 ) : (
-                  <EmptyState title="No curriculums yet" description="Create your first curriculum using the form on the left." />
+                  <EmptyState title="No curriculums yet" description="Use the Add curriculum button to create the first curriculum." />
                 )}
               </div>
             </div>
@@ -482,6 +376,144 @@ function AdminCurriculums() {
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+function CurriculumFormFields({
+  curriculumForm,
+  fieldErrors,
+  subjectOptions,
+  setCurriculumForm,
+  setFieldErrors,
+}: {
+  curriculumForm: CurriculumFormState;
+  fieldErrors: Record<string, string>;
+  subjectOptions: Array<{ label: string; value: string }>;
+  setCurriculumForm: Dispatch<SetStateAction<CurriculumFormState>>;
+  setFieldErrors: Dispatch<SetStateAction<Record<string, string>>>;
+}) {
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <InputField label="Curriculum title" error={fieldErrors.title}>
+        <input
+          type="text"
+          value={curriculumForm.title}
+          onChange={(event) => {
+            setCurriculumForm((current) => ({ ...current, title: event.target.value }));
+            setFieldErrors((current) => ({ ...current, title: '' }));
+          }}
+          placeholder="BSIT Second Year"
+          className="admin-text-input"
+        />
+      </InputField>
+
+      <InputField label="Curriculum code" error={fieldErrors.code}>
+        <input
+          type="text"
+          value={curriculumForm.code}
+          onChange={(event) => {
+            setCurriculumForm((current) => ({ ...current, code: event.target.value }));
+            setFieldErrors((current) => ({ ...current, code: '' }));
+          }}
+          placeholder="BSIT-2"
+          className="admin-text-input"
+        />
+      </InputField>
+
+      <div className="lg:col-span-2">
+        <InputField label="Description">
+          <textarea
+            rows={4}
+            value={curriculumForm.description}
+            onChange={(event) => {
+              setCurriculumForm((current) => ({ ...current, description: event.target.value }));
+            }}
+            placeholder="Add any notes for this curriculum grouping."
+            className="admin-text-input rounded-[0.16rem]"
+          />
+        </InputField>
+      </div>
+
+      <div className="lg:col-span-2">
+        <div className="rounded-[0.192rem] border border-[#d5e0e4] bg-[linear-gradient(180deg,#f8fbfb_0%,#eef4f6_100%)] p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-fluid-base font-semibold text-[#173b47]">Subjects</p>
+              <p className="mt-1 text-fluid-sm leading-6 text-[#607c88]">
+                Pick the subjects that belong to this curriculum.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setCurriculumForm((current) => ({
+                  ...current,
+                  subjects: [...current.subjects, createSubjectDraft()],
+                }));
+                setFieldErrors((current) => ({ ...current, subjects: '' }));
+              }}
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[0.16rem] border border-[#d1dde1] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
+            >
+              <FiPlus className="h-4 w-4" />
+              Add subject
+            </button>
+          </div>
+
+          {fieldErrors.subjects ? (
+            <p className="mt-3 text-fluid-xs font-medium text-rose-500">{fieldErrors.subjects}</p>
+          ) : null}
+
+          <div className="mt-4 grid gap-3">
+            {curriculumForm.subjects.map((entry, index) => (
+              <div
+                key={entry.id}
+                className="grid gap-3 rounded-[0.16rem] border border-[#d8e3e6] bg-white px-4 py-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <InputField label={`Subject ${index + 1}`}>
+                  <CustomSelect
+                    id={`curriculum-subject-${entry.id}`}
+                    value={entry.subjectId}
+                    onChange={(value) => {
+                      setCurriculumForm((current) => ({
+                        ...current,
+                        subjects: current.subjects.map((item) => (
+                          item.id === entry.id
+                            ? { ...item, subjectId: value }
+                            : item
+                        )),
+                      }));
+                      setFieldErrors((current) => ({ ...current, subjects: '' }));
+                    }}
+                    options={subjectOptions}
+                    placeholder={subjectOptions.length ? 'Choose subject' : 'Create a subject first'}
+                    menuPosition="top"
+                    tone="muted"
+                  />
+                </InputField>
+
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurriculumForm((current) => ({
+                        ...current,
+                        subjects: current.subjects.length > 1
+                          ? current.subjects.filter((item) => item.id !== entry.id)
+                          : [createSubjectDraft()],
+                      }));
+                    }}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-[0.16rem] border border-[#ecd6d6] bg-[#fff7f7] text-[#a95f5f] transition hover:bg-[#fff1f1]"
+                    aria-label={`Remove subject row ${index + 1}`}
+                  >
+                    <FiTrash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -530,7 +562,7 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-6 py-10 text-center">
+    <div className="rounded-[0.224rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-6 py-10 text-center">
       <p className="text-fluid-md font-semibold text-[#173b47]">{title}</p>
       <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">{description}</p>
     </div>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FiArrowRight, FiBookOpen, FiLayers, FiShield, FiUsers } from 'react-icons/fi';
+import { FiArrowRight, FiBookOpen, FiLayers, FiShield, FiUserCheck, FiUsers } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layout/admin/AdminLayout';
 import { getFullName, useAdminOverview } from './adminData';
@@ -25,8 +25,8 @@ function AdminDashboard() {
       pageEyebrow="Admin workspace"
       pageTitle="Dashboard"
     >
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[1.8rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-5 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6">
+      <div className="mx-auto w-full max-w-[15.68rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[0.288rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-5 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-4xl">
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f8d99]">
@@ -42,7 +42,7 @@ function AdminDashboard() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[30rem] xl:grid-cols-1">
+            <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[4.8rem] xl:grid-cols-1">
               <QuickAction
                 title="Open Subjects"
                 description="Create or edit catalog entries."
@@ -63,11 +63,16 @@ function AdminDashboard() {
                 description="Set course, batch, and section."
                 onClick={() => navigate('/admin/students')}
               />
+              <QuickAction
+                title="Open HR Accounts"
+                description="Create HR portal access."
+                onClick={() => navigate('/admin/hr')}
+              />
             </div>
           </div>
         </section>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
           <MetricCard
             icon={<FiBookOpen className="h-5 w-5" />}
             value={String(overview?.metrics.subjectCount ?? 0)}
@@ -93,10 +98,15 @@ function AdminDashboard() {
             value={String(overview?.metrics.facultyCount ?? 0)}
             label="Faculty"
           />
+          <MetricCard
+            icon={<FiUserCheck className="h-5 w-5" />}
+            value={String(overview?.metrics.hrCount ?? 0)}
+            label="HR"
+          />
         </div>
 
         <div className="mt-5 grid gap-4 xl:grid-cols-2">
-          <section className="rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
+          <section className="rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
             <PanelHeader
               title="Latest curriculums"
               description="Review the newest curriculum structures and jump into editing."
@@ -111,7 +121,7 @@ function AdminDashboard() {
                 overview.curriculums.slice(0, 4).map((curriculum) => (
                   <article
                     key={curriculum.id}
-                    className="rounded-[1.35rem] border border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-4 py-4"
+                    className="rounded-[0.216rem] border border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-4 py-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -142,7 +152,7 @@ function AdminDashboard() {
             </div>
           </section>
 
-          <section className="rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
+          <section className="rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
             <PanelHeader
               title="Latest sections"
               description="These sections decide which curriculum and teacher assignments students inherit."
@@ -157,7 +167,7 @@ function AdminDashboard() {
                 overview.sections.slice(0, 4).map((section) => (
                   <article
                     key={section.id}
-                    className="rounded-[1.35rem] border border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-4 py-4"
+                    className="rounded-[0.216rem] border border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-4 py-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -207,7 +217,7 @@ function MetricCard({
   label: string;
 }) {
   return (
-    <article className="rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
+    <article className="rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fluid-3xl font-semibold leading-none text-[#173b47]">{value}</p>
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#d8ece9_0%,#c9dfdd_100%)] text-[#1b7d71]">
@@ -232,7 +242,7 @@ function QuickAction({
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-[#d1dde1] bg-white px-4 py-3 text-left text-[#285468] shadow-[0_10px_22px_rgba(54,79,92,0.05)] transition hover:bg-[#f8fbfb]"
+      className="flex items-center justify-between gap-4 rounded-[0.192rem] border border-[#d1dde1] bg-white px-4 py-3 text-left text-[#285468] shadow-[0_10px_22px_rgba(54,79,92,0.05)] transition hover:bg-[#f8fbfb]"
     >
       <span className="min-w-0">
         <span className="block text-fluid-sm font-semibold text-[#173b47]">{title}</span>
@@ -263,7 +273,7 @@ function PanelHeader({
       <button
         type="button"
         onClick={onAction}
-        className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
+        className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#d1dde1] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
       >
         {actionLabel}
       </button>
@@ -281,7 +291,7 @@ function EmptyState({
   compact?: boolean;
 }) {
   return (
-    <div className={`rounded-[1.35rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] text-center ${compact ? 'px-5 py-7' : 'px-6 py-10'}`}>
+    <div className={`rounded-[0.216rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] text-center ${compact ? 'px-5 py-7' : 'px-6 py-10'}`}>
       <p className="text-fluid-md font-semibold text-[#173b47]">{title}</p>
       <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">{description}</p>
     </div>

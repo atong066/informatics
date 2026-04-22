@@ -37,7 +37,7 @@ function NotificationPopup({
   const isSuccess = variant === 'success';
 
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-50 w-[min(24rem,calc(100vw-2rem))]">
+    <div className="pointer-events-none fixed right-4 top-4 z-50 w-[min(3.84rem,calc(100vw-0.32rem))]">
       <div
         className={`pointer-events-auto overflow-hidden rounded-3xl border shadow-[0_22px_60px_rgba(15,23,42,0.22)] backdrop-blur-sm ${
           isSuccess

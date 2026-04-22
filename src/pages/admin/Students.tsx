@@ -1,8 +1,10 @@
 import { type ReactNode, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  FiAlertTriangle,
   FiChevronLeft,
   FiChevronRight,
+  FiCheckCircle,
   FiDownload,
   FiEdit3,
   FiPlus,
@@ -44,6 +46,9 @@ type StudentFormState = {
   course: string;
   batchNumber: string;
   sectionNumber: string;
+  studentType: 'new' | 'old';
+  completedSubjectIds: string[];
+  evaluationRemarks: string;
 };
 
 type SaveStudentPayload = {
@@ -55,6 +60,10 @@ type SaveStudentPayload = {
 const courseOptions = [
   { value: 'DCS', label: 'DCS | Diploma in Computer Studies' },
   { value: 'DIT', label: 'DIT | Diploma in Information Technology' },
+];
+const studentTypeOptions = [
+  { value: 'new', label: 'New student' },
+  { value: 'old', label: 'Old student' },
 ];
 const PAGE_SIZE = 10;
 
@@ -80,6 +89,9 @@ function emptyStudentForm(): StudentFormState {
     course: '',
     batchNumber: '',
     sectionNumber: '',
+    studentType: 'new',
+    completedSubjectIds: [],
+    evaluationRemarks: '',
   };
 }
 
@@ -139,6 +151,9 @@ function buildStudentForm(student: AdminStudentUser): StudentFormState {
     course: parsedSection.course,
     batchNumber: parsedSection.batchNumber,
     sectionNumber: parsedSection.sectionNumber,
+    studentType: student.studentType ?? 'new',
+    completedSubjectIds: student.completedSubjectIds ?? [],
+    evaluationRemarks: student.studentEvaluation?.remarks ?? '',
   };
 }
 
@@ -162,6 +177,53 @@ function AdminStudents() {
   const fullName = getFullName(activeUser);
   const students = adminOverviewQuery.data?.studentUsers ?? [];
   const availableSections = adminOverviewQuery.data?.availableSections ?? [];
+  const subjects = adminOverviewQuery.data?.subjects ?? [];
+  const sections = adminOverviewQuery.data?.sections ?? [];
+  const subjectById = useMemo(
+    () => new Map(subjects.map((subject) => [subject.id, subject])),
+    [subjects],
+  );
+  const selectedSectionLabel = buildSectionLabel(
+    studentForm.course,
+    studentForm.batchNumber,
+    studentForm.sectionNumber,
+  );
+  const selectedSection = useMemo(
+    () => sections.find((section) => normalizeSectionKey(section.name) === normalizeSectionKey(selectedSectionLabel)) ?? null,
+    [sections, selectedSectionLabel],
+  );
+  const evaluationRows = useMemo(() => {
+    if (!selectedSection) {
+      return [];
+    }
+
+    const completedSubjectIds = new Set(studentForm.completedSubjectIds);
+
+    return selectedSection.subjectAssignments.map((assignment) => {
+      const subject = subjectById.get(assignment.subjectId);
+      const prerequisites = (subject?.prerequisites ?? []).map((prerequisite) => ({
+        id: prerequisite.subjectId,
+        title: prerequisite.subjectTitle,
+        code: prerequisite.subjectCode,
+        isMet: completedSubjectIds.has(prerequisite.subjectId),
+      }));
+
+      return {
+        subjectId: assignment.subjectId,
+        subjectTitle: assignment.subjectTitle,
+        subjectCode: assignment.subjectCode,
+        prerequisites,
+        missingPrerequisites: prerequisites.filter((prerequisite) => !prerequisite.isMet),
+        isEligible: prerequisites.every((prerequisite) => prerequisite.isMet),
+      };
+    });
+  }, [selectedSection, studentForm.completedSubjectIds, subjectById]);
+  const oldStudentMissingPrerequisites = evaluationRows.flatMap((row) => row.missingPrerequisites);
+  const hasNoEvaluationSubjects = studentForm.studentType === 'old' && Boolean(selectedSection) && evaluationRows.length === 0;
+  const isOldStudentEvaluationBlocked =
+    studentForm.studentType === 'old' &&
+    Boolean(selectedSection) &&
+    (oldStudentMissingPrerequisites.length > 0 || hasNoEvaluationSubjects);
   const sectionOptions = useMemo(
     () => [
       { value: '', label: 'All sections' },
@@ -311,7 +373,9 @@ function AdminStudents() {
     const nextErrors: Record<string, string> = {};
 
     requiredFields.forEach((field) => {
-      if (!studentForm[field].trim()) {
+      const value = studentForm[field];
+
+      if (typeof value === 'string' && !value.trim()) {
         nextErrors[field] = 'Required';
       }
     });
@@ -320,8 +384,28 @@ function AdminStudents() {
       nextErrors.password = 'Required';
     }
 
+    if (studentForm.studentType === 'old' && !selectedSection) {
+      nextErrors.section = 'Matching section with curriculum is required';
+    }
+
+    if (hasNoEvaluationSubjects) {
+      nextErrors.section = 'Selected section has no curriculum subjects';
+    }
+
+    if (isOldStudentEvaluationBlocked) {
+      nextErrors.completedSubjectIds = 'Missing prerequisite subjects';
+    }
+
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors);
+      if (nextErrors.completedSubjectIds) {
+        setNotification({
+          open: true,
+          title: 'Student evaluation blocked',
+          message: 'The old student has missing prerequisites for the selected section.',
+          variant: 'error',
+        });
+      }
       return;
     }
 
@@ -460,8 +544,8 @@ function AdminStudents() {
         onClose={() => setNotification((current) => ({ ...current, open: false }))}
       />
 
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="relative z-30 rounded-[1.8rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-4 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6 sm:py-5">
+      <div className="mx-auto w-full max-w-[15.68rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="relative z-30 rounded-[0.288rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-4 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6 sm:py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f8d99]">
@@ -473,7 +557,7 @@ function AdminStudents() {
             </div>
 
             <div className="relative z-40 flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:flex-wrap lg:justify-end">
-              <div className="relative z-50 w-full sm:w-[15rem]">
+              <div className="relative z-50 w-full sm:w-[2.4rem]">
                 <CustomSelect
                   id="student-section-filter"
                   value={sectionFilter}
@@ -486,7 +570,7 @@ function AdminStudents() {
                   tone="muted"
                 />
               </div>
-              <div className="inline-flex w-full items-center gap-2 rounded-[1rem] border border-[#c9d7db] bg-white px-3 py-2 text-[#52707d] sm:w-[22rem]">
+              <div className="inline-flex w-full items-center gap-2 rounded-[0.16rem] border border-[#c9d7db] bg-white px-3 py-2 text-[#52707d] sm:w-[3.52rem]">
                 <FiSearch className="h-4 w-4 shrink-0" />
                 <input
                   type="search"
@@ -505,7 +589,7 @@ function AdminStudents() {
                   void exportStudentsPdf();
                 }}
                 disabled={adminOverviewQuery.isLoading || !filteredStudents.length}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#c9d7db] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#c9d7db] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiDownload className="h-4 w-4" />
                 Export PDF
@@ -513,7 +597,7 @@ function AdminStudents() {
               <button
                 type="button"
                 onClick={startEnrolling}
-                className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105"
               >
                 <FiPlus className="h-4 w-4" />
                 Enroll student
@@ -522,7 +606,7 @@ function AdminStudents() {
           </div>
         </section>
 
-        <section className="mt-5 overflow-hidden rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
+        <section className="mt-5 overflow-hidden rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-fluid-xl font-semibold text-[#173b47]">Student list</p>
@@ -536,7 +620,7 @@ function AdminStudents() {
             </div>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-[1.45rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)]">
+          <div className="mt-5 overflow-hidden rounded-[0.232rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)]">
             {adminOverviewQuery.isLoading ? (
               <EmptyState title="Loading students..." description="Student accounts are being prepared." />
             ) : adminOverviewQuery.isError ? (
@@ -546,13 +630,13 @@ function AdminStudents() {
                 <table className="w-full min-w-[1080px] table-fixed border-separate border-spacing-0">
                   <thead>
                     <tr>
-                      <TableHeadCell className="w-[22%] rounded-tl-[1.45rem]">Student</TableHeadCell>
+                      <TableHeadCell className="w-[22%] rounded-tl-[0.232rem]">Student</TableHeadCell>
                       <TableHeadCell className="w-[12%]">Course</TableHeadCell>
                       <TableHeadCell className="w-[10%]">Batch</TableHeadCell>
                       <TableHeadCell className="w-[15%]">Section</TableHeadCell>
                       <TableHeadCell className="w-[16%]">Contact</TableHeadCell>
                       <TableHeadCell className="w-[17%]">Email</TableHeadCell>
-                      <TableHeadCell className="w-[8%] rounded-tr-[1.45rem] text-right">Edit</TableHeadCell>
+                      <TableHeadCell className="w-[8%] rounded-tr-[0.232rem] text-right">Edit</TableHeadCell>
                     </tr>
                   </thead>
                   <tbody>
@@ -567,6 +651,9 @@ function AdminStudents() {
                           </p>
                           <p className="mt-1 truncate text-fluid-xs text-[#7b95a1]">
                             @{student.username}
+                          </p>
+                          <p className="mt-1 text-fluid-3xs font-semibold uppercase tracking-[0.16em] text-[#8aa0a8]">
+                            {student.studentType === 'old' ? 'Old student' : 'New student'}
                           </p>
                         </td>
                         <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
@@ -594,7 +681,7 @@ function AdminStudents() {
                           <button
                             type="button"
                             onClick={() => startEditing(student)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-[0.95rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-[0.152rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
                             aria-label={`Edit ${student.fullName}`}
                           >
                             <FiEdit3 className="h-4 w-4" />
@@ -619,7 +706,7 @@ function AdminStudents() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                 disabled={safePage <= 1}
-                className="inline-flex items-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-[0.16rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiChevronLeft className="h-4 w-4" />
                 Previous
@@ -628,7 +715,7 @@ function AdminStudents() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                 disabled={safePage >= totalPages}
-                className="inline-flex items-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-[0.16rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
                 <FiChevronRight className="h-4 w-4" />
@@ -650,7 +737,7 @@ function AdminStudents() {
             <button
               type="button"
               onClick={resetModal}
-              className="inline-flex items-center justify-center rounded-[1rem] border border-[#b7c7d6] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#48617d] transition hover:bg-[#f8fbfb]"
+              className="inline-flex items-center justify-center rounded-[0.16rem] border border-[#b7c7d6] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#48617d] transition hover:bg-[#f8fbfb]"
             >
               Close
             </button>
@@ -658,7 +745,7 @@ function AdminStudents() {
               type="button"
               onClick={saveStudent}
               disabled={saveStudentMutation.isPending}
-              className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FiUsers className="h-4 w-4" />
               {saveStudentMutation.isPending ? 'Saving...' : isCreateMode ? 'Enroll student' : 'Save changes'}
@@ -749,6 +836,24 @@ function AdminStudents() {
             />
           </InputField>
 
+          <InputField label="Student type" error={fieldErrors.studentType}>
+            <CustomSelect
+              id="student-type"
+              value={studentForm.studentType}
+              onChange={(value) => {
+                setStudentForm((current) => ({
+                  ...current,
+                  studentType: value as StudentFormState['studentType'],
+                  completedSubjectIds: value === 'old' ? current.completedSubjectIds : [],
+                }));
+                setFieldErrors((current) => ({ ...current, studentType: '', completedSubjectIds: '' }));
+              }}
+              options={studentTypeOptions}
+              placeholder="Choose type"
+              tone="muted"
+            />
+          </InputField>
+
           <InputField label="Course" error={fieldErrors.course}>
             <CustomSelect
               id="student-course"
@@ -782,7 +887,7 @@ function AdminStudents() {
           </InputField>
         </div>
 
-        <div className="mt-4 rounded-[1.1rem] border border-[#c5d4df] bg-white px-4 py-3">
+        <div className="mt-4 rounded-[0.176rem] border border-[#c5d4df] bg-white px-4 py-3">
           <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#7b95a1]">
             Section label
           </p>
@@ -791,6 +896,165 @@ function AdminStudents() {
               || 'Choose course, batch, and section'}
           </p>
         </div>
+
+        {studentForm.studentType === 'old' ? (
+          <section className="mt-4 rounded-[0.192rem] border border-[#c5d4df] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-fluid-base font-semibold text-[#173b47]">
+                  Student evaluation
+                </p>
+                <p className="mt-1 text-fluid-sm leading-6 text-[#607c88]">
+                  Mark the subjects this old student already completed. The registrar can save only
+                  when the selected section subjects meet prerequisites.
+                </p>
+              </div>
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-fluid-sm font-semibold ${
+                isOldStudentEvaluationBlocked
+                  ? 'border-rose-200 bg-rose-50 text-rose-600'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+              }`}>
+                {isOldStudentEvaluationBlocked ? (
+                  <FiAlertTriangle className="h-4 w-4" />
+                ) : (
+                  <FiCheckCircle className="h-4 w-4" />
+                )}
+                {isOldStudentEvaluationBlocked ? 'Blocked' : 'Eligible'}
+              </span>
+            </div>
+
+            {fieldErrors.completedSubjectIds ? (
+              <p className="mt-3 text-fluid-xs font-medium text-rose-500">
+                {fieldErrors.completedSubjectIds}
+              </p>
+            ) : null}
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="rounded-[0.16rem] border border-[#d8e3e6] bg-white p-4">
+                <p className="text-fluid-sm font-semibold text-[#173b47]">Completed subjects</p>
+                <div className="mt-3 max-h-64 space-y-2 overflow-auto pr-1">
+                  {subjects.length ? (
+                    subjects.map((subject) => {
+                      const isSelected = studentForm.completedSubjectIds.includes(subject.id);
+
+                      return (
+                        <label
+                          key={subject.id}
+                          className={`flex cursor-pointer items-start gap-3 rounded-[0.152rem] border px-3 py-3 transition ${
+                            isSelected
+                              ? 'border-[#9bcfc8] bg-[#f8fbfb]'
+                              : 'border-[#d8e3e6] bg-white hover:bg-[#f8fbfb]'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(event) => {
+                              setStudentForm((current) => ({
+                                ...current,
+                                completedSubjectIds: event.target.checked
+                                  ? [...current.completedSubjectIds, subject.id]
+                                  : current.completedSubjectIds.filter((subjectId) => subjectId !== subject.id),
+                              }));
+                              setFieldErrors((current) => ({ ...current, completedSubjectIds: '' }));
+                            }}
+                            className="mt-1 h-4 w-4 rounded border-[#b8cbd0] text-[#1f8a78] focus:ring-[#bfe6df]"
+                          />
+                          <span className="min-w-0">
+                            <span className="block truncate text-fluid-sm font-semibold text-[#173b47]">
+                              {subject.title}
+                            </span>
+                            <span className="mt-1 block text-fluid-xs uppercase tracking-[0.16em] text-[#7b95a1]">
+                              {subject.code}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })
+                  ) : (
+                    <p className="rounded-[0.152rem] border border-dashed border-[#d4e0e4] px-4 py-5 text-center text-fluid-sm text-[#607c88]">
+                      Add subjects before evaluating old students.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-[0.16rem] border border-[#d8e3e6] bg-white p-4">
+                <p className="text-fluid-sm font-semibold text-[#173b47]">Prerequisite check</p>
+                <div className="mt-3 max-h-64 space-y-2 overflow-auto pr-1">
+                  {!selectedSection ? (
+                    <p className="rounded-[0.152rem] border border-dashed border-[#d4e0e4] px-4 py-5 text-center text-fluid-sm text-[#607c88]">
+                      Choose a section that exists in Admin Sections to run evaluation.
+                    </p>
+                  ) : evaluationRows.length ? (
+                    evaluationRows.map((row) => (
+                      <div
+                        key={row.subjectId}
+                        className={`rounded-[0.152rem] border px-3 py-3 ${
+                          row.isEligible
+                            ? 'border-emerald-200 bg-emerald-50/70'
+                            : 'border-rose-200 bg-rose-50/70'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-fluid-sm font-semibold text-[#173b47]">
+                              {row.subjectTitle}
+                            </p>
+                            <p className="mt-1 text-fluid-xs uppercase tracking-[0.16em] text-[#7b95a1]">
+                              {row.subjectCode}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-full px-2.5 py-1 text-fluid-3xs font-semibold ${
+                            row.isEligible
+                              ? 'bg-white text-emerald-700'
+                              : 'bg-white text-rose-600'
+                          }`}>
+                            {row.isEligible ? 'OK' : 'Missing'}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {row.prerequisites.length ? (
+                            row.prerequisites.map((prerequisite) => (
+                              <span
+                                key={`${row.subjectId}-${prerequisite.id}`}
+                                className={`rounded-full border px-3 py-1 text-fluid-xs font-semibold ${
+                                  prerequisite.isMet
+                                    ? 'border-emerald-200 bg-white text-emerald-700'
+                                    : 'border-rose-200 bg-white text-rose-600'
+                                }`}
+                              >
+                                {prerequisite.code}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-fluid-xs text-[#607c88]">No prerequisite</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-[0.152rem] border border-dashed border-[#d4e0e4] px-4 py-5 text-center text-fluid-sm text-[#607c88]">
+                      The selected section has no curriculum subjects to evaluate.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <InputField label="Evaluation remarks" error={fieldErrors.evaluationRemarks}>
+                <textarea
+                  rows={3}
+                  value={studentForm.evaluationRemarks}
+                  onChange={(event) => updateFormField('evaluationRemarks', event.target.value)}
+                  placeholder="Registrar notes, credited transcript reference, or evaluation basis."
+                  className="admin-text-input rounded-[0.16rem]"
+                />
+              </InputField>
+            </div>
+          </section>
+        ) : null}
       </Modal>
     </AdminLayout>
   );

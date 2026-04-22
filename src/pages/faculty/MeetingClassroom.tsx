@@ -282,11 +282,11 @@ function FacultyMeetingClassroom() {
       pageEyebrow="Faculty classroom"
       pageTitle={meeting?.title ?? 'Classroom stage'}
     >
-      <div className="mx-auto w-full max-w-[100rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.8rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(235,243,250,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+      <div className="mx-auto w-full max-w-[16rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.288rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(235,243,250,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex items-start gap-3.5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[0.168rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
                 <FiVideo className="h-6 w-6" />
               </div>
               <div className="min-w-0">
@@ -382,7 +382,7 @@ function FacultyMeetingClassroom() {
             </div>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[1.05fr_0.95fr_0.9fr]">
-              <article className="rounded-[1.45rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
+              <article className="rounded-[0.232rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
                 <div className="flex items-center gap-3">
                   <FiClock className="h-5 w-5 text-[#2f78bc]" />
                   <div>
@@ -393,28 +393,28 @@ function FacultyMeetingClassroom() {
                   </div>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Created</p>
                     <p className="mt-2 text-fluid-sm text-[#45627f]">{formatDateTime(meeting.createdAt, 'Not available')}</p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Started</p>
                     <p className="mt-2 text-fluid-sm text-[#45627f]">{formatDateTime(meeting.startedAt, 'Not started yet')}</p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Ended</p>
                     <p className="mt-2 text-fluid-sm text-[#45627f]">{formatDateTime(meeting.endedAt, 'Still live')}</p>
                   </div>
                 </div>
               </article>
 
-              <article className="rounded-[1.45rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
+              <article className="rounded-[0.232rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Room access</p>
                 <p className="mt-3 text-fluid-xl font-semibold tracking-[-0.04em] text-[#173b70]">{meeting.roomName}</p>
                 <p className="mt-2 break-all text-fluid-sm leading-6 text-[#607b95]">
                   Share this room only with the enrolled class. Students join from their subject meeting page.
                 </p>
-                <div className="mt-4 rounded-[1rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
+                <div className="mt-4 rounded-[0.16rem] border border-[#d6e2ec] bg-[#f8fbfd] px-4 py-3">
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Subject</p>
                   <p className="mt-2 text-fluid-sm font-semibold text-[#173b70]">
                     {meetingDetails?.subjectTitle ?? 'Subject'}
@@ -422,7 +422,7 @@ function FacultyMeetingClassroom() {
                 </div>
               </article>
 
-              <article className="rounded-[1.45rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
+              <article className="rounded-[0.232rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4 shadow-[0_12px_24px_rgba(39,77,117,0.06)]">
                 <div className="flex items-center gap-3">
                   <FiFileText className="h-5 w-5 text-[#2f78bc]" />
                   <div>
@@ -435,7 +435,7 @@ function FacultyMeetingClassroom() {
                 <button
                   type="button"
                   onClick={() => navigate(`/faculty/subjects/${subjectId}/meetings/${meetingId}`)}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-[#d5e0ea] bg-white px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc]"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[0.16rem] border border-[#d5e0ea] bg-white px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc]"
                 >
                   <FiFileText className="h-4 w-4" />
                   Open conference management

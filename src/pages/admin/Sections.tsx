@@ -1,7 +1,8 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type Dispatch, type ReactNode, type SetStateAction, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiEdit3, FiRefreshCcw, FiUsers } from 'react-icons/fi';
+import { FiEdit3, FiPlus } from 'react-icons/fi';
 import CustomSelect from '../../components/CustomSelect';
+import Modal from '../../components/Modal';
 import NotificationPopup from '../../components/NotificationPopup';
 import AdminLayout from '../../layout/admin/AdminLayout';
 import {
@@ -109,6 +110,7 @@ function AdminSections() {
   const queryClient = useQueryClient();
   const { activeUser, isError, token, adminOverviewQuery } = useAdminOverview();
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
   const [sectionForm, setSectionForm] = useState<SectionFormState>(emptySectionForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [notification, setNotification] = useState<NotificationState>({
@@ -201,7 +203,7 @@ function AdminSections() {
         message: result.message,
         variant: 'success',
       });
-      resetForm();
+      resetModal();
     },
     onError: (error: MutationError) => {
       setFieldErrors(error.fieldErrors ?? {});
@@ -214,10 +216,18 @@ function AdminSections() {
     },
   });
 
-  function resetForm() {
+  function resetModal() {
+    setIsSectionModalOpen(false);
     setEditingSectionId(null);
     setSectionForm(emptySectionForm());
     setFieldErrors({});
+  }
+
+  function openCreateModal() {
+    setEditingSectionId(null);
+    setSectionForm(emptySectionForm());
+    setFieldErrors({});
+    setIsSectionModalOpen(true);
   }
 
   function applyCurriculum(
@@ -275,6 +285,7 @@ function AdminSections() {
       ),
     });
     setFieldErrors({});
+    setIsSectionModalOpen(true);
   }
 
   function handleSubmit() {
@@ -335,167 +346,68 @@ function AdminSections() {
         onClose={() => setNotification((current) => ({ ...current, open: false }))}
       />
 
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[1.8rem] border border-[#c9d7db] bg-[linear-gradient(135deg,rgba(251,254,254,0.97)_0%,rgba(238,245,246,0.95)_100%)] px-5 py-4 shadow-[0_16px_30px_rgba(54,79,92,0.07)] sm:px-6 sm:py-5">
-          <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f8d99]">
-            Section planning
-          </p>
-          <h1 className="mt-2 max-w-4xl text-fluid-2xl font-semibold tracking-[-0.05em] text-[#173b47]">
-            Create sections now, connect curriculum when it is ready.
-          </h1>
-          <p className="mt-2 max-w-3xl text-fluid-sm leading-6 text-[#607c88]">
-            Curriculum is optional during section setup. Assign faculty teaching loads, subjects,
-            and schedules from Faculty management.
-          </p>
-        </section>
+      <Modal
+        open={isSectionModalOpen}
+        title={editingSectionId ? 'Edit section' : 'Add section'}
+        description="Set the course, batch, section number, curriculum, and adviser."
+        onClose={resetModal}
+        panelClassName="max-w-4xl"
+        bodyClassName="scrollbar-super-thin max-h-[70vh] overflow-auto px-5 py-5 sm:px-6"
+        actions={(
+          <>
+            <button
+              type="button"
+              onClick={resetModal}
+              className="inline-flex items-center justify-center rounded-[0.16rem] border border-[#b7c7d6] bg-white px-4 py-2.5 text-fluid-sm font-semibold text-[#48617d] transition hover:bg-[#f8fbfb]"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saveSectionMutation.isPending}
+              className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {editingSectionId ? <FiEdit3 className="h-4 w-4" /> : <FiPlus className="h-4 w-4" />}
+              {saveSectionMutation.isPending ? 'Saving...' : editingSectionId ? 'Save changes' : 'Create section'}
+            </button>
+          </>
+        )}
+      >
+        <SectionFormFields
+          sectionForm={sectionForm}
+          fieldErrors={fieldErrors}
+          curriculumOptions={curriculumOptions}
+          facultyOptions={facultyOptions}
+          applyCurriculum={applyCurriculum}
+          setSectionForm={setSectionForm}
+          setFieldErrors={setFieldErrors}
+        />
+      </Modal>
 
-        <div className="mt-5 grid gap-4 xl:grid-cols-[430px_minmax(0,1fr)] xl:items-start">
-          <section className="rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-fluid-xl font-semibold text-[#173b47]">
-                  {editingSectionId ? 'Edit section' : 'Add section'}
-                </p>
-                <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                  Choose a course and batch, then add a section number when one batch has multiple sections.
-                </p>
-              </div>
-              {editingSectionId ? (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="inline-flex items-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
-                >
-                  <FiRefreshCcw className="h-4 w-4" />
-                  Clear
-                </button>
-              ) : null}
-            </div>
-
-            <div className="mt-5 space-y-4">
-              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                <InputField label="Course" error={fieldErrors.course}>
-                  <CustomSelect
-                    id="section-course"
-                    value={sectionForm.course}
-                    onChange={(value) => {
-                      setSectionForm((current) => ({
-                        ...current,
-                        course: value,
-                        name: buildSectionLabel(value, current.batchNumber, current.sectionNumber),
-                      }));
-                      setFieldErrors((current) => ({ ...current, course: '', name: '' }));
-                    }}
-                    options={courseOptions}
-                    placeholder="Choose course"
-                    tone="muted"
-                  />
-                </InputField>
-
-                <InputField label="Batch number" error={fieldErrors.batchNumber}>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={sectionForm.batchNumber}
-                    onChange={(event) => {
-                      const batchNumber = event.target.value.replace(/^B/i, '');
-                      setSectionForm((current) => ({
-                        ...current,
-                        batchNumber,
-                        name: buildSectionLabel(current.course, batchNumber, current.sectionNumber),
-                      }));
-                      setFieldErrors((current) => ({ ...current, batchNumber: '', name: '' }));
-                    }}
-                    placeholder="7"
-                    className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                  />
-                </InputField>
-
-                <InputField label="Section" error={fieldErrors.sectionNumber}>
-                  <input
-                    type="text"
-                    value={sectionForm.sectionNumber}
-                    onChange={(event) => {
-                      const sectionNumber = event.target.value;
-                      setSectionForm((current) => ({
-                        ...current,
-                        sectionNumber,
-                        name: buildSectionLabel(current.course, current.batchNumber, sectionNumber),
-                      }));
-                      setFieldErrors((current) => ({ ...current, sectionNumber: '', name: '' }));
-                    }}
-                    placeholder="2"
-                    className="w-full rounded-2xl border border-[#c9d7db] bg-white px-4 py-3 text-fluid-base text-[#21485a] outline-none transition focus:border-[#6ea7a0] focus:ring-4 focus:ring-[rgba(110,167,160,0.14)]"
-                  />
-                </InputField>
-              </div>
-
-              <div className="rounded-[1.1rem] border border-[#d1dde1] bg-white px-4 py-3">
-                <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#7b95a1]">
-                  Section label
-                </p>
-                <p className="mt-1 text-fluid-base font-semibold text-[#173b47]">
-                  {buildSectionLabel(sectionForm.course, sectionForm.batchNumber, sectionForm.sectionNumber)
-                    || 'Choose course, batch, and section'}
-                </p>
-              </div>
-
-              <InputField label="Curriculum (optional)" error={fieldErrors.curriculumId}>
-                <CustomSelect
-                  id="section-curriculum"
-                  value={sectionForm.curriculumId}
-                  onChange={(value) => applyCurriculum(value)}
-                  options={curriculumOptions}
-                  placeholder={curriculumOptions.length ? 'Optional curriculum' : 'No curriculums yet'}
-                  tone="muted"
-                />
-              </InputField>
-
-              <InputField label="Adviser">
-                <CustomSelect
-                  id="section-adviser"
-                  value={sectionForm.adviserId}
-                  onChange={(value) => setSectionForm((current) => ({ ...current, adviserId: value }))}
-                  options={facultyOptions}
-                  placeholder="No adviser yet"
-                  tone="muted"
-                />
-              </InputField>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={saveSectionMutation.isPending}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-[1rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-3 text-fluid-base font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <FiUsers className="h-4 w-4" />
-                  {saveSectionMutation.isPending ? 'Saving...' : editingSectionId ? 'Update section' : 'Create section'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#d1dde1] bg-white px-4 py-3 text-fluid-base font-semibold text-[#52707d] transition hover:bg-[#f8fbfb]"
-                >
-                  <FiRefreshCcw className="h-4 w-4" />
-                  Reset
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="overflow-hidden rounded-[1.7rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-5 shadow-[0_14px_28px_rgba(54,79,92,0.06)] xl:max-h-[calc(100vh-11.5rem)]">
-            <div className="flex h-full min-h-0 flex-col">
+      <div className="mx-auto flex min-h-[calc(100dvh-0.88rem)] w-full max-w-none flex-col px-4 py-5 sm:px-6 lg:min-h-[calc(100dvh-1.04rem)] lg:px-8">
+        <div className="flex min-h-0 flex-1">
+          <section className="flex min-h-0 flex-1 overflow-hidden rounded-[0.272rem] border border-[#c9d7db] bg-[rgba(251,254,254,0.92)] p-4 shadow-[0_14px_28px_rgba(54,79,92,0.06)] sm:p-5">
+            <div className="flex h-full min-h-0 w-full flex-col">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
+                <div className="min-w-0">
                   <p className="text-fluid-xl font-semibold text-[#173b47]">Existing sections</p>
                   <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">
-                    Sections can stay unlinked until curriculum planning is ready. Faculty loads
-                    control which subjects become visible to students.
+                    Sections can stay unlinked until curriculum planning is ready.
                   </p>
                 </div>
-                <div className="rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">
-                  {sections.length} sections
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-2 text-fluid-sm font-semibold text-[#52707d]">
+                    {sections.length} sections
+                  </div>
+                  <button
+                    type="button"
+                    onClick={openCreateModal}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[0.16rem] border border-[#1f8a78] bg-[linear-gradient(180deg,#27a18f_0%,#1a7b6f_100%)] px-4 py-2.5 text-fluid-sm font-semibold text-white transition hover:brightness-105"
+                  >
+                    <FiPlus className="h-4 w-4" />
+                    Add section
+                  </button>
                 </div>
               </div>
 
@@ -505,16 +417,16 @@ function AdminSections() {
                 ) : adminOverviewQuery.isError ? (
                   <EmptyState title="Unable to load sections" description="Refresh the page or try again in a moment." />
                 ) : sections.length ? (
-                  <div className="scrollbar-super-thin h-full min-h-[20rem] max-h-[28rem] overflow-auto rounded-[1.45rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)] sm:max-h-[32rem] xl:max-h-[calc(100vh-18rem)]">
+                  <div className="scrollbar-super-thin h-full min-h-[3.2rem] overflow-auto rounded-[0.232rem] border border-[#d7e2e6] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,249,250,0.96)_100%)]">
                     <table className="w-full min-w-[900px] table-fixed border-separate border-spacing-0">
                       <thead className="sticky top-0 z-10">
                         <tr>
-                          <TableHeadCell className="w-[18%] rounded-tl-[1.45rem]">Section</TableHeadCell>
+                          <TableHeadCell className="w-[18%] rounded-tl-[0.232rem]">Section</TableHeadCell>
                           <TableHeadCell className="w-[24%]">Curriculum</TableHeadCell>
                           <TableHeadCell className="w-[18%]">Adviser</TableHeadCell>
                           <TableHeadCell className="w-[10%]">Students</TableHeadCell>
                           <TableHeadCell className="w-[18%]">Teacher load</TableHeadCell>
-                          <TableHeadCell className="w-[12%] rounded-tr-[1.45rem] text-right">Edit</TableHeadCell>
+                          <TableHeadCell className="sticky right-0 w-[12%] rounded-tr-[0.232rem] text-center shadow-[-10px_0_18px_rgba(82,112,125,0.08)]">Edit</TableHeadCell>
                         </tr>
                       </thead>
                       <tbody>
@@ -524,7 +436,7 @@ function AdminSections() {
                           return (
                             <tr
                               key={section.id}
-                              className={index % 2 === 0 ? 'bg-white/70' : 'bg-[#f7fbfc]/92'}
+                              className={`group transition-colors ${index % 2 === 0 ? 'bg-white/70 hover:bg-[#f3faf9]' : 'bg-[#f7fbfc]/92 hover:bg-[#f0f7f8]'}`}
                             >
                               <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
                                 <p className="truncate text-fluid-md font-semibold text-[#173b47]">
@@ -548,20 +460,20 @@ function AdminSections() {
                                 </p>
                               </td>
                               <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
-                                <span className="inline-flex rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
+                                <span className="inline-flex whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
                                   {section.studentCount}
                                 </span>
                               </td>
                               <td className="border-b border-[#dce6e9] px-4 py-4 align-top">
-                                <span className="inline-flex rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
+                                <span className="inline-flex whitespace-nowrap rounded-full border border-[#d1dde1] bg-white px-3 py-1 text-fluid-xs font-semibold text-[#5a7885]">
                                   {assignedTeachers}/{section.subjectAssignments.length} assigned
                                 </span>
                               </td>
-                              <td className="border-b border-[#dce6e9] px-4 py-4 align-top text-right">
+                              <td className="sticky right-0 z-[1] border-b border-[#dce6e9] bg-[#fbfefe] px-3 py-4 align-top text-center shadow-[-10px_0_18px_rgba(82,112,125,0.08)] transition-colors group-hover:bg-[#f2faf8]">
                                 <button
                                   type="button"
                                   onClick={() => startEditing(section)}
-                                  className="inline-flex h-10 w-10 items-center justify-center rounded-[0.95rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
+                                  className="inline-flex h-10 w-10 items-center justify-center rounded-[0.152rem] border border-[#d2dee2] bg-white text-[#52707d] transition hover:bg-[#f8fbfb]"
                                   aria-label={`Edit ${section.name}`}
                                 >
                                   <FiEdit3 className="h-4 w-4" />
@@ -574,7 +486,7 @@ function AdminSections() {
                     </table>
                   </div>
                 ) : (
-                  <EmptyState title="No sections yet" description="Create your first section using the form on the left." />
+                  <EmptyState title="No sections yet" description="Use the Add section button to create the first section." />
                 )}
               </div>
             </div>
@@ -582,6 +494,121 @@ function AdminSections() {
         </div>
       </div>
     </AdminLayout>
+  );
+}
+
+function SectionFormFields({
+  sectionForm,
+  fieldErrors,
+  curriculumOptions,
+  facultyOptions,
+  applyCurriculum,
+  setSectionForm,
+  setFieldErrors,
+}: {
+  sectionForm: SectionFormState;
+  fieldErrors: Record<string, string>;
+  curriculumOptions: Array<{ label: string; value: string }>;
+  facultyOptions: Array<{ label: string; value: string }>;
+  applyCurriculum: (curriculumId: string) => void;
+  setSectionForm: Dispatch<SetStateAction<SectionFormState>>;
+  setFieldErrors: Dispatch<SetStateAction<Record<string, string>>>;
+}) {
+  return (
+    <div className="grid min-w-0 gap-4 lg:grid-cols-3">
+      <InputField label="Course" error={fieldErrors.course}>
+        <CustomSelect
+          id="section-course"
+          value={sectionForm.course}
+          onChange={(value) => {
+            setSectionForm((current) => ({
+              ...current,
+              course: value,
+              name: buildSectionLabel(value, current.batchNumber, current.sectionNumber),
+            }));
+            setFieldErrors((current) => ({ ...current, course: '', name: '' }));
+          }}
+          options={courseOptions}
+          placeholder="Choose course"
+          tone="muted"
+        />
+      </InputField>
+
+      <InputField label="Batch number" error={fieldErrors.batchNumber}>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={sectionForm.batchNumber}
+          onChange={(event) => {
+            const batchNumber = event.target.value.replace(/^B/i, '');
+            setSectionForm((current) => ({
+              ...current,
+              batchNumber,
+              name: buildSectionLabel(current.course, batchNumber, current.sectionNumber),
+            }));
+            setFieldErrors((current) => ({ ...current, batchNumber: '', name: '' }));
+          }}
+          placeholder="7"
+          className="admin-text-input"
+        />
+      </InputField>
+
+      <InputField label="Section" error={fieldErrors.sectionNumber}>
+        <input
+          type="text"
+          value={sectionForm.sectionNumber}
+          onChange={(event) => {
+            const sectionNumber = event.target.value;
+            setSectionForm((current) => ({
+              ...current,
+              sectionNumber,
+              name: buildSectionLabel(current.course, current.batchNumber, sectionNumber),
+            }));
+            setFieldErrors((current) => ({ ...current, sectionNumber: '', name: '' }));
+          }}
+          placeholder="2"
+          className="admin-text-input"
+        />
+      </InputField>
+
+      <div className="min-w-0 lg:col-span-3">
+        <div className="rounded-[0.176rem] border border-[#d1dde1] bg-white px-4 py-3">
+          <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#7b95a1]">
+            Section label
+          </p>
+          <p className="mt-1 text-fluid-base font-semibold text-[#173b47]">
+            {buildSectionLabel(sectionForm.course, sectionForm.batchNumber, sectionForm.sectionNumber)
+              || 'Choose course, batch, and section'}
+          </p>
+        </div>
+      </div>
+
+      <div className="min-w-0 lg:col-span-2">
+        <InputField label="Curriculum (optional)" error={fieldErrors.curriculumId}>
+          <CustomSelect
+            id="section-curriculum"
+            value={sectionForm.curriculumId}
+            onChange={(value) => applyCurriculum(value)}
+            options={curriculumOptions}
+            placeholder={curriculumOptions.length ? 'Optional curriculum' : 'No curriculums yet'}
+            menuPosition="top"
+            tone="muted"
+          />
+        </InputField>
+      </div>
+
+      <InputField label="Adviser">
+        <CustomSelect
+          id="section-adviser"
+          value={sectionForm.adviserId}
+          onChange={(value) => setSectionForm((current) => ({ ...current, adviserId: value }))}
+          options={facultyOptions}
+          placeholder="No adviser yet"
+          menuPosition="top"
+          tone="muted"
+        />
+      </InputField>
+    </div>
   );
 }
 
@@ -595,7 +622,7 @@ function InputField({
   children: ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-2 flex items-center justify-between gap-3">
         <label className="block text-fluid-sm font-semibold text-[#173b47]">{label}</label>
         {error ? <span className="text-fluid-xs font-medium text-rose-500">{error}</span> : null}
@@ -625,14 +652,12 @@ function TableHeadCell({
 function EmptyState({
   title,
   description,
-  compact = false,
 }: {
   title: string;
   description: string;
-  compact?: boolean;
 }) {
   return (
-    <div className={`rounded-[1.35rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] text-center ${compact ? 'px-5 py-7' : 'px-6 py-10'}`}>
+    <div className="rounded-[0.224rem] border border-dashed border-[#d4e0e4] bg-[linear-gradient(180deg,#fbfdfd_0%,#eef4f6_100%)] px-6 py-10 text-center">
       <p className="text-fluid-md font-semibold text-[#173b47]">{title}</p>
       <p className="mt-2 text-fluid-sm leading-6 text-[#607c88]">{description}</p>
     </div>

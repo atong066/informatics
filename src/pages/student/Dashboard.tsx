@@ -1,4 +1,4 @@
-﻿import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import {
   FiArrowRight,
@@ -325,9 +325,9 @@ function Dashboard() {
       username={activeUser.username}
       profileImage={activeUser.profileImage}
     >
-      <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 py-4 sm:px-5 lg:px-6">
+      <div className="mx-auto flex w-full max-w-[15.36rem] flex-col gap-4 px-4 py-4 sm:px-5 lg:px-6">
         <section
-          className="dashboard-rise relative min-w-0 max-w-full overflow-hidden rounded-[2.35rem] border border-[#173552] bg-[#0d2339] px-6 py-6 text-white shadow-[0_28px_70px_rgba(8,20,35,0.28)] sm:px-8 sm:py-8"
+          className="dashboard-rise relative min-w-0 max-w-full overflow-hidden rounded-[0.376rem] border border-[#173552] bg-[#0d2339] px-6 py-6 text-white shadow-[0_28px_70px_rgba(8,20,35,0.28)] sm:px-8 sm:py-8"
           style={{ animationDelay: '40ms' }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,178,255,0.18),transparent_30%),radial-gradient(circle_at_75%_25%,rgba(113,209,167,0.1),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
@@ -354,7 +354,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="min-w-0 rounded-[1.8rem] border border-white/10 bg-white/7 p-4 backdrop-blur-md">
+            <div className="min-w-0 rounded-[0.288rem] border border-white/10 bg-white/7 p-4 backdrop-blur-md">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <ProgressRing progress={summary.averageProgress} label="Synced" />
 
@@ -414,7 +414,7 @@ function Dashboard() {
 
         <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.35fr)_340px]">
           <article
-            className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+            className="dashboard-rise min-w-0 max-w-full rounded-[0.32rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
             style={{ animationDelay: '140ms' }}
           >
             <SectionHeading
@@ -422,7 +422,7 @@ function Dashboard() {
               detail="Each subject is ranked from the data already stored in your account."
             />
 
-            <div className="mt-4 overflow-hidden rounded-[1.45rem] border border-[#d9e5ee] bg-white/84">
+            <div className="mt-4 overflow-hidden rounded-[0.232rem] border border-[#d9e5ee] bg-white/84">
               {hasDashboardError ? (
                 <EmptyState
                   title="Dashboard data could not be loaded"
@@ -450,7 +450,7 @@ function Dashboard() {
 
           <div className="grid min-w-0 gap-4">
             <article
-              className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              className="dashboard-rise min-w-0 max-w-full rounded-[0.32rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
               style={{ animationDelay: '200ms' }}
             >
               <SectionHeading
@@ -471,9 +471,9 @@ function Dashboard() {
                     <Link
                       key={item.id}
                       to={`/student/subjects/${item.subjectId}`}
-                      className="dashboard-hover group flex min-w-0 max-w-full items-center gap-3 rounded-[1.2rem] border border-[#dde7ef] bg-white px-3.5 py-3.5"
+                      className="dashboard-hover group flex min-w-0 max-w-full items-center gap-3 rounded-[0.192rem] border border-[#dde7ef] bg-white px-3.5 py-3.5"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.152rem] bg-[#edf5ff] text-[#2f78bc]">
                         <FiArrowRight className="h-4 w-4 transition duration-200 group-hover:translate-x-0.5" />
                       </div>
 
@@ -501,7 +501,7 @@ function Dashboard() {
             </article>
 
             <article
-              className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+              className="dashboard-rise min-w-0 max-w-full rounded-[0.32rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
               style={{ animationDelay: '250ms' }}
             >
               <SectionHeading
@@ -537,7 +537,7 @@ function Dashboard() {
         </section>
 
         <section
-          className="dashboard-rise min-w-0 max-w-full rounded-[2rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
+          className="dashboard-rise min-w-0 max-w-full rounded-[0.32rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.86)] p-4 shadow-[0_18px_40px_rgba(30,52,78,0.08)] backdrop-blur-sm sm:p-5"
           style={{ animationDelay: '290ms' }}
         >
           <SectionHeading
@@ -604,7 +604,7 @@ function MetricTile({
 }) {
   return (
     <article
-      className="dashboard-rise min-w-0 max-w-full rounded-[1.4rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.82)] px-4 py-3.5 shadow-[0_14px_30px_rgba(30,52,78,0.06)] backdrop-blur-sm"
+      className="dashboard-rise min-w-0 max-w-full rounded-[0.224rem] border border-[#d9e3ec] bg-[rgba(249,252,254,0.82)] px-4 py-3.5 shadow-[0_14px_30px_rgba(30,52,78,0.06)] backdrop-blur-sm"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center justify-between gap-3">
@@ -616,7 +616,7 @@ function MetricTile({
             {value}
           </p>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[#edf5ff] text-[#2f78bc]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-[0.16rem] bg-[#edf5ff] text-[#2f78bc]">
           {icon}
         </div>
       </div>
@@ -638,7 +638,7 @@ function SubjectRow({
       to={`/student/subjects/${subject.id}`}
       className="dashboard-hover group grid min-w-0 max-w-full gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.152rem] bg-[#edf5ff] text-[#2f78bc]">
         <SubjectIconGlyph iconKey={subject.iconKey} className="h-5 w-5" />
       </div>
 
@@ -685,9 +685,9 @@ function DirectoryItem({ subject }: { subject: SubjectProgressItem }) {
   return (
     <Link
       to={`/student/subjects/${subject.id}`}
-      className="dashboard-hover group flex min-w-0 max-w-full items-start gap-3.5 rounded-[1.35rem] border border-[#dbe6ef] bg-white/76 px-3.5 py-3.5"
+      className="dashboard-hover group flex min-w-0 max-w-full items-start gap-3.5 rounded-[0.216rem] border border-[#dbe6ef] bg-white/76 px-3.5 py-3.5"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] bg-[#edf5ff] text-[#2f78bc]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.152rem] bg-[#edf5ff] text-[#2f78bc]">
         <SubjectIconGlyph iconKey={subject.iconKey} className="h-5 w-5" />
       </div>
 
@@ -804,7 +804,7 @@ function PanelMessage({ message }: { message: string }) {
 
 function EmptyState({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-[1.2rem] border border-dashed border-[#dbe6ef] bg-[#fbfdff] px-4 py-4">
+    <div className="rounded-[0.192rem] border border-dashed border-[#dbe6ef] bg-[#fbfdff] px-4 py-4">
       <p className="text-fluid-md font-semibold text-[#173b70]">{title}</p>
       <p className="mt-1.5 text-fluid-sm leading-5 text-[#7088a1]">{body}</p>
     </div>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FiChevronDown } from 'react-icons/fi';
 
 type CustomSelectProps = {
@@ -49,12 +49,12 @@ function CustomSelect({
   const resolvedDisplayValue = selectedOption?.label ?? displayValue;
   const menuPositionClasses =
     menuPosition === 'top'
-      ? 'bottom-[calc(100%+0.5rem)]'
-      : 'top-[calc(100%+0.5rem)]';
+      ? 'bottom-[calc(100%+0.08rem)]'
+      : 'top-[calc(100%+0.08rem)]';
   const isMuted = tone === 'muted';
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative min-w-0">
       <input id={id} name={id} type="hidden" value={value} />
 
       {error ? (
@@ -68,18 +68,18 @@ function CustomSelect({
         type="button"
         aria-controls={`${id}-listbox`}
         aria-expanded={isOpen}
-        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 ${
+        className={`flex min-h-[0.48rem] w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 ${
           isOpen
             ? isMuted
-              ? 'border-[#7ea8cf] bg-[rgba(209,220,231,0.96)] text-[#21486d] ring-4 ring-[rgba(126,168,207,0.18)] shadow-[0_8px_18px_rgba(43,70,99,0.08)]'
-              : 'border-[#3498db] bg-white text-[#2c3e50] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(52,152,219,0.08)]'
+              ? 'border-[#2f9d8f] bg-[#fbfefd] text-[#173b47] ring-4 ring-[rgba(47,157,143,0.18)] shadow-[0_10px_24px_rgba(19,94,89,0.1)]'
+              : 'border-[#238fca] bg-white text-[#22384a] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(35,143,202,0.1)]'
             : error
               ? isMuted
-                ? 'border-red-300 bg-[rgba(209,220,231,0.96)] text-[#21486d] focus:border-red-400 focus:ring-red-100'
-                : 'border-red-300 bg-white text-[#2c3e50] focus:border-red-400 focus:ring-red-100'
+                ? 'border-red-300 bg-[#fbfefd] text-[#173b47] focus:border-red-400 focus:ring-red-100'
+                : 'border-red-300 bg-white text-[#22384a] focus:border-red-400 focus:ring-red-100'
               : isMuted
-                ? 'border-[#b6c7d6] bg-[rgba(209,220,231,0.96)] text-[#21486d] focus:border-[#7ea8cf] focus:ring-4 focus:ring-[rgba(126,168,207,0.16)]'
-                : 'border-[#bdc3c7] bg-white text-[#2c3e50] focus:border-[#3498db] focus:ring-4 focus:ring-blue-100'
+                ? 'border-[#b9ced2] bg-[#fbfefd] text-[#173b47] hover:border-[#8fb2b3] focus:border-[#2f9d8f] focus:ring-4 focus:ring-[rgba(47,157,143,0.16)]'
+                : 'border-[#bdcbd0] bg-white text-[#22384a] hover:border-[#98b7c4] focus:border-[#238fca] focus:ring-4 focus:ring-sky-100'
         }`}
         onClick={() => setIsOpen((current) => !current)}
       >
@@ -87,11 +87,11 @@ function CustomSelect({
           className={`min-w-0 truncate whitespace-nowrap text-left ${
             value
               ? isMuted
-                ? 'text-[#21486d]'
-                : 'text-[#2c3e50]'
+                ? 'text-[#173b47]'
+                : 'text-[#22384a]'
               : isMuted
-                ? 'text-[#6f89a4]'
-                : 'text-[#95a5a6]'
+                ? 'text-[#78919a]'
+                : 'text-[#8ca0a8]'
           }`}
         >
           {resolvedDisplayValue}
@@ -99,10 +99,10 @@ function CustomSelect({
         <span
           className={`shrink-0 text-fluid-xs leading-none transition duration-200 ${
             isOpen
-              ? 'rotate-180 text-[#3498db]'
+              ? 'rotate-180 text-[#2f9d8f]'
               : isMuted
-                ? 'text-[#6f89a4]'
-                : 'text-[#7f8c8d]'
+                ? 'text-[#78919a]'
+                : 'text-[#7b8f98]'
           }`}
         >
           <FiChevronDown className="h-4 w-4" />
@@ -112,10 +112,10 @@ function CustomSelect({
       {isOpen ? (
         <div
           id={`${id}-listbox`}
-          className={`absolute left-0 right-0 z-20 overflow-hidden rounded-2xl border shadow-[0_18px_36px_rgba(15,23,42,0.12)] ${
+          className={`scrollbar-super-thin absolute left-0 right-0 z-50 max-h-[2.56rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border shadow-[0_20px_42px_rgba(15,23,42,0.14)] ${
             isMuted
-              ? 'border-[#b6c7d6] bg-[rgba(210,220,231,0.98)] backdrop-blur-sm'
-              : 'border-[#bdc3c7] bg-white'
+              ? 'border-[#abc8c7] bg-[rgba(252,254,253,0.98)] backdrop-blur-sm'
+              : 'border-[#bdcbd0] bg-white'
           } ${menuPositionClasses}`}
           role="listbox"
         >
@@ -126,21 +126,24 @@ function CustomSelect({
               <button
                 key={option.value}
                 type="button"
-                className={`block w-full px-4 py-3 text-left text-fluid-md transition ${
+                role="option"
+                aria-selected={isSelected}
+                title={option.label}
+                className={`flex w-full items-center px-4 py-3 text-left text-fluid-md transition ${
                   isSelected
                     ? isMuted
-                      ? 'bg-[rgba(194,209,224,0.92)] text-[#255a91]'
-                      : 'bg-[#ebf5fb] text-[#3498db]'
+                      ? 'bg-[#dff5ef] text-[#126b63]'
+                      : 'bg-[#e7f4fb] text-[#1978ad]'
                     : isMuted
-                      ? 'text-[#33516f] hover:bg-[rgba(219,228,237,0.98)]'
-                      : 'text-[#34495e] hover:bg-[#f7f9fa]'
+                      ? 'text-[#31565c] hover:bg-[#eef8f6]'
+                      : 'text-[#334b5c] hover:bg-[#f5fafc]'
                 }`}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
               >
-                {option.label}
+                <span className="min-w-0 truncate">{option.label}</span>
               </button>
             );
           })}

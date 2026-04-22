@@ -451,11 +451,11 @@ function FacultyMeetingDetails() {
       pageEyebrow="Faculty conference"
       pageTitle={meeting?.title ?? 'Conference room'}
     >
-      <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(238,245,251,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+      <div className="mx-auto w-full max-w-[14.4rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.264rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(238,245,251,0.96)_100%)] px-5 py-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-start gap-3.5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.05rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[0.168rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
                 <FiVideo className="h-6 w-6" />
               </div>
               <div className="min-w-0">
@@ -527,7 +527,7 @@ function FacultyMeetingDetails() {
                 }}
               />
 
-              <article className="rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+              <article className="rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6d86a0]">
@@ -543,7 +543,7 @@ function FacultyMeetingDetails() {
                     </div>
                   </div>
 
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-right">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3 text-right">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Room name
                     </p>
@@ -552,7 +552,7 @@ function FacultyMeetingDetails() {
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Created
                     </p>
@@ -560,7 +560,7 @@ function FacultyMeetingDetails() {
                       {formatDateTime(meeting.createdAt, 'Not available')}
                     </p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Started
                     </p>
@@ -568,7 +568,7 @@ function FacultyMeetingDetails() {
                       {formatDateTime(meeting.startedAt, 'Not started yet')}
                     </p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.86)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Ended
                     </p>
@@ -579,7 +579,7 @@ function FacultyMeetingDetails() {
                 </div>
               </article>
 
-              <article className="rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+              <article className="rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <FiFileText className="h-5 w-5 text-[#2f78bc]" />
@@ -601,7 +601,7 @@ function FacultyMeetingDetails() {
                 </div>
 
                 {meeting.aiNotes ? (
-                  <div className="mt-5 rounded-[1.2rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-4">
+                  <div className="mt-5 rounded-[0.192rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-4">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Notes
                     </p>
@@ -610,7 +610,7 @@ function FacultyMeetingDetails() {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-5 rounded-[1.2rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+                  <div className="mt-5 rounded-[0.192rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
                     <p className="text-fluid-md font-semibold text-[#173b70]">Notes not ready yet</p>
                     <p className="mt-2 text-fluid-sm text-[#6a839d]">
                       {meeting.aiStatus === 'processing'
@@ -623,7 +623,7 @@ function FacultyMeetingDetails() {
                 )}
 
                 {meeting.transcriptText ? (
-                  <div className="mt-5 rounded-[1.2rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-4">
+                  <div className="mt-5 rounded-[0.192rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-4">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Transcript
                     </p>
@@ -636,7 +636,7 @@ function FacultyMeetingDetails() {
             </section>
 
             <section className="space-y-5">
-              <article className="rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+              <article className="rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
                 <div className="flex items-center gap-3">
                   <FiClock className="h-5 w-5 text-[#2f78bc]" />
                   <div>
@@ -652,13 +652,13 @@ function FacultyMeetingDetails() {
                     type="button"
                     onClick={() => startMeetingMutation.mutate()}
                     disabled={meeting.status === 'live' || isBusy}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-3 text-fluid-sm font-semibold text-white shadow-[0_10px_18px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-[0.16rem] border border-[#6eaad9] bg-[linear-gradient(180deg,#3f92de_0%,#297cc6_100%)] px-4 py-3 text-fluid-sm font-semibold text-white shadow-[0_10px_18px_rgba(41,124,198,0.14)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiPlay className="h-4 w-4" />
                     {startMeetingMutation.isPending ? 'Starting conference...' : 'Start conference'}
                   </button>
 
-                  <div className="rounded-[1.15rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4">
+                  <div className="rounded-[0.184rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-fluid-sm font-semibold text-[#173b70]">Optional recording</p>
@@ -686,7 +686,7 @@ function FacultyMeetingDetails() {
                     />
 
                     {selectedRecording ? (
-                      <div className="mt-4 flex items-center justify-between gap-3 rounded-[1rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] px-4 py-3">
+                      <div className="mt-4 flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] px-4 py-3">
                         <div className="min-w-0">
                           <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{selectedRecording.name}</p>
                           <p className="mt-1 text-fluid-xs text-[#607b95]">{formatBytes(selectedRecording.size)}</p>
@@ -712,7 +712,7 @@ function FacultyMeetingDetails() {
                     type="button"
                     onClick={() => endMeetingMutation.mutate()}
                     disabled={meeting.status !== 'live' || isBusy}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-[1rem] border border-[#d5e0ea] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-[0.16rem] border border-[#d5e0ea] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-fluid-sm font-semibold text-[#2f78bc] transition hover:bg-[#f2f7fc] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <FiCheckCircle className="h-4 w-4" />
                     {endMeetingMutation.isPending
@@ -724,7 +724,7 @@ function FacultyMeetingDetails() {
                 </div>
               </article>
 
-              <article className="rounded-[1.55rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
+              <article className="rounded-[0.248rem] border border-[#d6e2ec] bg-[linear-gradient(180deg,rgba(250,253,255,0.98)_0%,rgba(236,243,250,0.96)_100%)] p-5 shadow-[0_18px_36px_rgba(39,77,117,0.08)]">
                 <div className="flex items-center gap-3">
                   <FiMic className="h-5 w-5 text-[#2f78bc]" />
                   <div>
@@ -736,13 +736,13 @@ function FacultyMeetingDetails() {
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Join path
                     </p>
                     <p className="mt-2 break-all text-fluid-sm text-[#45627f]">{meeting.joinUrl}</p>
                   </div>
-                  <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
+                  <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
                     <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                       Last update
                     </p>
@@ -751,7 +751,7 @@ function FacultyMeetingDetails() {
                     </p>
                   </div>
                   {meeting.recordingName ? (
-                    <div className="rounded-[1rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
+                    <div className="rounded-[0.16rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.84)] px-4 py-3">
                       <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">
                         Last recording
                       </p>
@@ -785,11 +785,11 @@ function FacultyMeetingDetails() {
         bodyClassName="max-h-[72vh] overflow-y-auto px-5 py-5 sm:px-6"
       >
         {meeting?.aiNotes ? (
-          <div className="formatted-text rounded-[1.15rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
+          <div className="formatted-text rounded-[0.184rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4 text-fluid-sm leading-[1.7] text-[#45627f]">
             {meeting.aiNotes}
           </div>
         ) : (
-          <div className="rounded-[1.15rem] border border-dashed border-[#bfceda] bg-[rgba(255,255,255,0.66)] px-5 py-6 text-center">
+          <div className="rounded-[0.184rem] border border-dashed border-[#bfceda] bg-[rgba(255,255,255,0.66)] px-5 py-6 text-center">
             <p className="text-fluid-base font-semibold text-[#173b70]">Notes are not ready yet</p>
             <p className="mt-2 text-fluid-sm text-[#607b95]">
               {meeting?.aiStatus === 'processing'
@@ -802,7 +802,7 @@ function FacultyMeetingDetails() {
         )}
 
         {meeting?.transcriptText ? (
-          <div className="mt-4 rounded-[1.15rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4">
+          <div className="mt-4 rounded-[0.184rem] border border-[#c7d6e3] bg-[rgba(255,255,255,0.88)] px-4 py-4">
             <p className="text-fluid-xs font-semibold uppercase tracking-[0.18em] text-[#6d86a0]">Transcript</p>
             <div className="formatted-text mt-3 text-fluid-sm leading-[1.7] text-[#45627f]">
               {meeting.transcriptText}
@@ -822,7 +822,7 @@ function FacultyMeetingDetails() {
           meeting.recordingMimeType.startsWith('audio/') ? (
             <audio src={meeting.recordingUrl} controls className="w-full" />
           ) : (
-            <video src={meeting.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+            <video src={meeting.recordingUrl} controls className="max-h-[68vh] w-full rounded-[0.16rem] bg-black" />
           )
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>

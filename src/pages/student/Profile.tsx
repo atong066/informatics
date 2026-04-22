@@ -1,4 +1,4 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { FiCamera, FiEdit3, FiUploadCloud } from 'react-icons/fi';
 import CustomDatePicker from '../../components/CustomDatePicker';
@@ -235,7 +235,7 @@ function Profile() {
                 setFormValues((current) => ({ ...current, email: event.target.value }));
                 setFormErrors((current) => ({ ...current, email: undefined }));
               }}
-              className="rounded-[1.2rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
+              className="rounded-[0.192rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
             />
             {formErrors.email ? (
               <span className="text-fluid-xs font-medium text-rose-600">{formErrors.email}</span>
@@ -251,7 +251,7 @@ function Profile() {
                 setFormValues((current) => ({ ...current, contactNumber: event.target.value }));
                 setFormErrors((current) => ({ ...current, contactNumber: undefined }));
               }}
-              className="rounded-[1.2rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
+              className="rounded-[0.192rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
             />
             {formErrors.contactNumber ? (
               <span className="text-fluid-xs font-medium text-rose-600">
@@ -283,7 +283,7 @@ function Profile() {
                 setFormErrors((current) => ({ ...current, address: undefined }));
               }}
               rows={4}
-              className="resize-none rounded-[1.2rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
+              className="resize-none rounded-[0.192rem] border border-[#cad8e5] bg-white px-4 py-3 text-fluid-md text-[#173b70] outline-none transition focus:border-[#6aa6d6] focus:ring-2 focus:ring-[#c8dff1]"
             />
             {formErrors.address ? (
               <span className="text-fluid-xs font-medium text-rose-600">{formErrors.address}</span>
@@ -292,7 +292,7 @@ function Profile() {
         </div>
       </Modal>
       <div className="grid gap-5 px-4 py-5 sm:px-7 lg:px-8">
-        <section className="rounded-[2rem] border border-[#b8cddd] bg-[linear-gradient(120deg,#eef4f9_0%,#e4edf5_38%,#dde7f0_100%)] px-5 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.1)] sm:px-6">
+        <section className="rounded-[0.32rem] border border-[#b8cddd] bg-[linear-gradient(120deg,#eef4f9_0%,#e4edf5_38%,#dde7f0_100%)] px-5 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.1)] sm:px-6">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
             <div>
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.24em] text-[#2b79ba]">
@@ -307,7 +307,7 @@ function Profile() {
               </p>
             </div>
 
-            <div className="rounded-[1.7rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-5 text-white shadow-[0_20px_32px_rgba(27,46,70,0.2)]">
+            <div className="rounded-[0.272rem] bg-[linear-gradient(180deg,#365678_0%,#284463_100%)] px-5 py-5 text-white shadow-[0_20px_32px_rgba(27,46,70,0.2)]">
               <p className="text-fluid-xs text-[#d2dfec]">Student identity</p>
               <p className="mt-3 text-fluid-xl font-semibold leading-tight">{fullName}</p>
               <p className="mt-2 text-fluid-base text-[#e8eff6]">{activeUser.section}</p>
@@ -317,7 +317,7 @@ function Profile() {
         </section>
 
         <div className="grid gap-5 xl:grid-cols-[340px_1fr]">
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
+          <section className="rounded-[0.304rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative">
                 {activeUser.profileImage ? (
@@ -378,7 +378,7 @@ function Profile() {
             </div>
           </section>
 
-          <section className="rounded-[1.9rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
+          <section className="rounded-[0.304rem] border border-[#bfcedd] bg-[linear-gradient(180deg,#f3f7fb_0%,#edf3f8_100%)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.08)] sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-fluid-xl font-semibold text-[#123b74]">Account information</p>
@@ -409,7 +409,7 @@ function Profile() {
               {infoCards.map((item) => (
                 <article
                   key={item.label}
-                  className="rounded-[1.45rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4"
+                  className="rounded-[0.232rem] border border-[#d3dee8] bg-[#f8fbfd] px-4 py-4"
                 >
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#7391ae]">
                     {item.label}

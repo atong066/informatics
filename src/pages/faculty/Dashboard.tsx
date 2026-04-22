@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { FiBookOpen, FiClipboard, FiClock, FiUsers } from 'react-icons/fi';
 import { useCurrentStudent } from '../../hooks/useCurrentStudent';
 import FacultyLayout from '../../layout/faculty/FacultyLayout';
@@ -24,8 +24,8 @@ function FacultyDashboard() {
       pageEyebrow="Faculty workspace"
       pageTitle="Dashboard"
     >
-      <div className="mx-auto max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] border border-[#c9d5e0] bg-[linear-gradient(135deg,rgba(251,253,255,0.96)_0%,rgba(238,244,249,0.94)_100%)] px-6 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.08)]">
+      <div className="mx-auto max-w-[14.72rem] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[0.32rem] border border-[#c9d5e0] bg-[linear-gradient(135deg,rgba(251,253,255,0.96)_0%,rgba(238,244,249,0.94)_100%)] px-6 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.08)]">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
@@ -39,7 +39,7 @@ function FacultyDashboard() {
               </p>
             </div>
 
-            <div className="min-w-[260px] rounded-[1.75rem] bg-[linear-gradient(180deg,#2d4c70_0%,#365a81_100%)] px-5 py-5 text-white shadow-[0_18px_30px_rgba(24,46,74,0.22)]">
+            <div className="min-w-[260px] rounded-[0.28rem] bg-[linear-gradient(180deg,#2d4c70_0%,#365a81_100%)] px-5 py-5 text-white shadow-[0_18px_30px_rgba(24,46,74,0.22)]">
               <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#bfd3e8]">Next block</p>
               <p className="mt-3 text-fluid-xl font-semibold tracking-[-0.04em]">
                 Systems Analysis
@@ -58,7 +58,7 @@ function FacultyDashboard() {
         </div>
 
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[1.9rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
+          <section className="rounded-[0.304rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
             <PanelHeader title="Teaching schedule" action="View timetable" />
             <div className="mt-4 space-y-3">
               {[
@@ -68,7 +68,7 @@ function FacultyDashboard() {
               ].map(([time, title, detail]) => (
                 <div
                   key={`${time}-${title}`}
-                  className="rounded-[1.4rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4"
+                  className="rounded-[0.224rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -82,7 +82,7 @@ function FacultyDashboard() {
             </div>
           </section>
 
-          <section className="rounded-[1.9rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
+          <section className="rounded-[0.304rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
             <PanelHeader title="Faculty notes" action="Open inbox" />
             <div className="mt-4 space-y-3">
               {[
@@ -92,7 +92,7 @@ function FacultyDashboard() {
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-[1.4rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4 text-fluid-base leading-6 text-[#48617d]"
+                  className="rounded-[0.224rem] border border-[#dce5ed] bg-[#f8fbfd] px-4 py-4 text-fluid-base leading-6 text-[#48617d]"
                 >
                   {item}
                 </div>
@@ -115,7 +115,7 @@ function MetricCard({
   label: string;
 }) {
   return (
-    <article className="rounded-[1.75rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.92)] p-5 shadow-[0_14px_28px_rgba(49,70,98,0.06)]">
+    <article className="rounded-[0.28rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.92)] p-5 shadow-[0_14px_28px_rgba(49,70,98,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fluid-3xl font-semibold leading-none text-[#123b74]">{value}</p>
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#dde9f6_0%,#cadcf0_100%)] text-[#2b79ba]">

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCheck, FiChevronDown } from 'react-icons/fi';
 
 type CustomMultiSelectProps = {
@@ -10,6 +10,8 @@ type CustomMultiSelectProps = {
   error?: string;
   menuPosition?: 'top' | 'bottom';
   tone?: 'default' | 'muted';
+  selectionLabel?: string;
+  emptyMessage?: string;
 };
 
 function CustomMultiSelect({
@@ -21,6 +23,8 @@ function CustomMultiSelect({
   error,
   menuPosition = 'bottom',
   tone = 'default',
+  selectionLabel = 'sections',
+  emptyMessage = 'No options available',
 }: CustomMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,10 +53,13 @@ function CustomMultiSelect({
   }, []);
 
   const isMuted = tone === 'muted';
+  const exclusiveValue = normalizedOptions.some((option) => option.value === 'All sections')
+    ? 'All sections'
+    : '';
   const menuPositionClasses =
     menuPosition === 'top'
-      ? 'bottom-[calc(100%+0.5rem)]'
-      : 'top-[calc(100%+0.5rem)]';
+      ? 'bottom-[calc(100%+0.08rem)]'
+      : 'top-[calc(100%+0.08rem)]';
   const resolvedValues =
     values.length > 0 ? values : [];
   const resolvedDisplayValue = (() => {
@@ -60,8 +67,8 @@ function CustomMultiSelect({
       return placeholder;
     }
 
-    if (resolvedValues.includes('All sections')) {
-      return 'All sections';
+    if (exclusiveValue && resolvedValues.includes(exclusiveValue)) {
+      return normalizedOptions.find((option) => option.value === exclusiveValue)?.label ?? exclusiveValue;
     }
 
     const selectedLabels = normalizedOptions
@@ -72,16 +79,16 @@ function CustomMultiSelect({
       return selectedLabels.join(', ');
     }
 
-    return `${selectedLabels.length} sections selected`;
+    return `${selectedLabels.length} ${selectionLabel} selected`;
   })();
 
   function handleToggleOption(nextValue: string) {
-    if (nextValue === 'All sections') {
-      onChange(['All sections']);
+    if (exclusiveValue && nextValue === exclusiveValue) {
+      onChange([exclusiveValue]);
       return;
     }
 
-    const nextValues = resolvedValues.includes('All sections')
+    const nextValues = exclusiveValue && resolvedValues.includes(exclusiveValue)
       ? []
       : [...resolvedValues];
     const valueIndex = nextValues.indexOf(nextValue);
@@ -92,11 +99,11 @@ function CustomMultiSelect({
       nextValues.push(nextValue);
     }
 
-    onChange(nextValues.length > 0 ? nextValues : ['All sections']);
+    onChange(nextValues.length > 0 ? nextValues : exclusiveValue ? [exclusiveValue] : []);
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative min-w-0">
       {resolvedValues.map((value) => (
         <input key={value} id={`${id}-${value}`} name={id} type="hidden" value={value} />
       ))}
@@ -112,18 +119,18 @@ function CustomMultiSelect({
         type="button"
         aria-controls={`${id}-listbox`}
         aria-expanded={isOpen}
-        className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 ${
+        className={`flex min-h-[0.48rem] w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-fluid-md outline-none transition duration-200 ${
           isOpen
             ? isMuted
-              ? 'border-[#7ea8cf] bg-[rgba(209,220,231,0.96)] text-[#21486d] ring-4 ring-[rgba(126,168,207,0.18)] shadow-[0_8px_18px_rgba(43,70,99,0.08)]'
-              : 'border-[#3498db] bg-white text-[#2c3e50] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(52,152,219,0.08)]'
+              ? 'border-[#2f9d8f] bg-[#fbfefd] text-[#173b47] ring-4 ring-[rgba(47,157,143,0.18)] shadow-[0_10px_24px_rgba(19,94,89,0.1)]'
+              : 'border-[#238fca] bg-white text-[#22384a] ring-4 ring-sky-100 shadow-[0_10px_24px_rgba(35,143,202,0.1)]'
             : error
               ? isMuted
-                ? 'border-red-300 bg-[rgba(209,220,231,0.96)] text-[#21486d]'
-                : 'border-red-300 bg-white text-[#2c3e50]'
+                ? 'border-red-300 bg-[#fbfefd] text-[#173b47]'
+                : 'border-red-300 bg-white text-[#22384a]'
               : isMuted
-                ? 'border-[#b6c7d6] bg-[rgba(209,220,231,0.96)] text-[#21486d] focus:border-[#7ea8cf] focus:ring-4 focus:ring-[rgba(126,168,207,0.16)]'
-                : 'border-[#bdc3c7] bg-white text-[#2c3e50] focus:border-[#3498db] focus:ring-4 focus:ring-blue-100'
+                ? 'border-[#b9ced2] bg-[#fbfefd] text-[#173b47] hover:border-[#8fb2b3] focus:border-[#2f9d8f] focus:ring-4 focus:ring-[rgba(47,157,143,0.16)]'
+                : 'border-[#bdcbd0] bg-white text-[#22384a] hover:border-[#98b7c4] focus:border-[#238fca] focus:ring-4 focus:ring-sky-100'
         }`}
         onClick={() => setIsOpen((current) => !current)}
       >
@@ -131,11 +138,11 @@ function CustomMultiSelect({
           className={`min-w-0 truncate whitespace-nowrap text-left ${
             resolvedValues.length > 0
               ? isMuted
-                ? 'text-[#21486d]'
-                : 'text-[#2c3e50]'
+                ? 'text-[#173b47]'
+                : 'text-[#22384a]'
               : isMuted
-                ? 'text-[#6f89a4]'
-                : 'text-[#95a5a6]'
+                ? 'text-[#78919a]'
+                : 'text-[#8ca0a8]'
           }`}
         >
           {resolvedDisplayValue}
@@ -143,10 +150,10 @@ function CustomMultiSelect({
         <span
           className={`shrink-0 text-fluid-xs leading-none transition duration-200 ${
             isOpen
-              ? 'rotate-180 text-[#3498db]'
+              ? 'rotate-180 text-[#2f9d8f]'
               : isMuted
-                ? 'text-[#6f89a4]'
-                : 'text-[#7f8c8d]'
+                ? 'text-[#78919a]'
+                : 'text-[#7b8f98]'
           }`}
         >
           <FiChevronDown className="h-4 w-4" />
@@ -156,39 +163,46 @@ function CustomMultiSelect({
       {isOpen ? (
         <div
           id={`${id}-listbox`}
-          className={`absolute left-0 right-0 z-20 overflow-hidden rounded-2xl border shadow-[0_18px_36px_rgba(15,23,42,0.12)] ${
+          className={`scrollbar-super-thin absolute left-0 right-0 z-50 max-h-[2.56rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border shadow-[0_20px_42px_rgba(15,23,42,0.14)] ${
             isMuted
-              ? 'border-[#b6c7d6] bg-[rgba(210,220,231,0.98)] backdrop-blur-sm'
-              : 'border-[#bdc3c7] bg-white'
+              ? 'border-[#abc8c7] bg-[rgba(252,254,253,0.98)] backdrop-blur-sm'
+              : 'border-[#bdcbd0] bg-white'
           } ${menuPositionClasses}`}
           role="listbox"
           aria-multiselectable="true"
         >
-          {normalizedOptions.map((option) => {
+          {normalizedOptions.length ? normalizedOptions.map((option) => {
             const isSelected = resolvedValues.includes(option.value);
 
             return (
               <button
                 key={option.value}
                 type="button"
+                role="option"
+                aria-selected={isSelected}
+                title={option.label}
                 className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-fluid-md transition ${
                   isSelected
                     ? isMuted
-                      ? 'bg-[rgba(194,209,224,0.92)] text-[#255a91]'
-                      : 'bg-[#ebf5fb] text-[#3498db]'
+                      ? 'bg-[#dff5ef] text-[#126b63]'
+                      : 'bg-[#e7f4fb] text-[#1978ad]'
                     : isMuted
-                      ? 'text-[#33516f] hover:bg-[rgba(219,228,237,0.98)]'
-                      : 'text-[#34495e] hover:bg-[#f7f9fa]'
+                      ? 'text-[#31565c] hover:bg-[#eef8f6]'
+                      : 'text-[#334b5c] hover:bg-[#f5fafc]'
                 }`}
                 onClick={() => handleToggleOption(option.value)}
               >
-                <span>{option.label}</span>
+                <span className="min-w-0 truncate">{option.label}</span>
                 <span className={`shrink-0 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
                   <FiCheck className="h-4 w-4" />
                 </span>
               </button>
             );
-          })}
+          }) : (
+            <div className="px-4 py-3 text-fluid-sm font-medium text-[#78919a]">
+              {emptyMessage}
+            </div>
+          )}
         </div>
       ) : null}
     </div>

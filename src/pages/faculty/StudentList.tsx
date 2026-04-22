@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   FiAlertCircle,
@@ -202,8 +202,8 @@ function FacultyStudentList() {
       pageEyebrow="Student management"
       pageTitle="Student List"
     >
-      <div className="mx-auto w-full max-w-[98rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[1.9rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(197,209,223,0.93)_100%)] shadow-[0_14px_32px_rgba(27,46,70,0.09)]">
+      <div className="mx-auto w-full max-w-[15.68rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[0.304rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(197,209,223,0.93)_100%)] shadow-[0_14px_32px_rgba(27,46,70,0.09)]">
           <div className="border-b border-[#bfcedb] px-5 py-5 sm:px-6">
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -258,7 +258,7 @@ function FacultyStudentList() {
                     />
                   </FilterShell>
 
-                  <label className="flex min-w-0 items-center gap-3 rounded-[1.05rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-2.5 text-[#6f89a4] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] xl:translate-y-[1px]">
+                  <label className="flex min-w-0 items-center gap-3 rounded-[0.168rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-2.5 text-[#6f89a4] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] xl:translate-y-[1px]">
                     <FiSearch className="h-4 w-4 shrink-0" />
                     <input
                       type="text"
@@ -278,7 +278,7 @@ function FacultyStudentList() {
                     type="button"
                     onClick={() => exportStudentsToCsv(filteredStudents)}
                     disabled={filteredStudents.length === 0}
-                    className="inline-flex items-center justify-center gap-2 rounded-[1rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-3 text-fluid-base font-semibold text-[#31567f] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:bg-[rgba(217,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-55"
+                    className="inline-flex items-center justify-center gap-2 rounded-[0.16rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-4 py-3 text-fluid-base font-semibold text-[#31567f] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:bg-[rgba(217,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     <FiDownload className="h-4 w-4" />
                     Export CSV
@@ -289,7 +289,7 @@ function FacultyStudentList() {
           </div>
 
           <div className="px-4 py-4 sm:px-6 sm:py-5">
-            <div className="overflow-hidden rounded-[1.45rem] border border-[#b7c8d7] bg-[rgba(197,209,222,0.42)]">
+            <div className="overflow-hidden rounded-[0.232rem] border border-[#b7c8d7] bg-[rgba(197,209,222,0.42)]">
               <div className="overflow-x-auto">
                 <table className="min-w-[1040px] w-full border-collapse">
                   <thead className="bg-[rgba(185,199,214,0.5)]">
@@ -444,7 +444,7 @@ function FacultyStudentList() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                 disabled={currentPageSafe === 1}
-                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-[0.152rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiChevronLeft className="h-4 w-4" />
                 Prev
@@ -455,7 +455,7 @@ function FacultyStudentList() {
                   key={page}
                   type="button"
                   onClick={() => setCurrentPage(page)}
-                  className={`h-10 min-w-10 rounded-[0.95rem] border px-3 text-fluid-base font-medium transition ${
+                  className={`h-10 min-w-10 rounded-[0.152rem] border px-3 text-fluid-base font-medium transition ${
                     page === currentPageSafe
                       ? 'border-[#4a89c6] bg-[#4a89c6] text-white shadow-[0_8px_18px_rgba(53,110,170,0.18)]'
                       : 'border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] text-[#4e6883] hover:bg-[rgba(218,227,236,0.98)]'
@@ -469,7 +469,7 @@ function FacultyStudentList() {
                 type="button"
                 onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                 disabled={currentPageSafe === pageCount}
-                className="inline-flex h-10 items-center gap-2 rounded-[0.95rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-[0.152rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.96)] px-3 text-fluid-base font-medium text-[#5b7490] transition hover:bg-[rgba(218,227,236,0.98)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
                 <FiChevronRight className="h-4 w-4" />
@@ -506,7 +506,7 @@ function FacultyStudentList() {
       >
         {selectedStudent ? (
           <div className="space-y-5">
-            <div className="flex items-start gap-4 rounded-[1.3rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.72)] px-4 py-4">
+            <div className="flex items-start gap-4 rounded-[0.208rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.72)] px-4 py-4">
               {selectedStudent.profileImage ? (
                 <img
                   src={selectedStudent.profileImage}
@@ -598,7 +598,7 @@ function FilterShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[1.05rem] border border-[#b7c8d7] bg-[rgba(204,216,228,0.74)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+    <div className="rounded-[0.168rem] border border-[#b7c8d7] bg-[rgba(204,216,228,0.74)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
       <p className="mb-2 text-fluid-3xs font-semibold uppercase tracking-[0.18em] text-[#6f89a4]">
         {label}
       </p>
@@ -647,7 +647,7 @@ function ActionIcon({
   tone?: 'default' | 'accent';
   onClick?: () => void;
 }) {
-  const className = `flex h-9 w-9 items-center justify-center rounded-[0.9rem] border transition ${
+  const className = `flex h-9 w-9 items-center justify-center rounded-[0.144rem] border transition ${
     tone === 'accent'
       ? 'border-[#c7bfd6] bg-[rgba(214,207,224,0.88)] text-[#755fa0] hover:bg-[rgba(222,215,231,0.98)]'
       : 'border-[#b7c8d7] bg-[rgba(210,220,231,0.96)] text-[#607a96] hover:bg-[rgba(219,228,236,0.98)]'
@@ -679,7 +679,7 @@ function DetailCard({
 }) {
   return (
     <div
-      className={`rounded-[1.1rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.72)] px-4 py-4 ${
+      className={`rounded-[0.176rem] border border-[#b7c8d7] bg-[rgba(209,220,231,0.72)] px-4 py-4 ${
         fullWidth ? 'sm:col-span-2' : ''
       }`}
     >

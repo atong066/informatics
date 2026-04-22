@@ -1,4 +1,4 @@
-﻿import { useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomDatePicker from '../components/CustomDatePicker';
@@ -220,11 +220,11 @@ function Register() {
       />
 
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:84px_84px] opacity-30" />
-      <div className="absolute left-[-8rem] top-[-6rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
-      <div className="absolute bottom-[-8rem] right-[-3rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
+      <div className="absolute left-[-1.28rem] top-[-0.96rem] h-72 w-72 rounded-full bg-[#3498db]/18 blur-3xl" />
+      <div className="absolute bottom-[-1.28rem] right-[-0.48rem] h-80 w-80 rounded-full bg-[#5dade2]/14 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl items-center justify-center">
-        <section className="w-full max-w-xl rounded-[1.75rem] border border-white/55 bg-[#ecf0f1] p-5 shadow-[0_30px_80px_rgba(16,33,53,0.28)] sm:p-6">
+      <div className="relative mx-auto flex min-h-[calc(100vh-0.64rem)] max-w-5xl items-center justify-center">
+        <section className="w-full max-w-xl rounded-[0.28rem] border border-white/55 bg-[#ecf0f1] p-5 shadow-[0_30px_80px_rgba(16,33,53,0.28)] sm:p-6">
           <div className="mb-6 flex items-center gap-3 border-b border-[#d6dde2] pb-5">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d6dde2] bg-white p-2 shadow-[0_8px_18px_rgba(44,62,80,0.08)]">
               <img

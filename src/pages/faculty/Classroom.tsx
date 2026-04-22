@@ -214,8 +214,8 @@ function FacultyClassroom() {
       pageEyebrow="Faculty classroom"
       pageTitle="Classroom"
     >
-      <div className="mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] border border-[#c9d5e0] bg-[linear-gradient(135deg,rgba(251,253,255,0.96)_0%,rgba(238,244,249,0.94)_100%)] px-6 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.08)]">
+      <div className="mx-auto w-full max-w-[14.72rem] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="overflow-hidden rounded-[0.32rem] border border-[#c9d5e0] bg-[linear-gradient(135deg,rgba(251,253,255,0.96)_0%,rgba(238,244,249,0.94)_100%)] px-6 py-6 shadow-[0_18px_34px_rgba(49,70,98,0.08)]">
           <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <p className="text-fluid-2xs font-semibold uppercase tracking-[0.22em] text-[#6f89a4]">
@@ -230,7 +230,7 @@ function FacultyClassroom() {
               </p>
             </div>
 
-            <div className="min-w-[260px] rounded-[1.75rem] bg-[linear-gradient(180deg,#2d4c70_0%,#365a81_100%)] px-5 py-5 text-white shadow-[0_18px_30px_rgba(24,46,74,0.22)]">
+            <div className="min-w-[260px] rounded-[0.28rem] bg-[linear-gradient(180deg,#2d4c70_0%,#365a81_100%)] px-5 py-5 text-white shadow-[0_18px_30px_rgba(24,46,74,0.22)]">
               <p className="text-fluid-2xs uppercase tracking-[0.18em] text-[#bfd3e8]">Quick reminder</p>
               <p className="mt-3 text-fluid-xl font-semibold tracking-[-0.04em]">
                 Sidebar {'>'} Classroom
@@ -249,7 +249,7 @@ function FacultyClassroom() {
           <MetricCard icon={<FiCheckCircle className="h-5 w-5" />} value={String(readyNotesCount)} label="AI notes ready" />
         </div>
 
-        <section className="mt-6 rounded-[1.9rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
+        <section className="mt-6 rounded-[0.304rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.9)] p-5 shadow-[0_16px_30px_rgba(49,70,98,0.06)] sm:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-fluid-xl font-semibold text-[#123b74]">Classroom overview</p>
@@ -260,14 +260,14 @@ function FacultyClassroom() {
           </div>
 
           {classroomQuery.isLoading ? (
-            <div className="mt-5 rounded-[1.4rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+            <div className="mt-5 rounded-[0.224rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
               <p className="text-fluid-md font-semibold text-[#173b70]">Loading classroom rooms...</p>
               <p className="mt-2 text-fluid-sm text-[#6a839d]">
                 Pulling your subject conferences and note status.
               </p>
             </div>
           ) : classroomQuery.isError ? (
-            <div className="mt-5 rounded-[1.4rem] border border-dashed border-[#e4c2c2] bg-[linear-gradient(180deg,#fffafa_0%,#fff1f1_100%)] px-6 py-10 text-center">
+            <div className="mt-5 rounded-[0.224rem] border border-dashed border-[#e4c2c2] bg-[linear-gradient(180deg,#fffafa_0%,#fff1f1_100%)] px-6 py-10 text-center">
               <p className="text-fluid-md font-semibold text-[#9c4a4a]">Unable to load classroom data</p>
               <p className="mt-2 text-fluid-sm text-[#a56262]">
                 {classroomQuery.error instanceof Error
@@ -276,7 +276,7 @@ function FacultyClassroom() {
               </p>
             </div>
           ) : classroomSubjects.length === 0 ? (
-            <div className="mt-5 rounded-[1.4rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+            <div className="mt-5 rounded-[0.224rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
               <p className="text-fluid-md font-semibold text-[#173b70]">No classroom subjects yet</p>
               <p className="mt-2 text-fluid-sm text-[#6a839d]">
                 Once subjects are assigned to this faculty account, their conference rooms will show up here.
@@ -290,10 +290,10 @@ function FacultyClassroom() {
                 return (
                   <article
                     key={subject.id}
-                    className="rounded-[1.5rem] border border-[#dce5ed] bg-[#f8fbfd] px-5 py-5 shadow-[0_12px_24px_rgba(39,77,117,0.06)]"
+                    className="rounded-[0.24rem] border border-[#dce5ed] bg-[#f8fbfd] px-5 py-5 shadow-[0_12px_24px_rgba(39,77,117,0.06)]"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0]">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-[0.16rem] bg-[linear-gradient(180deg,#eef6ff_0%,#e1edf8_100%)] text-[#2b6fb0]">
                         <SubjectIcon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -318,7 +318,7 @@ function FacultyClassroom() {
                           return (
                             <div
                               key={meeting.id}
-                              className="rounded-[1.15rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.88)] p-4"
+                              className="rounded-[0.184rem] border border-[#d6e2ec] bg-[rgba(255,255,255,0.88)] p-4"
                             >
                               <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
@@ -349,7 +349,7 @@ function FacultyClassroom() {
                                 {meeting.agenda || 'No agenda added yet.'}
                               </p>
 
-                              <div className="mt-3 rounded-[1rem] border border-[#dce5ed] bg-[#f8fbfd] px-3.5 py-3">
+                              <div className="mt-3 rounded-[0.16rem] border border-[#dce5ed] bg-[#f8fbfd] px-3.5 py-3">
                                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.14em] text-[#6f89a4]">
                                   Timeline
                                 </p>
@@ -402,7 +402,7 @@ function FacultyClassroom() {
                         })}
                       </div>
                     ) : (
-                      <div className="mt-4 rounded-[1.2rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-5 py-6">
+                      <div className="mt-4 rounded-[0.192rem] border border-dashed border-[#cfdeea] bg-[linear-gradient(180deg,rgba(252,254,255,0.98)_0%,rgba(240,246,252,0.96)_100%)] px-5 py-6">
                         <p className="text-fluid-base font-semibold text-[#173b70]">No conference rooms yet</p>
                         <p className="mt-2 text-fluid-sm text-[#6a839d]">
                           Assign this subject to a section schedule in admin to create its room.
@@ -436,7 +436,7 @@ function FacultyClassroom() {
           selectedRecording.recordingMimeType.startsWith('audio/') ? (
             <audio src={selectedRecording.recordingUrl} controls className="w-full" />
           ) : (
-            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[1rem] bg-black" />
+            <video src={selectedRecording.recordingUrl} controls className="max-h-[68vh] w-full rounded-[0.16rem] bg-black" />
           )
         ) : (
           <p className="text-fluid-sm text-[#607b95]">No recording has been saved yet.</p>
@@ -456,7 +456,7 @@ function MetricCard({
   label: string;
 }) {
   return (
-    <article className="rounded-[1.75rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.92)] p-5 shadow-[0_14px_28px_rgba(49,70,98,0.06)]">
+    <article className="rounded-[0.28rem] border border-[#c9d5e0] bg-[rgba(251,253,255,0.92)] p-5 shadow-[0_14px_28px_rgba(49,70,98,0.06)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fluid-3xl font-semibold leading-none text-[#123b74]">{value}</p>
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#dde9f6_0%,#cadcf0_100%)] text-[#2b79ba]">

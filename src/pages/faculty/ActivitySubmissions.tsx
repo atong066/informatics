@@ -119,7 +119,10 @@ type ActivitySubmissionsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     activityType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     status: string;
     submittedCount: number;
     totalStudents: number;
@@ -129,7 +132,10 @@ type ActivitySubmissionsResponse = {
     title: string;
     detail: string;
     dueDate: string;
+    deadlineTime: string;
     submissionType: 'text' | 'file';
+    targetSections: string[];
+    targetSectionLabel: string;
     status: string;
     submittedCount: number;
     totalStudents: number;
@@ -180,6 +186,33 @@ function formatDateTime(value: string) {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function formatTimeLabel(value: string) {
+  if (!value) {
+    return '';
+  }
+
+  const [hours, minutes] = value.split(':').map(Number);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  return new Date(2000, 0, 1, hours, minutes).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function formatDeadlineLabel(date: string, time?: string) {
+  const dateLabel = formatCalendarDate(date);
+
+  if (!time) {
+    return dateLabel;
+  }
+
+  return `${dateLabel} at ${formatTimeLabel(time)}`;
 }
 
 function sanitizeScoreInput(value: string) {
@@ -290,7 +323,7 @@ function PdfPreviewContent({ attachment }: { attachment: AttachmentRecord }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[28rem] items-center justify-center rounded-[1rem] border border-[#c1d0dc] bg-[linear-gradient(180deg,#eef3f8_0%,#dde6ef_100%)] px-6 text-center">
+      <div className="flex min-h-[4.48rem] items-center justify-center rounded-[0.16rem] border border-[#c1d0dc] bg-[linear-gradient(180deg,#eef3f8_0%,#dde6ef_100%)] px-6 text-center">
         <div>
           <p className="text-fluid-lg font-semibold text-[#173b70]">Preparing PDF preview...</p>
           <p className="mt-2 text-fluid-sm text-[#607b95]">Rendering the submitted pages in the review modal.</p>
@@ -301,7 +334,7 @@ function PdfPreviewContent({ attachment }: { attachment: AttachmentRecord }) {
 
   if (errorMessage) {
     return (
-      <div className="rounded-[1rem] border border-[#ecd0d0] bg-[#fff2f2] px-5 py-5 text-fluid-sm text-[#944a4a]">
+      <div className="rounded-[0.16rem] border border-[#ecd0d0] bg-[#fff2f2] px-5 py-5 text-fluid-sm text-[#944a4a]">
         <p className="font-semibold">PDF preview unavailable</p>
         <p className="mt-2">{errorMessage}</p>
       </div>
@@ -309,17 +342,17 @@ function PdfPreviewContent({ attachment }: { attachment: AttachmentRecord }) {
   }
 
   return (
-    <div className="max-h-[62vh] overflow-y-auto rounded-[1rem] border border-[#c1d0dc] bg-[linear-gradient(180deg,#dbe4ed_0%,#cfd9e3_100%)] px-4 py-4">
-      <div className="mx-auto flex max-w-[52rem] flex-col gap-4">
+    <div className="max-h-[62vh] overflow-y-auto rounded-[0.16rem] border border-[#c1d0dc] bg-[linear-gradient(180deg,#dbe4ed_0%,#cfd9e3_100%)] px-4 py-4">
+      <div className="mx-auto flex max-w-[8.32rem] flex-col gap-4">
         {pageImages.map((pageImage, index) => (
           <figure
             key={`${attachment.id}-page-${index + 1}`}
-            className="rounded-[1rem] border border-[#bccbd8] bg-white p-3 shadow-[0_12px_24px_rgba(27,46,70,0.12)]"
+            className="rounded-[0.16rem] border border-[#bccbd8] bg-white p-3 shadow-[0_12px_24px_rgba(27,46,70,0.12)]"
           >
             <img
               src={pageImage}
               alt={`${attachment.name} page ${index + 1}`}
-              className="w-full rounded-[0.7rem] border border-[#e0e7ef] bg-white"
+              className="w-full rounded-[0.112rem] border border-[#e0e7ef] bg-white"
             />
             <figcaption className="mt-2 text-center text-fluid-xs font-semibold uppercase tracking-[0.12em] text-[#6b8198]">
               Page {index + 1}
@@ -575,9 +608,18 @@ function ActivitySubmissions() {
   const activeImageDrawings = activeImage
     ? imageDrawings.filter((drawing) => drawing.attachmentId === activeImage.id)
     : [];
-  const submittedStudents = payload?.submittedStudents ?? [];
-  const pendingStudents = payload?.pendingStudents ?? [];
-  const activeReviewStudents = activeSubmissionTab === 'submitted' ? submittedStudents : pendingStudents;
+  const submittedStudents = useMemo(
+    () => payload?.submittedStudents ?? [],
+    [payload?.submittedStudents],
+  );
+  const pendingStudents = useMemo(
+    () => payload?.pendingStudents ?? [],
+    [payload?.pendingStudents],
+  );
+  const activeReviewStudents = useMemo(
+    () => (activeSubmissionTab === 'submitted' ? submittedStudents : pendingStudents),
+    [activeSubmissionTab, pendingStudents, submittedStudents],
+  );
   const sectionOptions = useMemo(() => {
     const sections = new Set([
       ...(payload?.availableSections ?? []),
@@ -587,12 +629,13 @@ function ActivitySubmissions() {
 
     return ['All sections', ...Array.from(sections).sort((left, right) => left.localeCompare(right))];
   }, [payload?.availableSections, pendingStudents, submittedStudents]);
+  const selectedSectionValue = sectionOptions.includes(selectedSection) ? selectedSection : 'All sections';
   const filteredReviewStudents = useMemo(
     () =>
-      selectedSection === 'All sections'
+      selectedSectionValue === 'All sections'
         ? activeReviewStudents
-        : activeReviewStudents.filter((student) => student.section === selectedSection),
-    [activeReviewStudents, selectedSection],
+        : activeReviewStudents.filter((student) => student.section === selectedSectionValue),
+    [activeReviewStudents, selectedSectionValue],
   );
   const totalSubmissionPages = Math.max(1, Math.ceil(filteredReviewStudents.length / SUBMISSIONS_PER_PAGE));
   const activeSubmissionPage = Math.min(submissionPage, totalSubmissionPages);
@@ -619,18 +662,6 @@ function ActivitySubmissions() {
     ? filteredReviewStudents[selectedStudentIndex + 1]
     : null;
   const selectedStudentPosition = selectedStudentIndex >= 0 ? selectedStudentIndex + 1 : 0;
-
-  useEffect(() => {
-    setSubmissionPage(1);
-  }, [activeSubmissionTab, selectedSection]);
-
-  useEffect(() => {
-    if (sectionOptions.includes(selectedSection)) {
-      return;
-    }
-
-    setSelectedSection('All sections');
-  }, [sectionOptions, selectedSection]);
 
   function openReviewModal(student: ReviewableStudent) {
     setSelectedStudent(student);
@@ -940,8 +971,8 @@ function ActivitySubmissions() {
       pageEyebrow={`${itemKind === 'assignment' ? 'Assignment' : 'Activity'} submissions`}
       pageTitle={item?.title ?? `${itemKind === 'assignment' ? 'Assignment' : 'Activity'} submissions`}
     >
-      <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8">
-        <section className="rounded-[1.65rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+      <div className="mx-auto w-full max-w-[14.4rem] px-4 py-5 sm:px-6 lg:px-8">
+        <section className="rounded-[0.264rem] border border-[#b2c3d1] bg-[linear-gradient(180deg,rgba(212,222,233,0.97)_0%,rgba(201,212,225,0.95)_100%)] px-5 py-5 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
           {submissionsQuery.isLoading ? (
             <p className="text-fluid-md text-[#6b8198]">Loading submissions...</p>
           ) : payload && item ? (
@@ -964,7 +995,7 @@ function ActivitySubmissions() {
                 </h1>
               </div>
 
-              <div className="grid min-w-[15rem] gap-3 rounded-[1.2rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
+              <div className="grid min-w-[2.4rem] gap-3 rounded-[0.192rem] bg-[linear-gradient(180deg,#365678_0%,#2d4868_100%)] px-4 py-4 text-white shadow-[0_10px_20px_rgba(27,46,70,0.12)]">
                 <div className="flex items-center gap-2 text-[#d5e2ef]">
                   <FiCheckCircle className="h-4 w-4" />
                   <p className="text-fluid-xs uppercase tracking-[0.16em]">Submission summary</p>
@@ -973,7 +1004,10 @@ function ActivitySubmissions() {
                   {item.submittedCount} of {item.totalStudents} students
                 </p>
                 <p className="text-fluid-sm text-[#d5e2ef]">
-                  Deadline: {formatCalendarDate(item.dueDate)}
+                  Deadline: {formatDeadlineLabel(item.dueDate, item.deadlineTime)}
+                </p>
+                <p className="text-fluid-sm text-[#d5e2ef]">
+                  Sections: {item.targetSectionLabel}
                 </p>
               </div>
             </div>
@@ -981,9 +1015,9 @@ function ActivitySubmissions() {
         </section>
 
         {payload && item ? (
-          <section className="mt-5 rounded-[1.55rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
+          <section className="mt-5 rounded-[0.248rem] border border-[#b4c6d4] bg-[linear-gradient(180deg,rgba(209,220,231,0.95)_0%,rgba(198,210,223,0.93)_100%)] p-4 shadow-[0_10px_22px_rgba(27,46,70,0.08)]">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiUsers className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Submitted</p>
@@ -991,7 +1025,7 @@ function ActivitySubmissions() {
                 <p className="mt-3 text-fluid-xl font-semibold text-[#173b70]">{item.submittedCount}</p>
               </div>
 
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiClock className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Pending</p>
@@ -1001,7 +1035,7 @@ function ActivitySubmissions() {
                 </p>
               </div>
 
-              <div className="rounded-[1.2rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
+              <div className="rounded-[0.192rem] border border-[#b7c8d7] bg-[linear-gradient(180deg,#dbe5ed_0%,#d0dbe5_100%)] p-4">
                 <div className="flex items-center gap-2 text-[#2f78bc]">
                   <FiFileText className="h-4 w-4" />
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Output type</p>
@@ -1015,7 +1049,7 @@ function ActivitySubmissions() {
             <div className="mt-5">
               {submittedStudents.length > 0 || pendingStudents.length > 0 ? (
                 <div>
-                  <div className="mb-3 rounded-[1.15rem] border border-[#b7c8d7] bg-[rgba(232,239,246,0.8)] px-4 py-3">
+                  <div className="mb-3 rounded-[0.184rem] border border-[#b7c8d7] bg-[rgba(232,239,246,0.8)] px-4 py-3">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                       <div className="inline-flex w-full rounded-full border border-[#b7c8d7] bg-white p-1 sm:w-auto">
                         {[
@@ -1025,7 +1059,10 @@ function ActivitySubmissions() {
                           <button
                             key={tab.id}
                             type="button"
-                            onClick={() => setActiveSubmissionTab(tab.id as 'submitted' | 'not-submitted')}
+                            onClick={() => {
+                              setActiveSubmissionTab(tab.id as 'submitted' | 'not-submitted');
+                              setSubmissionPage(1);
+                            }}
                             className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-fluid-sm font-semibold transition sm:flex-none ${
                               activeSubmissionTab === tab.id
                                 ? 'bg-[#eaf5ff] text-[#2f78bc] shadow-[0_8px_18px_rgba(47,120,188,0.14)]'
@@ -1042,9 +1079,12 @@ function ActivitySubmissions() {
 
                       <select
                         id="submission-section-filter"
-                        value={selectedSection}
-                        onChange={(event) => setSelectedSection(event.target.value)}
-                        className="min-h-11 min-w-[14rem] rounded-full border border-[#b7c8d6] bg-white px-4 py-2 text-fluid-sm font-semibold text-[#173b70] outline-none transition focus:border-[#6eaad9] focus:ring-2 focus:ring-[#6eaad9]/25"
+                        value={selectedSectionValue}
+                        onChange={(event) => {
+                          setSelectedSection(event.target.value);
+                          setSubmissionPage(1);
+                        }}
+                        className="min-h-11 min-w-[2.24rem] rounded-full border border-[#b7c8d6] bg-white px-4 py-2 text-fluid-sm font-semibold text-[#173b70] outline-none transition focus:border-[#6eaad9] focus:ring-2 focus:ring-[#6eaad9]/25"
                       >
                         {sectionOptions.map((section) => (
                           <option key={section} value={section}>
@@ -1062,9 +1102,9 @@ function ActivitySubmissions() {
                     </div>
                   </div>
 
-                  <div className="overflow-hidden rounded-[1.15rem] border border-[#b4c6d4] bg-[rgba(232,239,246,0.76)] shadow-[0_8px_18px_rgba(27,46,70,0.06)]">
+                  <div className="overflow-hidden rounded-[0.184rem] border border-[#b4c6d4] bg-[rgba(232,239,246,0.76)] shadow-[0_8px_18px_rgba(27,46,70,0.06)]">
                   <div className="overflow-x-auto">
-                    <table className="min-w-[68rem] w-full border-collapse text-left">
+                    <table className="min-w-[10.88rem] w-full border-collapse text-left">
                       <thead className="bg-[linear-gradient(180deg,#dce7f0_0%,#d1dde8_100%)]">
                         <tr className="border-b border-[#b8c8d6] text-fluid-2xs font-semibold uppercase tracking-[0.16em] text-[#607790]">
                           <th className="px-4 py-3">Student</th>
@@ -1086,8 +1126,8 @@ function ActivitySubmissions() {
                             <td className="px-4 py-3 align-top">
                               <div className="min-w-0">
                                 <p className="truncate text-fluid-sm font-semibold text-[#173b70]">{student.fullName}</p>
-                                <p className="mt-1 max-w-[16rem] truncate text-fluid-xs text-[#607790]">@{student.username}</p>
-                                <p className="mt-1 max-w-[18rem] truncate text-fluid-xs text-[#2f78bc]">{student.email}</p>
+                                <p className="mt-1 max-w-[2.56rem] truncate text-fluid-xs text-[#607790]">@{student.username}</p>
+                                <p className="mt-1 max-w-[2.88rem] truncate text-fluid-xs text-[#2f78bc]">{student.email}</p>
                               </div>
                             </td>
                             <td className="px-4 py-3 align-top text-fluid-sm font-medium text-[#48617d]">
@@ -1183,7 +1223,7 @@ function ActivitySubmissions() {
                 </div>
                 </div>
               ) : (
-                <div className="rounded-[1.4rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
+                <div className="rounded-[0.224rem] border border-dashed border-[#b2c2d0] bg-[linear-gradient(180deg,#d2dde8_0%,#c7d4e0_100%)] px-6 py-10 text-center">
                   <p className="text-fluid-md font-semibold text-[#173b70]">No submissions yet</p>
                   <p className="mt-2 text-fluid-sm text-[#7088a1]">
                     This page will fill in once students start submitting this {itemKind}.
@@ -1206,7 +1246,7 @@ function ActivitySubmissions() {
               : 'Preview the submitted output, add comments or image notes, and save a score.'
         }
         onClose={closeReviewModal}
-        panelClassName="max-w-[min(90vw,96rem)]"
+        panelClassName="max-w-[min(90vw,15.36rem)]"
         bodyClassName="max-h-[76vh] overflow-y-auto px-4 py-4 sm:px-6 lg:px-8"
         outsideControls={(
           <>
@@ -1255,10 +1295,10 @@ function ActivitySubmissions() {
         )}
       >
         {selectedStudent ? (
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1.75fr)_20rem]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_3.04rem] xl:grid-cols-[minmax(0,1.75fr)_3.2rem]">
             <div className="space-y-4">
               {selectedStudent.submissionStatus === 'not-submitted' ? (
-                <div className="rounded-[1.15rem] border border-[#f2d9bc] bg-[#fff5e8] p-4">
+                <div className="rounded-[0.184rem] border border-[#f2d9bc] bg-[#fff5e8] p-4">
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#b06b15]">No LMS submission</p>
                   <p className="mt-2 text-fluid-sm leading-6 text-[#6f5632]">
                     Use this manual score when the student sent the work outside the LMS.
@@ -1267,7 +1307,7 @@ function ActivitySubmissions() {
               ) : null}
 
               {selectedStudent.textContent ? (
-                <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
+                <div className="rounded-[0.184rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Text output</p>
@@ -1282,7 +1322,7 @@ function ActivitySubmissions() {
                       Highlight selected words
                     </button>
                   </div>
-                  <p className="formatted-text mt-4 whitespace-pre-wrap rounded-[1rem] border border-[#d4e0ea] bg-white px-4 py-4 text-fluid-sm leading-[1.75] text-[#344d68]">
+                  <p className="formatted-text mt-4 whitespace-pre-wrap rounded-[0.16rem] border border-[#d4e0ea] bg-white px-4 py-4 text-fluid-sm leading-[1.75] text-[#344d68]">
                     {splitTextWithHighlights(selectedStudent.textContent, textHighlights).map((piece, index) =>
                       piece.highlight ? (
                         <mark
@@ -1317,7 +1357,7 @@ function ActivitySubmissions() {
               ) : null}
 
               {selectedStudent.attachments.length > 0 ? (
-                <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
+                <div className="rounded-[0.184rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                   <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Submitted files</p>
 
                   {previewableAttachments.length > 0 ? (
@@ -1451,7 +1491,7 @@ function ActivitySubmissions() {
                             onPointerMove={continueImageDrawing}
                             onPointerUp={finishImageDrawing}
                             onPointerCancel={finishImageDrawing}
-                            className={`relative mt-3 touch-none overflow-hidden rounded-[1rem] border border-[#c1d0dc] bg-black ${
+                            className={`relative mt-3 touch-none overflow-hidden rounded-[0.16rem] border border-[#c1d0dc] bg-black ${
                               activeImageTool === 'draw' ? 'cursor-crosshair' : 'cursor-copy'
                             }`}
                           >
@@ -1499,7 +1539,7 @@ function ActivitySubmissions() {
                                 onPointerUp={endImageNoteDrag}
                                 onPointerCancel={endImageNoteDrag}
                                 onClick={(event) => event.stopPropagation()}
-                                className="absolute max-w-[14rem] -translate-x-1/2 -translate-y-full cursor-move touch-none rounded-[0.85rem] border border-[#b59b1d] bg-[#fff7c2] px-3 py-2 text-fluid-xs font-semibold text-[#6d5510] shadow-[0_10px_18px_rgba(0,0,0,0.18)]"
+                                className="absolute max-w-[2.24rem] -translate-x-1/2 -translate-y-full cursor-move touch-none rounded-[0.136rem] border border-[#b59b1d] bg-[#fff7c2] px-3 py-2 text-fluid-xs font-semibold text-[#6d5510] shadow-[0_10px_18px_rgba(0,0,0,0.18)]"
                                 style={{
                                   left: `${note.x * 100}%`,
                                   top: `${note.y * 100}%`,
@@ -1510,7 +1550,7 @@ function ActivitySubmissions() {
                             ))}
                             {draftImageNote ? (
                               <div
-                                className="absolute w-[15rem] -translate-x-1/2 rounded-[0.85rem] border border-[#6eaad9] bg-white p-2 shadow-[0_12px_22px_rgba(0,0,0,0.18)]"
+                                className="absolute w-[2.4rem] -translate-x-1/2 rounded-[0.136rem] border border-[#6eaad9] bg-white p-2 shadow-[0_12px_22px_rgba(0,0,0,0.18)]"
                                 style={{
                                   left: `${draftImageNote.x * 100}%`,
                                   top: `${draftImageNote.y * 100}%`,
@@ -1522,7 +1562,7 @@ function ActivitySubmissions() {
                                   value={draftImageText}
                                   onChange={(event) => setDraftImageText(event.target.value)}
                                   placeholder="Write note"
-                                  className="w-full rounded-[0.65rem] border border-[#c1d0dc] px-3 py-2 text-fluid-sm font-semibold text-[#173b70] outline-none focus:border-[#6eaad9]"
+                                  className="w-full rounded-[0.104rem] border border-[#c1d0dc] px-3 py-2 text-fluid-sm font-semibold text-[#173b70] outline-none focus:border-[#6eaad9]"
                                 />
                                 <div className="mt-2 flex justify-end gap-2">
                                   <button
@@ -1566,7 +1606,7 @@ function ActivitySubmissions() {
                         key={attachment.id}
                         href={attachment.dataUrl}
                         download={attachment.name}
-                        className="flex items-center justify-between gap-3 rounded-[1rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
+                        className="flex items-center justify-between gap-3 rounded-[0.16rem] border border-[#c3d2de] bg-[rgba(214,224,234,0.94)] px-4 py-3 text-fluid-sm font-medium text-[#2f78bc] transition hover:bg-[rgba(221,230,238,0.98)] hover:text-[#215f99]"
                       >
                         <span className="flex min-w-0 items-center gap-2">
                           <FiPaperclip className="h-3.5 w-3.5 shrink-0" />
@@ -1583,7 +1623,7 @@ function ActivitySubmissions() {
             </div>
 
             <aside className="space-y-4">
-              <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
+              <div className="rounded-[0.184rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                 <label className="block text-fluid-sm font-semibold text-[#173b70]" htmlFor="review-score">
                   Score
                 </label>
@@ -1594,11 +1634,11 @@ function ActivitySubmissions() {
                   value={reviewScore}
                   onChange={(event) => setReviewScore(sanitizeScoreInput(event.target.value))}
                   placeholder="Add score"
-                  className="mt-2 w-full rounded-[0.85rem] border border-[#b8c8d7] bg-white px-3 py-2 text-fluid-base font-semibold text-[#173b70] outline-none focus:border-[#6eaad9]"
+                  className="mt-2 w-full rounded-[0.136rem] border border-[#b8c8d7] bg-white px-3 py-2 text-fluid-base font-semibold text-[#173b70] outline-none focus:border-[#6eaad9]"
                 />
               </div>
 
-              <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
+              <div className="rounded-[0.184rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                 <label className="flex items-center gap-2 text-fluid-sm font-semibold text-[#173b70]" htmlFor="review-comment">
                   <FiMessageSquare className="h-4 w-4" />
                   Faculty comments
@@ -1609,11 +1649,11 @@ function ActivitySubmissions() {
                   onChange={(event) => setReviewComment(event.target.value)}
                   rows={8}
                   placeholder="Write comments for this student..."
-                  className="mt-2 w-full rounded-[0.85rem] border border-[#b8c8d7] bg-white px-3 py-2 text-fluid-sm leading-6 text-[#173b70] outline-none focus:border-[#6eaad9]"
+                  className="mt-2 w-full rounded-[0.136rem] border border-[#b8c8d7] bg-white px-3 py-2 text-fluid-sm leading-6 text-[#173b70] outline-none focus:border-[#6eaad9]"
                 />
               </div>
 
-              <div className="rounded-[1.15rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
+              <div className="rounded-[0.184rem] border border-[#c1d0dc] bg-[rgba(255,255,255,0.78)] p-4">
                 <p className="text-fluid-xs font-semibold uppercase tracking-[0.16em] text-[#6d86a0]">Saved image markup</p>
                 {imageNotes.length > 0 ? (
                   <div className="mt-3 space-y-2">
@@ -1622,7 +1662,7 @@ function ActivitySubmissions() {
                         key={note.id}
                         type="button"
                         onClick={() => setImageNotes((current) => current.filter((entry) => entry.id !== note.id))}
-                        className="flex w-full items-center justify-between gap-3 rounded-[0.85rem] border border-[#d5b957] bg-[#fff7c2] px-3 py-2 text-left text-fluid-xs font-semibold text-[#816410]"
+                        className="flex w-full items-center justify-between gap-3 rounded-[0.136rem] border border-[#d5b957] bg-[#fff7c2] px-3 py-2 text-left text-fluid-xs font-semibold text-[#816410]"
                       >
                         <span className="min-w-0 truncate">{note.text}</span>
                         <FiTrash2 className="h-3.5 w-3.5 shrink-0" />
@@ -1642,7 +1682,7 @@ function ActivitySubmissions() {
                           key={drawing.id}
                           type="button"
                           onClick={() => setImageDrawings((current) => current.filter((entry) => entry.id !== drawing.id))}
-                          className="flex w-full items-center justify-between gap-3 rounded-[0.85rem] border border-[#f0b8b8] bg-[#fff7f7] px-3 py-2 text-left text-fluid-xs font-semibold text-[#9f3838]"
+                          className="flex w-full items-center justify-between gap-3 rounded-[0.136rem] border border-[#f0b8b8] bg-[#fff7f7] px-3 py-2 text-left text-fluid-xs font-semibold text-[#9f3838]"
                         >
                           <span className="inline-flex min-w-0 items-center gap-2">
                             <span
